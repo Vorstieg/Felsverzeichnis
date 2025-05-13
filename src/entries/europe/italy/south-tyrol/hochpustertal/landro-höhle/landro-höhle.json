@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "landro-höhle",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "hochpustertal/landro-höhle",
+    "name": "Landro Höhle",
+    "type": "sports-climbing",
+    "description": "Die Landro Höhle ist ein herausforderndes Klettergebiet, das sich besonders für erfahrene Kletterer eignet. Die beeindruckenden Überhänge und steilen Wandstrukturen bieten spannende Herausforderungen und unvergessliche Klettererlebnisse.\n Dieses Gebiet ist von Toblach aus mit dem Bus 445 gut erreichbar. Die kurze Wanderung von der Haltestelle zum Kletterspot führt durch eine beeindruckende Naturkulisse.",
+    "topo": {
+      "site": "drei-zinnen.info",
+      "link": "https://www.drei-zinnen.info/media/a5ca3153-0af6-4c70-a1cd-49e6d9c2c1c1/broschure-klettergaerten-definitiv.pdf"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.231074,
+      46.621440
+    ]
+  }
+}

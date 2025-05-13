@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Drei-Zinnen-Blick",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      12.23199757232042,
+      46.64090848091821
+    ],
+    "type": "Point"
+  }
+}
+

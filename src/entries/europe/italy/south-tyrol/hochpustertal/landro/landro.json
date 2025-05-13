@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "landro",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "hochpustertal/landro",
+    "name": "Landro",
+    "type": "sports-climbing",
+    "description": "Das Klettergebiet Landro liegt in einer atemberaubenden alpinen Umgebung und bietet eine Vielzahl von Routen für alle Schwierigkeitsstufen. Besonders beliebt ist es aufgrund seiner beeindruckenden Felsformationen und der Möglichkeit, auch an heißen Sommertagen im Schatten zu klettern.\nVon Toblach aus ist der Klettergarten mit dem Bus 445 bequem erreichbar. Die Fahrt führt entlang malerischer Landschaften und macht bereits die Anreise zu einem Erlebnis.",
+    "topo": {
+      "site": "drei-zinnen.info",
+      "link": "https://www.drei-zinnen.info/media/a5ca3153-0af6-4c70-a1cd-49e6d9c2c1c1/broschure-klettergaerten-definitiv.pdf"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.2250614,
+      46.6254198
+    ]
+  }
+}

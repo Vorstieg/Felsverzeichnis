@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Rettenbach b. Bad Ischl Abzw Hinterstein",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      13.636656,
+      47.706878
+    ],
+    "type": "Point"
+  }
+}
+

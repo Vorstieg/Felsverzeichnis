@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "adlerhorst",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "traunstein/adlerhorst",
+    "name": "Adlerhorst",
+    "type": "sports-climbing",
+    "description": "Um zum Traunstein zu gelangen ist das Traunstein Shuttle (https://traunsee-almtal.salzkammergut.at/anreise-nahverkehr/regionale-mobilitaet/gmunden-mobilitaet.html) zu empfehlen.",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/adlerhorst/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.819849,
+      47.880658
+    ]
+  }
+}

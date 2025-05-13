@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "roter-ofen",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "mödling/roter-ofen",
+    "name": "Roter Ofen",
+    "type": "sports-climbing",
+    "description": "Mit dem Zug nach Mödling und dann mit dem Bus nach Hinterbrühl dauert die Anreise von Wien ca. eine Stunde.",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/roter-ofen-moedling-hinterbruehl/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.239197788586296,
+      48.0898335567538
+    ]
+  }
+}

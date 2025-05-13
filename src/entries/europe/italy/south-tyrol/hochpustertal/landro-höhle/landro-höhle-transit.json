@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Dürrensee",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      12.229892881696216,
+      46.63266055141102
+    ],
+    "type": "Point"
+  }
+}
+

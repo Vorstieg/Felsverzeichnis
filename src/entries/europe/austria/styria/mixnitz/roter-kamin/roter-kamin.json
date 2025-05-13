@@ -1,0 +1,22 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "roter-kamin",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "mixnitz/roter-kamin",
+    "name": "Roter Kamin",
+    "type": "multi-pitch",
+    "description": "Von Wien fährt man mit einem beliebigen Zug nach Bruck/Mur und dann mit der S1 weiter nach Mixnitz. Die gesamte Fahrt dauert knapp über 2 Stunden. Dannach gibt es noch einen etwa 30 minütigen Zustieg durch die schöne Bärenschützklamm.\n",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/roter-kamin-rampenwulst/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.389441386534566, 47.33561636563111
+    ]
+  }
+}

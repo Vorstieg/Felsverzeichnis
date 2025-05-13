@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Grünbach am Schneeberg Bahnhof",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      15.997949418142149,
+      47.79767563193555
+    ],
+    "type": "Point"
+  }
+}
+

@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "rettenbachtal",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "bad-ischl/rettenbachtal",
+    "name": "Rettenbachtal",
+    "type": "sports-climbing",
+    "description": "Das Rettenbachtal bei Bad Ischl ist ein landschaftlich beeindruckendes Klettergebiet mit zahlreichen Routen für alle Könnensstufen. Die imposanten Felswände aus Kalkstein bieten sowohl lange, ausdauernde Touren als auch knackige, technisch anspruchsvolle Routen. Besonders beeindruckend sind die Routen in den hohen Schwierigkeitsgraden bis 8c+.\n\nDer einfachste Weg zum Klettergebiet führt mit dem Zug nach Bad Ischl, von wo aus man bequem mit dem Fahrrad weiterfahren kann. Alternativ steht der Bus 553 zur Verfügung, der eine direkte Anbindung bietet. Die letzten Meter zum Kletterfelsen führen durch ein malerisches Tal, das allein schon die Anreise wert ist.\n Neben den Kletterrouten bietet das Rettenbachtal eine atemberaubende Naturkulisse, die sich perfekt für einen erholsamen Tag in den Bergen eignet. Nach dem Klettern lohnt sich ein Abstecher in die nahegelegenen Euro Therme in Bad Ischl.\n",
+    "topo": {
+      "site": "thecrag.com",
+      "link": "https://www.thecrag.com/de/klettern/austria/rettenbachtal"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.655880,
+      47.702854
+    ]
+  }
+}

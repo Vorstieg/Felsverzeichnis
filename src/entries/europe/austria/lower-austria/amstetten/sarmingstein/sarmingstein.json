@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "sarmingstein",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "amstetten/sarmingstein",
+    "name": "Sarmingstein",
+    "type": "sports-climbing",
+    "description": "Sarmingstein ist ein lohnendes Ziel für Kletterer, die von Wien aus anreisen. Die Felsen liegen inmitten einer malerischen Naturlandschaft und bieten sowohl Sportkletterrouten als auch Boulderprobleme für alle Könnensstufen.\n\nDie Anreise erfolgt ähnlich wie nach Tiefenbach: Zunächst mit dem Zug nach Amstetten, dann mit dem Bus weiter bis Sarmingstein. Die Fahrt dauert insgesamt rund zwei Stunden. Auch hier steht in Amstetten eine Rail & Drive-Option zur Verfügung, falls man die letzte Strecke lieber mit dem Auto zurücklegen möchte.",
+    "topo": {
+      "site": "woidkraxler.at",
+      "link": "https://woidkraxler.at/wp-content/uploads/2022/07/Gloxwald-Sarmingstein-2022.pdf"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.9466775,
+      48.2321660
+    ]
+  }
+}

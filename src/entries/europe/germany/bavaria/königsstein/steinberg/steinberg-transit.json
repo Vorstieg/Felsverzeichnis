@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Abzw. Breitenstein",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      11.644209170023137,
+      49.598529558239754
+    ],
+    "type": "Point"
+  }
+}
+

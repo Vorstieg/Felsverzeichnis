@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Aufhofen",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      11.945496602166399,
+      46.81437112458529
+    ],
+    "type": "Point"
+  }
+}
+

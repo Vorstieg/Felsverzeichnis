@@ -1,0 +1,18 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "han-derventa",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "name": "Han derventa",
+    "type": "sports-climbing",
+    "description": "Das Klettergebiet besteht aus mehreren Sektoren, welche alle auf Privatgrund sind. Der linke Sektor ist in einem Ziegenauslauf."
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      18.5440083,
+      43.8643265
+    ]
+  }
+}

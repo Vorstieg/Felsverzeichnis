@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "lausbubenwand",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "mödling/lausbubenwand",
+    "name": "Lausbubenwand",
+    "type": "sports-climbing",
+    "description": "Die Lausbubenwand ist nur 5 Minuten vom Efeugrat entfernt. Jedoch ist der Fels wesentlich weniger abgegriffen.",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/lausbubenwand-moedling/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.27297,
+      48.08049
+    ]
+  }
+}

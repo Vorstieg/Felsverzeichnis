@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "St.Lorenz/Wachau Bundesstraße",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      15.475550008331474,
+      48.39249240797019
+    ],
+    "type": "Point"
+  }
+}
+

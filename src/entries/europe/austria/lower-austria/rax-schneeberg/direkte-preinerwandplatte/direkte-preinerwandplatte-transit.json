@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Prein an der Rax/Griesleiten",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      15.749070398342548,
+      47.675119899399654
+    ],
+    "type": "Point"
+  }
+}
+

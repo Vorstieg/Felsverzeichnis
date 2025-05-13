@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "smaragdlerweg",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "wachau/smaragdlerweg",
+    "name": "Smaragdlerweg",
+    "type": "multi-pitch",
+    "description": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/smaragdlerweg/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.523507164453482,
+      48.39747507190018
+    ]
+  }
+}

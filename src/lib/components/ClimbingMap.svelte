@@ -73,7 +73,7 @@
 
 		map.on('click', 'places', (e) => {
 			if (e.features[0]?.properties?.path)
-				goto(`${base}/map/post/${e.features[0].properties.path}`);
+				goto(`${base}/map/crag/${e.features[0].properties.path}`);
 		});
 
 		map.on('load', async () => {

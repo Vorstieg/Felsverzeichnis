@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Puchberg am Schneeberg/Sonnleiten",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      15.863153,
+      47.790828
+    ],
+    "type": "Point"
+  }
+}
+

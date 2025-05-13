@@ -1,0 +1,22 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "lueggraben",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "scheibbs/lueggraben",
+    "name": "Lueggraben",
+    "type": "sports-climbing",
+    "description": "Mit dem Zug zum Banhof in Scheibbs und dann mit dem Bus nach Neustift, ist dieses Klettergebiet u in ca. 2,5 Stunden von Wien erreichbar. Von Neustift gibt es noch einen ca. 20 min Zustieg. Durch die position im Wald und der Ausrichtung ist diese Klettergebiet ideal für den Sommer.\n",
+    "topo": {
+      "site": "oetk-scheibbs.at",
+      "link": "https://www.oetk-scheibbs.at/klettern/klettergarten-lueggraben/topo/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.13871, 47.98624
+    ]
+  }
+}

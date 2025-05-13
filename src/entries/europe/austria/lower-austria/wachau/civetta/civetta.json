@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "civetta",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "wachau/civetta",
+    "name": "Civetta",
+    "type": "sports-climbing",
+    "description": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/civetta-duernstein-wachau/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.5220663,
+      48.4025936
+    ]
+  }
+}

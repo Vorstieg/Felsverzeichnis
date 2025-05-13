@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "glocknergrat",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "mödling/glocknergrat",
+    "name": "Glocknergrat",
+    "type": "sports-climbing",
+    "description": "Die Glocknergrat zu Fuß von Mödling erreichbar.",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/glocknergrat-moedling/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.27625,
+      48.08245
+    ]
+  }
+}

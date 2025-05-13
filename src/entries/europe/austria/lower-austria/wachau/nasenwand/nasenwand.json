@@ -1,0 +1,22 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "nasenwand",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "wachau/nasenwand",
+    "name": "Nasenwand",
+    "type": "sports-climbing",
+    "description": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/nasenwand-duernstein-wachau/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.51789, 48.40237
+    ]
+  }
+}

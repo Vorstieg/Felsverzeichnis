@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Helenental Abzweigung Siegenfeld",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      16.19025325567717,
+      48.018118316836784
+    ],
+    "type": "Point"
+  }
+}
+

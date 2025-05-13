@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Ardagger-Markt Donaubrücke/Tiefenbach",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      14.857920,
+      48.210354
+    ],
+    "type": "Point"
+  }
+}
+

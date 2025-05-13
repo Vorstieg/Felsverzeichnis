@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Banhof Scheibbs",
+    "type": "train"
+  },
+  "geometry": {
+    "coordinates": [
+      15.16464122792469,
+      48.005033476848304
+    ],
+    "type": "Point"
+  }
+}
+

@@ -1,0 +1,18 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "kebnekaise-fjällstation",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "name": "Kebnekaise Fjällstation",
+    "type": "bouldering",
+    "description": "Im Tal neben der Basisstation des Kebnekaise gibt es eine große Anzahl an Granit blöcken, viele davon wharscheinlich noch nie bebouldert. Im Bergführerbüro können Matten und schuhe ausgeborgt werden."
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      18.609046,
+      67.859926
+    ]
+  }
+}
