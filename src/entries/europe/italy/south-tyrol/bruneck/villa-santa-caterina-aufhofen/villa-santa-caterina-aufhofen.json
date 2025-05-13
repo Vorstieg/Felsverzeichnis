@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "villa-santa-caterina-aufhofen",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "bruneck/villa-santa-caterina-aufhofen",
+    "name": "Villa Santa Caterina - Aufhofen",
+    "type": "sports-climbing",
+    "description": "Die Villa Santa Caterina in Aufhofen ist ein wunderschön gelegenes Klettergebiet in der Nähe von Bruneck, das sich durch seine Vielfalt an Routen und die idyllische Umgebung auszeichnet. Die Felsen bieten sowohl für Anfänger als auch für erfahrene Kletterer spannende Herausforderungen. Besonders an heißen Sommertagen ist das Gebiet aufgrund seiner schattigen Lagen eine gute Wahl.\nVon Bruneck aus ist der Klettergarten mit dem Bus 420.2 bequem erreichbar. Noch einfacher ist die Anreise mit dem Fahrrad, da sich das Gebiet nur wenige Kilometer außerhalb der Stadt befindet.\nDas Klettergebiet bietet abwechslungsreiche Routen in unterschiedlichen Schwierigkeitsgraden. Von überhängen bis Rissen ist alles dabei. Leider sind einige Routen sehr stark gechiped.\nNeben dem Klettern lädt die Umgebung zu weiteren Outdoor-Aktivitäten ein. Die nahegelegenen Wanderwege bieten wunderschöne Ausblicke auf das Pustertal, und Bruneck ist mit seinen Cafés und Restaurants ein perfekter Ort, um den Tag entspannt ausklingen zu lassen.\n",
+    "topo": {
+      "site": "thecrag.com",
+      "link": "https://www.thecrag.com/climbing/italy/alto-adige/val-pusteria-pustertal/area/14124601"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      11.9483151,
+      46.8182957
+    ]
+  }
+}

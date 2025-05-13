@@ -1,10 +1,10 @@
 <script>
-	import PostsList from '$lib/components/PostsList.svelte';
+	import CragList from '$lib/components/CragList.svelte';
 
 	/** @type {{data: any}} */
 	let { data } = $props();
 
-	const { posts, search } = data;
+	const { crags, search } = data;
 	let searchTerm = $state(search);
 
 	function resetSearch() {
@@ -19,9 +19,9 @@
 </svelte:head>
 <div class="pt-50 h-screen  max-w-3/4 justify-self-center">
 
-	{#if posts.length}
+	{#if crags.length}
 		<div class="pb-10">
-			<PostsList posts={posts} />
+			<CragList crags={crags} />
 		</div>
 	{:else}
 		<p> Keine Einträge gefunden </p>

@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Neustift b.Scheibbs Strudenbrücke",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      15.16354771933244,
+      47.994195027679126
+    ],
+    "type": "Point"
+  }
+}
+

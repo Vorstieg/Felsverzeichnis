@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "bergrettungssteig",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "wachau/bergrettungssteig",
+    "name": "Bergrettungssteig",
+    "type": "multi-pitch",
+    "description": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/bergrettungsweg-duernstein-wachau/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.5181851,
+      48.4023248
+    ]
+  }
+}

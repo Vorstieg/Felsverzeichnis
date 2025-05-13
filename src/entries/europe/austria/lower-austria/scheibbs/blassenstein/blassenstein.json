@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "blassenstein",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "scheibbs/blassenstein",
+    "name": "Blassenstein",
+    "type": "sports-climbing",
+    "description": "Öffentlich ist der Blassenstein etwas schwierig erreichbar, dafür lockt er mit einer Wunderschönen Aussicht über das Mostviertel. Online ist leider kein Topo verfügbar. Um beim Blassenstein zu klettern ist es notwendig, sich ein stück abzuseilen.\n",
+    "topo": {
+      "site": "thecrag.com",
+      "link": "https://www.thecrag.com/de/klettern/austria/wien-vienna-area/area/4287648768"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.1998192,
+      48.0088208
+    ]
+  }
+}

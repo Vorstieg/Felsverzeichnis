@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Sarmingstein Abzw Alter Bahnhof",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      14.9426978,
+      48.2305654
+    ],
+    "type": "Point"
+  }
+}
+

@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Marktplatz, Köngisstein",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      11.63340446227266,
+      49.60716261839839
+    ],
+    "type": "Point"
+  }
+}
+

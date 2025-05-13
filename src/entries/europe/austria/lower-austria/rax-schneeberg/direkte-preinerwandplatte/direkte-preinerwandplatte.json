@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "direkte-preinerwandplatte",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "rax-schneeberg/direkte-preinerwandplatte",
+    "name": "Direkte Preinerwandplatte",
+    "type": "multi-pitch",
+    "description": "Mit dem Zug nach Puchberg am Schneeberg und dann mit dem Bus weiter, ist man in 2 Stunden in Prain. Dannach gibt es noch einen 1,5 Stunden Zustieg.\n",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/direkte-preinerwandplatte/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.7333238,
+      47.7012064
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "hochempor-verschneidung",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "hohe-wand/hochempor-verschneidung",
+    "name": "Hochempor verschneidung",
+    "type": "multi-pitch",
+    "description": "Um zu dieser ultra-klassischen Route zu kommen muss man von Wien eine Anfahrt von etwa 1,5 Stunden in Kauf nehmen. Dazu kommt ein Zustieg von etwa einer halben Stunde. Dafür wird man mit einer der schönsten Verschneidungen auf der Hohen Wand belohnt.\n",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/hochempor-verschneidung-hohe-wand/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.05398068106439,
+      47.83266954305114
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "kleines-verdon",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "baden/kleines-verdon",
+    "name": "Kleines Verdon",
+    "type": "bouldering",
+    "description": "Von Wien fährt man mit einem beliebigen Zug nach Baden und dann mit dem Bus zur Haltestelle Helenental Abzweigung Siegenfeld.\n",
+    "topo": {
+      "site": "thecrag.com",
+      "link": "https://www.thecrag.com/climbing/austria/wien-vienna-area/wien-vienna-and-surrounds/vorderes-helental/area/761450622/routes"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.1959914,
+      48.0182711
+    ]
+  }
+}

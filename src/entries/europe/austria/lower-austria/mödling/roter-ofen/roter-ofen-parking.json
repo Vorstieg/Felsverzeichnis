@@ -1,0 +1,14 @@
+{
+  "type": "Feature",
+  "properties": {
+    "type": "parking-space"
+  },
+  "geometry": {
+    "coordinates": [
+      16.23935874780655,
+      48.087555926961315
+    ],
+    "type": "Point"
+  }
+}
+

@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "traumland-rosenburg-kamptal",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "rosenburg/traumland-rosenburg-kamptal",
+    "name": "Traumland Rosenburg Kamptal",
+    "type": "sports-climbing",
+    "description": "Mit einer Dauer von 2,5 Stunden ist die Anreise von Wien etwas länger. Wer die lange Reise antritt wird mit gutem Gneis und einem Klettergarten am Kamp belohnt. Mit dem Zug nach Rosenburg Bahnhof und dann ca. 40 Minuten zu Fuß zum Klettergarten.\n",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/traumland-rosenburg-kamptal/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.60953615193662,
+      48.62740886682984
+    ]
+  }
+}

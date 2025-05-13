@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "efeugrat",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "mödling/efeugrat",
+    "name": "Efeugrat",
+    "type": "sports-climbing",
+    "description": "Der Efeugrat ist zu Fuß vom Bahnhof Mödling erreichbar. Dabei dauert die Anreise von Wien ca. eine Stunde. Alternativ kann man sich am Bahnhof Mödling ein Nextbike ausborgen, um die Anreise um 15 Minuten zu verkürzen.",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/efeugrat-moedling"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.27030,
+      48.08088
+    ]
+  }
+}

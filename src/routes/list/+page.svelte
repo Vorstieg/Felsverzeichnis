@@ -1,11 +1,11 @@
 <script>
-	import PostsList from '$lib/components/PostsList.svelte';
+	import CragList from '$lib/components/CragList.svelte';
 	import { siteDescription, types } from '$lib/config';
 	import { base } from '$app/paths';
 
 	/** @type {{data: any}} */
 	let { data } = $props();
-	const { posts } = data;
+	const { crags } = data;
 
 	let searchTerm = $state('');
 </script>
@@ -18,7 +18,7 @@
 
 <div class="pt-60 h-screen max-w-3/4 justify-self-center">
 	<div class="pb-10">
-		<PostsList posts={posts} />
+		<CragList crags={crags} />
 	</div>
 </div>
 

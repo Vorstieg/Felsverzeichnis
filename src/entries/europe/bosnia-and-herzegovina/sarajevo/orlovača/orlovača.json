@@ -1,0 +1,18 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "orlovača",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "name": "Orlovača",
+    "type": "sports-climbing",
+    "description": "Klettern neben der Orlovača Höhle! Durch die touristische Nutzung der Höhle gibt es gute Parkplätze und Toiletten. Teile der Kletterrouten sind hinter einem Stromkabel und dadurch nicht ideal zu beklettern. \n"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      18.546583,
+      43.864327
+    ]
+  }
+}

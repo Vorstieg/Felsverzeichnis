@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "don-bosco-grat",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "wachau/don-bosco-grat",
+    "name": "Don Bosco Grat",
+    "type": "multi-pitch",
+    "description": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/don-bosco-grat-wachau/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.5205428,
+      48.4053065
+    ]
+  }
+}

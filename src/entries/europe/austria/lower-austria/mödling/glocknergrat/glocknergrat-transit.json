@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Bahnhof Mödling",
+    "type": "train"
+  },
+  "geometry": {
+    "coordinates":
+      [
+        16.29574165342936, 48.08579238497782
+      ],
+    "type": "Point"
+  }
+}
+

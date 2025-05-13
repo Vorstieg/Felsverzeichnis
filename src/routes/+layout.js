@@ -18,7 +18,6 @@ export const load = async ({ url }) => {
 				description: "Diese Plattform bietet eine Sammlung von Klettergebieten mit detaillierten Informationen zur öffentlichen Anreise." +
 					"Egal ob Anfänger*in oder erfahrene*r Kletterer*in – hier findest du passende Felsen für dein nächstes Abenteuer.",
 				author: "Vorstieg Software FlexCo",
-				image: base + "banner.png",
 				url: url.href
 			}
 		};

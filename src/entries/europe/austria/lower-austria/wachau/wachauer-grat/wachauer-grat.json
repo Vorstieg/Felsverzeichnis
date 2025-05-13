@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "wachauer-grat",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "wachau/wachauer-grat",
+    "name": "Wachauer Grat",
+    "type": "multi-pitch",
+    "description": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/wachauergrat-wachauer-grat/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.519515679993651,
+      48.405450617564235
+    ]
+  }
+}

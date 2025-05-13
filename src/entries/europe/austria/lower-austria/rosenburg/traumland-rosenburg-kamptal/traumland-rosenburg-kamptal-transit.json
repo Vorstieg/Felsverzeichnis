@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Rosenburg/Kamp Bahnhof",
+    "type": "train"
+  },
+  "geometry": {
+    "coordinates": [
+      15.643512927469002,
+      48.62848705517076
+    ],
+    "type": "Point"
+  }
+}
+

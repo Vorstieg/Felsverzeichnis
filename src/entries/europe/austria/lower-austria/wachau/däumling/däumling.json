@@ -1,0 +1,22 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "däumling",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "wachau/däumling",
+    "name": "Däumling",
+    "type": "sports-climbing",
+    "description": "Rund um die Burgruine Dürnstein sind mehrere Türme mit Kletterrouten.\n Der Däumling dominiert als höchster Turm den Burggraben und bietet eine der lohnendsten Klettereien des Gebiets.",
+    "topo": {
+      "site": "thecrag.com",
+      "link": "https://www.thecrag.com/climbing/wachau/durnstein/routes"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.5238204, 48.3981524
+    ]
+  }
+}

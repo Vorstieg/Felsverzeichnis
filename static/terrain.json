@@ -24,6 +24,8 @@
     },
     "places": {
       "type": "geojson",
+      "cluster": true,
+      "clusterRadius": 20,
       "data": {}
     },
     "routes": {

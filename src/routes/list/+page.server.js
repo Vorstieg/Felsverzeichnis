@@ -1,7 +1,7 @@
-import fetchPosts from '$lib/assets/js/fetchPosts.js';
+import fetchCrags from '$lib/assets/js/fetchCrags.js';
 
 export const load = async () => {
 	// TODO: reimplement pagination if performance issues arise
-	const posts = await fetchPosts();
-	return { posts };
+	const crags = await fetchCrags();
+	return { crags };
 };

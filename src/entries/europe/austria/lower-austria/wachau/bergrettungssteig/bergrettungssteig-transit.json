@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Dürnstein/Wachau Nord",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      15.518170,
+      48.399350
+    ],
+    "type": "Point"
+  }
+}
+

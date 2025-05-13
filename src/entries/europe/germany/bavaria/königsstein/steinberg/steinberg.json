@@ -1,0 +1,23 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "steinberg",
+    "date": "2024-04-09",
+    "updated": "2024-04-09",
+    "path": "königsstein/steinberg",
+    "name": "Steinberg",
+    "type": "sports-climbing",
+    "description": "Steinberg ist zu Fuß von Königsstein erreichbar.",
+    "topo": {
+      "site": "thecrag.com",
+      "link": "https://www.thecrag.com/de/klettern/germany/frankenjura/steinberg"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      11.6538595,
+      49.6047817
+    ]
+  }
+}

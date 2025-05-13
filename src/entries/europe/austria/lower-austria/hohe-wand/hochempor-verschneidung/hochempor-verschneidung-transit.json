@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Stollhof Ramhofweg",
+    "type": "bus"
+  },
+  "geometry": {
+    "coordinates": [
+      16.06698654877418,
+      47.829815149069375
+    ],
+    "type": "Point"
+  }
+}
+
