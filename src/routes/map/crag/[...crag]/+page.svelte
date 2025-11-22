@@ -6,6 +6,7 @@
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
 	import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
 	import { _, locale } from 'svelte-i18n';
+	import { securityRatings } from '$lib/config.js';
 
 	let fullscreenImage = $state();
 	let sunInfo = $state({ hours: 'N/A' });
@@ -13,8 +14,7 @@
 
 	/** @type {{data: any}} */
 	let { data } = $props();
-    
-    let description = $derived($locale === 'de' ? data.description_de : data.description_en || data.description_de);
+	let description = $derived($locale === 'de' ? data.description_de : data.description_en || data.description_de);
 	let displayWallDirection = $derived(wallDirection !== 'N/A' && wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection);
 	let displaySunHours = $derived(
 		sunInfo.hours === 'shade_all_day' || sunInfo.hours === 'no_geodata'
@@ -29,7 +29,7 @@
 		}
 	});
 
-	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags } = data;
+	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security } = data;
 
 	afterNavigate((_navigation) => {
 		if (location.hash) onMarkerClicked();
@@ -97,7 +97,6 @@
 					{/each}
 				</div>
 			{/if}
-			<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mt-5 mb-6">
 				<a href="{base}/map/{type}/"
 					 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
 					{$_('types.' + type)}
@@ -109,6 +108,18 @@
 						</span>
 					{/each}
 				{/if}
+				{#if security && securityRatings.has(security)}
+					<div class="flex items-center ml-2 mt-1" title={security}>
+						<span class="inline-block">
+							{#each Array(securityRatings.get(security)).fill(0) as _, i}
+								<i class="fa-solid fa-star text-yellow-400" title={security}></i>
+							{/each}
+							{#each Array(4 - securityRatings.get(security)).fill(0) as _, i}
+								<i class="fa-regular fa-star text-gray-300" title={security}></i>
+							{/each}
+						</span>
+					</div>
+				{/if}
 				{#if topoJson}
 					<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
 						<i class="fa-solid fa-compass text-gray-500"></i>
@@ -119,7 +130,6 @@
 						<span>{displaySunHours}</span>
 					</div>
 				{/if}
-			</div>
 			<div class="flex items-center mt-10 mb-10">
 				<div class="prose text-slate-800 w-full">
 					<div class="mb-5 w-full">
