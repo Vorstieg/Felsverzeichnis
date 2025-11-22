@@ -14,22 +14,7 @@
 
 	/** @type {{data: any}} */
 	let { data } = $props();
-	let description = $derived($locale === 'de' ? data.description_de : data.description_en || data.description_de);
-	let displayWallDirection = $derived(wallDirection !== 'N/A' && wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection);
-	let displaySunHours = $derived(
-		sunInfo.hours === 'shade_all_day' || sunInfo.hours === 'no_geodata'
-			? $_('sun.' + sunInfo.hours)
-			: sunInfo.hours
-	);
-
-	$effect(() => {
-		if (data.topoJson) {
-			sunInfo = calculateSunInfo(data.topoJson);
-			wallDirection = calculateWallDirection(data.topoJson);
-		}
-	});
-
-	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security } = data;
+	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security, grade } = data;
 
 	afterNavigate((_navigation) => {
 		if (location.hash) onMarkerClicked();
@@ -102,6 +87,11 @@
 					 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
 					{$_('types.' + type)}
 				</a>
+				{#if grade}
+					<span class="px-3 py-1.5 rounded-lg border bg-slate-700 text-white text-sm font-semibold border-slate-800 inline-flex items-center justify-center">
+						{grade}
+					</span>
+				{/if}
 				{#if tags && tags.length > 0}
 					{#each tags as tag}
 						<span class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100">
