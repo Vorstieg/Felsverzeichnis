@@ -97,6 +97,7 @@
 					{/each}
 				</div>
 			{/if}
+			<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mt-5 mb-6">
 				<a href="{base}/map/{type}/"
 					 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
 					{$_('types.' + type)}
@@ -109,13 +110,13 @@
 					{/each}
 				{/if}
 				{#if security && securityRatings.has(security)}
-					<div class="flex items-center ml-2 mt-1" title={security}>
+					<div class="flex items-center ml-2 mt-1" title="Absicherung">
 						<span class="inline-block">
 							{#each Array(securityRatings.get(security)).fill(0) as _, i}
-								<i class="fa-solid fa-star text-yellow-400" title={security}></i>
+								<i class="fa-solid fa-star text-yellow-400" title="Absicherung"></i>
 							{/each}
 							{#each Array(4 - securityRatings.get(security)).fill(0) as _, i}
-								<i class="fa-regular fa-star text-gray-300" title={security}></i>
+								<i class="fa-regular fa-star text-gray-300" title="Absicherung"></i>
 							{/each}
 						</span>
 					</div>
@@ -130,6 +131,7 @@
 						<span>{displaySunHours}</span>
 					</div>
 				{/if}
+			</div>
 			<div class="flex items-center mt-10 mb-10">
 				<div class="prose text-slate-800 w-full">
 					<div class="mb-5 w-full">
