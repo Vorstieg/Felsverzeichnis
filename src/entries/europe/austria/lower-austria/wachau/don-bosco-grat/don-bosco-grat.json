@@ -9,8 +9,24 @@
     "type": "multi-pitch",
     "grade": "5",
     "security": "Sehr Gut",
+<<<<<<< HEAD:src/entries/europe/austria/lower-austria/wachau/don-bosco-grat/don-bosco-grat.json
     "description_de": "",
     "description_en": "",
+=======
+    "equipment": [
+      {
+        "name": "Keile"
+      },
+      {
+        "name": "Friends",
+        "sizes": "0.5-3"
+      },
+      {
+        "name": "Expressschlingen",
+        "amount": 12
+      }
+    ],
+>>>>>>> ed9ddf6 (feat: display crag equipment details on post pages using new icons and add equipment data to crag entries.):src/lib/entries/europe/austria/lower-austria/wachau/don-bosco-grat/don-bosco-grat.json
     "topo": {
       "site": "bergsteigen.com",
       "link": "https://www.bergsteigen.com/touren/klettern/don-bosco-grat-wachau/"
