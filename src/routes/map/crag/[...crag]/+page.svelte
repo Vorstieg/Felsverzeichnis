@@ -23,6 +23,8 @@
 		'Expressschlingen': `${base}/icons/quickdraw.png`,
 		'Friends': `${base}/icons/friend.png`,
 		'Keile': `${base}/icons/nut.png`,
+		'Eisschrauben': `${base}/icons/ice-screw.png`,
+		'Eisgeräte': `${base}/icons/ice-axe.png`,
 		'Seil': 'fa-solid fa-infinity',
 		'Helm': 'fa-solid fa-hard-hat'
 	};
