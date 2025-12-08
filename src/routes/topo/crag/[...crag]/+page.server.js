@@ -1,5 +1,38 @@
 import { error } from '@sveltejs/kit';
 
+export const entries = async () => {
+	const jsonFiles = import.meta.glob('/src/entries/**/*.json');
+	const entriesList = [];
+
+	for (const path in jsonFiles) {
+		if (path.endsWith('-topo.json')) {
+			// Extract the crag path relative to /src/entries/ and remove filename
+			// e.g., /src/entries/europe/austria/wachau/nasenwand/nasenwand-topo.json -> europe/austria/wachau/nasenwand
+			const parts = path.split('/');
+			const dirPath = parts.slice(3, -1).join('/'); // slice(3) skips empty, src, entries
+			
+			// Add the main topo page
+			entriesList.push({ crag: dirPath });
+
+			try {
+				const module = await jsonFiles[path]();
+				const topo = module.default;
+				
+				// Add pages for individual routes if they exist
+				if (topo && topo.routes) {
+					for (const route of topo.routes) {
+						entriesList.push({ crag: `${dirPath}/${route.id}` });
+					}
+				}
+			} catch (e) {
+				console.error(`Error loading topo for entries generation: ${path}`, e);
+			}
+		}
+	}
+
+	return entriesList;
+};
+
 export const load = async ({ params, url }) => {
 	try {
 		let topo
