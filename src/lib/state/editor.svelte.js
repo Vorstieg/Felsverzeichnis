@@ -13,5 +13,9 @@ export const userState = $state({
 		wallAzimuth: 0,
 		altitude: 0,
 		scale: 1
+	},
+	// UI State for the editor
+	ui: {
+		selectedRouteId: null
 	}
 });

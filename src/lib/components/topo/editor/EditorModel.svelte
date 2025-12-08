@@ -1,7 +1,7 @@
 <script>
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { interactivity, MeshLineGeometry, MeshLineMaterial } from '@threlte/extras';
-	import { ArrowHelper, Raycaster, Vector3, Plane } from 'three'; // Added Plane
+	import { ArrowHelper, Raycaster, Vector3, Plane, CatmullRomCurve3 } from 'three'; // Added Plane
 	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 	import { onMount } from 'svelte';
 	import * as THREE from 'three';
@@ -194,16 +194,27 @@
 		return {
 			id: route.id,
 			points: points,
-			normal: normal
+			normal: normal,
+			curve: new CatmullRomCurve3(points)
 		};
 	}));
 
 	let visualFixPoints = $derived(userState.topo.fixPoints.map(pt => {
 		const offset = props.position ? new Vector3(...props.position) : new Vector3(0, 0, 0);
 		const pos = new Vector3(pt.position[0], pt.position[1], pt.position[2]).add(offset);
+		
+		let isAssigned = false;
+		if (userState.ui.selectedRouteId) {
+			const route = userState.topo.routes.find(r => r.id === userState.ui.selectedRouteId);
+			if (route && route.fixPoints && route.fixPoints.includes(pt.id)) {
+				isAssigned = true;
+			}
+		}
+		
 		return {
 			...pt,
-			renderPosition: pos.toArray()
+			renderPosition: pos.toArray(),
+			isAssigned
 		};
 	}));
 
@@ -316,6 +327,30 @@
 			}
 		}
 	}
+	
+	function handleFixPointClick(e, pointId) {
+		e.stopPropagation();
+		if (userState.ui.selectedRouteId) {
+			const route = userState.topo.routes.find(r => r.id === userState.ui.selectedRouteId);
+			if (route) {
+				if (!route.fixPoints) route.fixPoints = [];
+				if (route.fixPoints.includes(pointId)) {
+					route.fixPoints = route.fixPoints.filter(id => id !== pointId);
+				} else {
+					route.fixPoints.push(pointId);
+				}
+			}
+		}
+	}
+
+	function handleRouteClick(e, routeId) {
+		e.stopPropagation(); // Prevent generating a new point/segment
+		if (userState.ui.selectedRouteId === routeId) {
+			userState.ui.selectedRouteId = null;
+		} else {
+			userState.ui.selectedRouteId = routeId;
+		}
+	}
 
 	function handleKeyDown(event) {
 		if (activeTool !== 'route') return;
@@ -353,7 +388,8 @@
 						id: String(userState.topo.routes.length + 1),
 						points: pointsWithNormals.map(p => p.point.clone().sub(modelOffset).toArray().map(c => Number(c.toFixed(2)))),
 						orientation: [averageNormal.x, averageNormal.y, averageNormal.z],
-						tags: []
+						tags: [],
+						fixPoints: []
 					})
 				} else {
 					console.warn("Finalize attempt failed: No valid points found.");
@@ -496,17 +532,37 @@
 	</T.Mesh>
 {/each}
 
-{#each visualFixPoints as point (point.id)}
-	<T.Mesh position={point.renderPosition}>
-		<T.SphereGeometry args={[0.2]} />
-		<T.MeshBasicMaterial color={point.type === 'anchor' ? 'orange' : 'red'} />
+{#each visualFixPoints as point, idx (point.id)}
+	<CssObject position={point.renderPosition}>
+		{#snippet content()}
+			<div 
+				class={"fixpoint-label " + (point.isAssigned ? "!bg-green-500 !text-white" : "")}
+			>
+				{idx + 1}
+			</div>
+		{/snippet}
+	</CssObject>
+	<T.Mesh 
+		position={point.renderPosition}
+		onclick={(e) => handleFixPointClick(e, point.id)}
+		onpointerenter={() => document.body.style.cursor = 'pointer'}
+		onpointerleave={() => document.body.style.cursor = 'default'}
+	>
+		<T.SphereGeometry args={[0.25]} />
+		<T.MeshBasicMaterial color={point.isAssigned ? '#22c55e' : (point.type === 'anchor' ? 'orange' : '#ef4444')} />
 	</T.Mesh>
 {/each}
 
 {#each visualRoutes as route (route.id)}
 	<CssObject position={route.points[0]}>
 		{#snippet content()}
-			<div class={"route-label"}>
+			<div 
+				class={"route-label " + (userState.ui.selectedRouteId === route.id ? "!bg-blue-600 !scale-110 shadow-lg border-2 border-white" : "")}
+				onclick={(e) => handleRouteClick(e, route.id)}
+				onkeypress={(e) => e.key === 'Enter' && handleRouteClick(e, route.id)}
+				role="button"
+				tabindex="0"
+			>
 				{route.id}
 			</div>
 		{/snippet}
@@ -518,10 +574,20 @@
 	<T.Mesh>
 		<MeshLineGeometry points={route.points} />
 		<MeshLineMaterial
-			color={"#12538b"}
+			color={userState.ui.selectedRouteId === route.id ? "#3b82f6" : "#12538b"}
 			width={0.15}
 			resolution={$size.width && $size.height ? [$size.width, $size.height] : [1, 1]}
 		/>
+	</T.Mesh>
+
+	<!-- Hit Box for easier selection -->
+	<T.Mesh
+		onclick={(e) => handleRouteClick(e, route.id)}
+		onpointerenter={() => document.body.style.cursor = 'pointer'}
+		onpointerleave={() => document.body.style.cursor = 'default'}
+	>
+		<T.TubeGeometry args={[route.curve, route.points.length, 0.3, 4, false]} />
+		<T.MeshBasicMaterial transparent opacity={0} />
 	</T.Mesh>
 
 	{#if route.normal && route.normal.lengthSq() > 0.0001}
@@ -529,10 +595,10 @@
 			 args={[
      route.normal.normalize(),
      route.points[0],
-     0.4,       /* length */
+     0.8,       /* length */
      0xff0000,  /* color */
-     0.08,      /* headLength */
-     0.05       /* headWidth */
+     0.32,      /* headLength */
+     0.2       /* headWidth */
     ]}
 		/>
 	{/if}

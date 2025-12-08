@@ -164,8 +164,17 @@
 					userState.topo = { ...userState.topo, ...parsed };
 					// Ensure routes array exists
 					if (!userState.topo.routes) userState.topo.routes = [];
-					// Ensure tags array exists on imported routes
-					userState.topo.routes.forEach(r => { if (!r.tags) r.tags = []; });
+					// Ensure tags array and fixPoints array exists on imported routes
+					userState.topo.routes.forEach(r => { 
+						if (!r.tags) r.tags = [];
+						if (!r.fixPoints) r.fixPoints = [];
+					});
+					// Ensure fixPoints array exists
+					if (!userState.topo.fixPoints) userState.topo.fixPoints = [];
+					// Ensure fixPoints have IDs
+					userState.topo.fixPoints.forEach(fp => {
+						if (!fp.id) fp.id = crypto.randomUUID();
+					});
 					// Ensure modelOffset exists
 					if (!userState.topo.modelOffset) userState.topo.modelOffset = [0, 0, 0];
 					// If model is loaded, we might want to apply offset? 
@@ -399,24 +408,44 @@
 			</div>
 		</div>
 		{#each userState.topo.routes as route}
-			<div class="bg-white rounded-2xl shadow-md p-5 mb-5 mr-5 w-100 border-1 border-gray-200">
-				<div class="flex justify-between items-center mb-4">
-					<h3 class="text-lg font-semibold">Route {route.id}</h3>
-					<button 
-						class="text-gray-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 cursor-pointer"
-						onclick={() => {
-							const index = userState.topo.routes.indexOf(route);
-							if (index > -1) {
-								userState.topo.routes.splice(index, 1);
-							}
-						}}
-						title="Route löschen"
-					>
-						<i class="fa-solid fa-trash-can"></i>
-					</button>
-				</div>
-				<div class="flex flex-row">
-					<label for="name" class="block mb-2 mt-1 mr-2 text-sm font-medium w-1/3">Name:</label>
+			<div 
+				class={"bg-white rounded-2xl shadow-md p-5 mb-5 mr-5 w-100 border-2 transition-all " + 
+				(userState.ui.selectedRouteId === route.id ? "border-blue-500 ring-2 ring-blue-100" : "border-gray-200")}
+			>
+								                <div class="flex justify-between items-center mb-4 cursor-pointer"
+								                    onclick={() => userState.ui.selectedRouteId = (userState.ui.selectedRouteId === route.id ? null : route.id)}
+								                >
+								                    <h3 class={"text-lg font-semibold flex items-center gap-2 " + (userState.ui.selectedRouteId === route.id ? "text-blue-600" : "")}>
+								                        Route {route.id}
+								                        {#if userState.ui.selectedRouteId === route.id}
+								                            <span class="text-xs font-normal bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+								                                Bearbeitungsmodus
+								                            </span>
+								                        {/if}
+								                    </h3>
+								                    <div class="flex gap-2">
+								                        <button 
+								                            class="text-gray-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 cursor-pointer"
+								                            onclick={(e) => {
+								                                e.stopPropagation();
+								                                const index = userState.topo.routes.indexOf(route);
+								                                if (index > -1) {
+								                                    userState.topo.routes.splice(index, 1);
+								                                    if (userState.ui.selectedRouteId === route.id) userState.ui.selectedRouteId = null;
+								                                }
+								                            }}
+								                            title="Route löschen"
+								                        >
+								                            <i class="fa-solid fa-trash-can"></i>
+								                        </button>
+								                    </div>
+								                </div>
+								                {#if userState.ui.selectedRouteId === route.id}
+								                    <div class="mb-4 bg-blue-50 text-blue-700 text-xs p-2 rounded border border-blue-100">
+								                        Klicke auf die roten/grünen Fixpunkte im 3D-Modell, um sie dieser Route zuzuweisen.
+								                    </div>
+								                {/if}
+								                <div class="flex flex-row">					<label for="name" class="block mb-2 mt-1 mr-2 text-sm font-medium w-1/3">Name:</label>
 					<input
 						type="text"
 						id="name"
@@ -490,6 +519,39 @@
 						<TagSelector bind:selectedTags={route.tags} availableTags={availableRouteTags} />
 					</div>
 				</div>
+
+				{#if userState.topo.fixPoints.length > 0}
+					<div class="flex flex-row">
+						<label class="block mb-2 mt-1 mr-2 text-sm font-medium w-1/3">Fixpunkte:</label>
+						<div class="w-full mb-4">
+							<details class="group">
+								<summary class="list-none cursor-pointer text-sm text-blue-600 hover:text-blue-800 font-medium mb-2 flex items-center gap-2 select-none">
+									<i class="fa-solid fa-chevron-right group-open:rotate-90 transition-transform text-xs"></i>
+									<span>{route.fixPoints?.length || 0} zugewiesen</span>
+								</summary>
+								<div class="max-h-32 overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50 flex flex-wrap gap-1">
+									{#each userState.topo.fixPoints as fp, idx}
+										<button
+											class={"w-8 h-8 flex items-center justify-center rounded text-xs font-semibold transition-colors " +
+											(route.fixPoints?.includes(fp.id) ? "bg-blue-500 text-white shadow-sm" : "bg-white text-gray-500 border border-gray-200 hover:border-blue-300")}
+											onclick={() => {
+												if (!route.fixPoints) route.fixPoints = [];
+												if (route.fixPoints.includes(fp.id)) {
+													route.fixPoints = route.fixPoints.filter(id => id !== fp.id);
+												} else {
+													route.fixPoints.push(fp.id);
+												}
+											}}
+											title={`Fixpunkt ${idx + 1} (${fp.type})`}
+										>
+											{idx + 1}
+										</button>
+									{/each}
+								</div>
+							</details>
+						</div>
+					</div>
+				{/if}
 			</div>
 		{/each}
 		{#each userState.topo.fixPoints as point, i}
@@ -498,7 +560,15 @@
 					<h3 class="text-lg font-semibold">Fixpunkt {i + 1}</h3>
 					<button 
 						class="text-gray-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 cursor-pointer"
-						onclick={() => userState.topo.fixPoints.splice(i, 1)}
+						onclick={() => {
+							const pointId = point.id;
+							userState.topo.fixPoints.splice(i, 1);
+							userState.topo.routes.forEach(r => {
+								if (r.fixPoints) {
+									r.fixPoints = r.fixPoints.filter(id => id !== pointId);
+								}
+							});
+						}}
 						title="Löschen"
 					>
 						<i class="fa-solid fa-trash-can"></i>
@@ -556,6 +626,21 @@
         white-space: nowrap;
         text-align: center;
         cursor: pointer;
+    }
+    :global(.fixpoint-label) {
+        background-color: rgba(255, 255, 255, 0.75);
+        color: black;
+        padding: 0px 4px;
+        border-radius: 50%;
+        font-size: 10px;
+        font-weight: bold;
+        font-family: sans-serif;
+        text-align: center;
+        pointer-events: none;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+				margin-top: -25px; /* Offset to float above the sphere */
     }
 </style>
 
