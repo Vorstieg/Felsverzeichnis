@@ -1,11 +1,6 @@
 <script>
-	import CragList from '$lib/components/CragList.svelte';
 	import { siteDescription, types } from '$lib/config';
 	import { base } from '$app/paths';
-
-	/** @type {{data: any}} */
-	let { data } = $props();
-	const { crags } = data;
 
 	let searchTerm = $state('');
 </script>
@@ -15,12 +10,6 @@
 	<title>Klettergebiete</title>
 	<meta data-key="description" name="description" content={siteDescription}>
 </svelte:head>
-
-<div class="pt-60 h-screen max-w-3/4 justify-self-center">
-	<div class="pb-10">
-		<CragList crags={crags} />
-	</div>
-</div>
 
 <div class="bg-gray-100 border-1 border-gray-200 fixed h-50 left-0 right-0 top-0 shadow-md z-[500]"></div>
 <div
