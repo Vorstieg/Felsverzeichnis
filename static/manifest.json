@@ -2,7 +2,7 @@
   "name": "Felsverzeichnis",
   "short_name": "Felsverzeichnis",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
