@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <!-- Tree symbol -->
+  <circle cx="12" cy="8" r="5" fill="none"/>
+  <path d="M12 13 L12 22" stroke-linecap="round"/>
+</svg>

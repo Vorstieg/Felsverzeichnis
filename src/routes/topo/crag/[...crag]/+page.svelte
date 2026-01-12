@@ -10,6 +10,7 @@
 	import Model from '$lib/components/topo/Model.svelte';
 	import RouteLine from '$lib/components/topo/RouteLine.svelte';
 	import CssObject from '$lib/components/topo/CssObject.svelte';
+	import Topo2DViewer from '$lib/components/topo/Topo2DViewer.svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
@@ -219,6 +220,15 @@
 		}, {});
 	}
 
+	function translateFixPoint(type: string) {
+		const map: Record<string, string> = {
+			'bolt': 'Bohrhaken',
+			'belay': 'Umlenker',
+			'piton': 'Normalhaken',
+			'hourglass': 'Sanduhr'
+		};
+		return map[type] || type;
+	}
 	$effect(() => {
 		if (data.topo) {
 			sunInfo = calculateSunInfo(data.topo, data.route);
@@ -317,115 +327,123 @@
 </script>
 
 <div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden">
-	<div id="css-renderer-target"
-			 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"></div>
-
-	<Canvas>
-		<T.PerspectiveCamera makeDefault position={[0, 1, 25]} fov={75} near={0.1} far={1000} bind:ref={camera}>
-			<OrbitControls
-				enableZoom={true}
-				bind:ref={controls}
-				touches={{ ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE }}
-				onstart={() => isCameraMoving = true}
-				onend={() => isCameraMoving = false}
-			/>
-		</T.PerspectiveCamera>
-		<T.AmbientLight intensity={ambientIntensity} />
-		<T.DirectionalLight
-			position={sunLightPosition}
-			intensity={dirLightIntensity}
-			castShadow
-			shadow.mapSize={shadowMapSize}
-			shadow.bias={-0.0005}
-			shadow.camera.near={1}
-			shadow.camera.far={100}
-			shadow.camera.left={-50}
-			shadow.camera.right={50}
-			shadow.camera.top={50}
-			shadow.camera.bottom={-50}
+	{#if data.topo.editorMode === '2d'}
+		<Topo2DViewer 
+			topo={data.topo} 
+			routes={data.topo.routes} 
+			selectedRouteId={data.route?.id}
 		/>
+	{:else}
+		<div id="css-renderer-target"
+				 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"></div>
 
-		{#if isDaylightSimulation}
-			<CssObject position={sunLightPosition}>
-				<div
-					class="flex items-center justify-center w-10 h-10 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
-					title={$_('ui.sun')}>
-					<i class="fa-solid fa-sun text-yellow-600 text-xl"></i>
-				</div>
-			</CssObject>
-			<T.ArrowHelper
-				args={[sunDirectionVec3, sunPositionVec3, 2, 0xFDB813, 0.5, 0.25]}
-			/>
-		{/if}
-
-		<HTML center position={[0, 5, 0]}>
-		{#if progress < 1}
-			<div
-				class="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-3 transition-opacity duration-300">
-				<div class="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-				<div
-					class="text-sm font-medium text-gray-600 whitespace-nowrap">{$_('topo.loading')} {Math.round(progress * 100)}
-					%
-				</div>
-			</div>
-		{/if}
-		</HTML>
-
-		<Model
-			modelUrl={glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`]}
-			onload={() => modelLoaded = true}
-		/>
-		{#if visualRoutes && progress >= 1}
-			{#each visualRoutes as route (route.id)}
-				<RouteLine
-					link={base + "/topo/crag/" + data.path + "/" + (route.parentId || route.id)}
-					points={route.points}
-					name={route.name}
-					grade={route.grade}
-					id={route.id}
-					color={getGradeColor(route.grade)}
-					width={data.route?.id === (route.parentId || route.id) ? 0.1 : 0.08}
-					isSelected={data.route?.id === (route.parentId || route.id)}
-					isCameraMoving={isCameraMoving}
-					isHoveredExternally={hoveredRouteId === (route.parentId || route.id)}
+		<Canvas>
+			<T.PerspectiveCamera makeDefault position={[0, 1, 25]} fov={75} near={0.1} far={1000} bind:ref={camera}>
+				<OrbitControls
+					enableZoom={true}
+					bind:ref={controls}
+					touches={{ ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE }}
+					onstart={() => isCameraMoving = true}
+					onend={() => isCameraMoving = false}
 				/>
-			{/each}
-		{/if}
+			</T.PerspectiveCamera>
+			<T.AmbientLight intensity={ambientIntensity} />
+			<T.DirectionalLight
+				position={sunLightPosition}
+				intensity={dirLightIntensity}
+				castShadow
+				shadow.mapSize={shadowMapSize}
+				shadow.bias={-0.0005}
+				shadow.camera.near={1}
+				shadow.camera.far={100}
+				shadow.camera.left={-50}
+				shadow.camera.right={50}
+				shadow.camera.top={50}
+				shadow.camera.bottom={-50}
+			/>
 
-		{#if data && data.topo.fixPoints && progress >= 1 && data.route}
-			{#each data.topo.fixPoints.filter(fp => data.route.fixPoints?.includes(fp.id)) as point}
-				<CssObject position={point.position}>
-					{#if point.type === 'anchor'}
-						<div
-							class="flex items-center justify-center w-5 h-5 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-orange-200"
-							title={$_('topo.fixpoints.anchor')}>
-							<i class="fa-solid fa-anchor text-xs text-orange-500"></i>
-						</div>
-					{:else if point.type === 'piton'}
-						<div
-							class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-gray-200"
-							title={$_('topo.fixpoints.piton')}>
-							<i class="fa-solid fa-thumb-tack text-[10px] text-gray-500"></i>
-						</div>
-					{:else if point.type === 'hourglass'}
-						<div
-							class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
-							title={$_('topo.fixpoints.hourglass')}>
-							<i class="fa-solid fa-hourglass-half text-[10px] text-yellow-600"></i>
-						</div>
-					{:else}
-						<div
-							class="flex items-center justify-center w-3 h-3 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-red-200"
-							title={$_('topo.fixpoints.bolt')}>
-							<div class="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-						</div>
-					{/if}
+			{#if isDaylightSimulation}
+				<CssObject position={sunLightPosition}>
+					<div
+						class="flex items-center justify-center w-10 h-10 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
+						title={$_('ui.sun')}>
+						<i class="fa-solid fa-sun text-yellow-600 text-xl"></i>
+					</div>
 				</CssObject>
-			{/each}
-		{/if}
+				<T.ArrowHelper
+					args={[sunDirectionVec3, sunPositionVec3, 2, 0xFDB813, 0.5, 0.25]}
+				/>
+			{/if}
 
-		<SceneSetup />
-	</Canvas>
+			<HTML center position={[0, 5, 0]}>
+			{#if progress < 1}
+				<div
+					class="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-3 transition-opacity duration-300">
+					<div class="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+					<div
+						class="text-sm font-medium text-gray-600 whitespace-nowrap">{$_('topo.loading')} {Math.round(progress * 100)}
+						%
+					</div>
+				</div>
+			{/if}
+			</HTML>
+
+			<Model
+				modelUrl={glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`]}
+				onload={() => modelLoaded = true}
+			/>
+			{#if visualRoutes && progress >= 1}
+				{#each visualRoutes as route (route.id)}
+					<RouteLine
+						link={base + "/topo/crag/" + data.path + "/" + (route.parentId || route.id)}
+						points={route.points}
+						name={route.name}
+						grade={route.grade}
+						id={route.id}
+						color={data.route?.id === (route.parentId || route.id) ? "#ff0000" : getGradeColor(route.grade)}
+						width={data.route?.id === (route.parentId || route.id) ? 0.1 : 0.08}
+						isSelected={data.route?.id === (route.parentId || route.id)}
+						isCameraMoving={isCameraMoving}
+						isHoveredExternally={hoveredRouteId === (route.parentId || route.id)}
+					/>
+				{/each}
+			{/if}
+
+			{#if data && data.topo.fixPoints && progress >= 1 && data.route}
+				{#each data.topo.fixPoints.filter(fp => data.route.fixPoints?.includes(fp.id)) as point}
+					<CssObject position={point.position}>
+						{#if point.type === 'anchor'}
+							<div
+								class="flex items-center justify-center w-5 h-5 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-orange-200"
+								title={$_('topo.fixpoints.anchor')}>
+								<i class="fa-solid fa-anchor text-xs text-orange-500"></i>
+							</div>
+						{:else if point.type === 'piton'}
+							<div
+								class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-gray-200"
+								title={$_('topo.fixpoints.piton')}>
+								<i class="fa-solid fa-thumb-tack text-[10px] text-gray-500"></i>
+							</div>
+						{:else if point.type === 'hourglass'}
+							<div
+								class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
+								title={$_('topo.fixpoints.hourglass')}>
+								<i class="fa-solid fa-hourglass-half text-[10px] text-yellow-600"></i>
+							</div>
+						{:else}
+							<div
+								class="flex items-center justify-center w-3 h-3 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-red-200"
+								title={$_('topo.fixpoints.bolt')}>
+								<div class="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+							</div>
+						{/if}
+					</CssObject>
+				{/each}
+			{/if}
+
+			<SceneSetup />
+		</Canvas>
+	{/if}
 </div>
 
 
