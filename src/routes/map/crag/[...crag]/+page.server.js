@@ -32,7 +32,8 @@ export const load = async ({ params, url }) => {
 			name: crag.properties.name,
 			topo: crag.properties.topo,
 			topoJson,
-			description: crag.properties.description,
+			description_de: crag.properties.description_de,
+			description_en: crag.properties.description_en,
 			type: crag.properties.type,
 			detailsShown: true,
 			zoomToLocations: true,
@@ -40,7 +41,7 @@ export const load = async ({ params, url }) => {
 			meta: {
 				lang: 'de',
 				title: crag.properties.name + ' - Felsverzeichnis',
-				description: crag.properties.description,
+				description: crag.properties.description_de || '',
 				type: 'article',
 				author: 'Vorstieg Software FlexCo',
 				url: url.href

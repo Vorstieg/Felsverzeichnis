@@ -7,7 +7,8 @@
     "path": "wachau/st-lorenz",
     "name": "St. Lorenz",
     "type": "sports-climbing",
-    "description": "",
+    "description_de": "",
+    "description_en": "",
     "topo": {
       "site": "thecrag.com",
       "link": "https://www.thecrag.com/de/klettern/wachau/area/345374742"

@@ -7,7 +7,8 @@
     "path": "hochpustertal/militärklettergarten",
     "name": "Militärklettergarten",
     "type": "sports-climbing",
-    "description": "Der Militärklettergarten wurde vom Militär eingerichtet und ist hervorragend abgesichert. Seine Platten sind ideal für Anfänger geeignet.\n\n Die Anfahrt erfolgt mit dem Bus 445 von Toblach. Eine kurze Wanderung von der Haltestelle Drei-Zinnen-Blick führt direkt zum Klettergebiet.\n",
+    "description_de": "Der Militärklettergarten wurde vom Militär eingerichtet und ist hervorragend abgesichert. Seine Platten sind ideal für Anfänger geeignet.\n\n Die Anfahrt erfolgt mit dem Bus 445 von Toblach. Eine kurze Wanderung von der Haltestelle Drei-Zinnen-Blick führt direkt zum Klettergebiet.\n",
+    "description_en": "The Military Climbing Garden was set up by the military and is excellently protected. Its slabs are ideal for beginners.\n\n Access is by bus 445 from Toblach. A short hike from the Drei-Zinnen-Blick stop leads directly to the climbing area.\n",
     "topo": {
       "site": "drei-zinnen.info",
       "link": "https://www.drei-zinnen.info/media/a5ca3153-0af6-4c70-a1cd-49e6d9c2c1c1/broschure-klettergaerten-definitiv.pdf"

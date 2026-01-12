@@ -7,7 +7,8 @@
     "path": "wachau/kummerstal",
     "name": "Kummerstal",
     "type": "sports-climbing",
-    "description": "Das Kummerstal hat etwas mehr Zustieg und ist etwas schwerer zu finden. Jedoch sehr lohnenswert.",
+    "description_de": "Das Kummerstal hat etwas mehr Zustieg und ist etwas schwerer zu finden. Jedoch sehr lohnenswert.",
+    "description_en": "The Kummerstal requires a slightly longer approach and is a bit harder to find. However, it is very worthwhile.",
     "topo": {
       "site": "thecrag.com",
       "link": "https://www.thecrag.com/de/klettern/wachau/area/345363291"

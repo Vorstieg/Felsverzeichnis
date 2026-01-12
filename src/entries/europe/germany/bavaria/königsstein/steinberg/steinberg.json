@@ -7,7 +7,8 @@
     "path": "königsstein/steinberg",
     "name": "Steinberg",
     "type": "sports-climbing",
-    "description": "Steinberg ist zu Fuß von Königsstein erreichbar.",
+    "description_de": "Steinberg ist zu Fuß von Königsstein erreichbar.",
+    "description_en": "Steinberg is accessible on foot from Königsstein.",
     "topo": {
       "site": "thecrag.com",
       "link": "https://www.thecrag.com/de/klettern/germany/frankenjura/steinberg"

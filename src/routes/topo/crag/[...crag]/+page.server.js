@@ -6,19 +6,15 @@ export const entries = async () => {
 
 	for (const path in jsonFiles) {
 		if (path.endsWith('-topo.json')) {
-			// Extract the crag path relative to /src/entries/ and remove filename
-			// e.g., /src/entries/europe/austria/wachau/nasenwand/nasenwand-topo.json -> europe/austria/wachau/nasenwand
 			const parts = path.split('/');
-			const dirPath = parts.slice(3, -1).join('/'); // slice(3) skips empty, src, entries
+			const dirPath = parts.slice(3, -1).join('/'); 
 			
-			// Add the main topo page
 			entriesList.push({ crag: dirPath });
 
 			try {
 				const module = await jsonFiles[path]();
 				const topo = module.default;
 				
-				// Add pages for individual routes if they exist
 				if (topo && topo.routes) {
 					for (const route of topo.routes) {
 						entriesList.push({ crag: `${dirPath}/${route.id}` });
@@ -54,10 +50,13 @@ export const load = async ({ params, url }) => {
 			path,
 			topo,
 			route,
+            name: topo.name,
+            description_de: topo.description_de,
+            description_en: topo.description_en,
 			meta: {
 				lang: 'de',
 				title: topo.name + ' - Felsverzeichnis',
-				description: topo.description,
+				description: topo.description_de || '',
 				type: 'article',
 				author: topo.author,
 				url: url.href
