@@ -1,24 +1,33 @@
 <script lang="ts">
-	import Chart from 'chart.js/auto';
+    import Chart from 'chart.js/auto';
+    import { _ } from 'svelte-i18n';
 
 	let { routes } = $props();
-    let canvas: HTMLCanvasElement;
-    let gradeChartData = $derived(calculateGradeStats(routes));
+	let canvas: HTMLCanvasElement;
+	let gradeChartData = $derived(calculateGradeStats(routes));
+
+	let t_routes_label = $derived($_('charts.routes'));
+	let chartConfig = $derived({
+		data: gradeChartData,
+		translations: {
+			routes: t_routes_label
+		}
+	});
 
 	function calculateGradeStats(routes: any[]) {
 		if (!routes || routes.length === 0) return null;
-		
+
 		// Standard ordered grades (French scale)
 		const gradeOrder = [
 			'3a', '3a+', '3b', '3b+', '3c', '3c+',
 			'4a', '4a+', '4b', '4b+', '4c', '4c+',
-			'5a', '5a+', '5b', '5b+', '5c', '5c+', 
-			'6a', '6a+', '6b', '6b+', '6c', '6c+', 
-			'7a', '7a+', '7b', '7b+', '7c', '7c+', 
-			'8a', '8a+', '8b', '8b+', '8c', '8c+', 
+			'5a', '5a+', '5b', '5b+', '5c', '5c+',
+			'6a', '6a+', '6b', '6b+', '6c', '6c+',
+			'7a', '7a+', '7b', '7b+', '7c', '7c+',
+			'8a', '8a+', '8b', '8b+', '8c', '8c+',
 			'9a', '9a+', '9b', '9b+'
 		];
-		
+
 		const counts: Record<string, number> = {};
 		let minIdx = gradeOrder.length;
 		let maxIdx = 0;
@@ -27,12 +36,12 @@
 		routes.forEach(r => {
 			if (!r.grade) return;
 			let g = r.grade.trim();
-			
+
 			let idx = gradeOrder.indexOf(g);
 			if (idx === -1) {
 				if (gradeOrder.includes(g + 'a')) idx = gradeOrder.indexOf(g + 'a');
 			}
-			
+
 			if (idx !== -1) {
 				counts[gradeOrder[idx]] = (counts[gradeOrder[idx]] || 0) + 1;
 				if (idx < minIdx) minIdx = idx;
@@ -51,13 +60,13 @@
 			const grade = gradeOrder[i];
 			labels.push(grade);
 			dataCounts.push(counts[grade] || 0);
-			
+
 			let hue = 130 - (i * 5.5);
-			if (hue < 0) hue = 0; 
-			
+			if (hue < 0) hue = 0;
+
 			colors.push(`hsl(${hue}, 85%, 45%)`);
 		}
-		
+
 		return {
 			labels: labels,
 			counts: dataCounts,
@@ -65,18 +74,19 @@
 		};
 	}
 
-	function initGradeChart(node: HTMLCanvasElement, data: any) {
-		if (!data) return;
-		
+	function initGradeChart(node: HTMLCanvasElement, config: any) {
+		if (!config || !config.data) return;
+		const { data, translations } = config;
+
 		const ctx = node.getContext('2d');
-        if(!ctx) return;
+		if (!ctx) return;
 
 		const chart = new Chart(ctx, {
 			type: 'bar',
 			data: {
 				labels: [...data.labels],
 				datasets: [{
-					label: 'Routen',
+					label: translations.routes,
 					data: [...data.counts],
 					backgroundColor: [...data.colors],
 					borderRadius: 4,
@@ -94,7 +104,7 @@
 						cornerRadius: 8,
 						displayColors: true,
 						callbacks: {
-							label: (ctx: any) => `${ctx.raw} Routen`
+							label: (ctx: any) => `${ctx.raw} ${translations.routes}`
 						}
 					}
 				},
@@ -113,11 +123,19 @@
 		});
 
 		return {
-			update(newData: any) {
-				if (!newData) return;
-				chart.data.labels = [...newData.labels];
-				chart.data.datasets[0].data = [...newData.counts];
-				chart.data.datasets[0].backgroundColor = [...newData.colors];
+			update(newConfig: any) {
+				if (!newConfig || !newConfig.data) return;
+				const { data, translations } = newConfig;
+
+				chart.data.labels = [...data.labels];
+				chart.data.datasets[0].data = [...data.counts];
+				chart.data.datasets[0].backgroundColor = [...data.colors];
+				chart.data.datasets[0].label = translations.routes;
+
+				if (chart.options.plugins?.tooltip?.callbacks) {
+					chart.options.plugins.tooltip.callbacks.label = (ctx: any) => `${ctx.raw} ${translations.routes}`;
+				}
+
 				chart.update();
 			},
 			destroy() {
@@ -128,10 +146,18 @@
 </script>
 
 {#if gradeChartData}
-    <canvas bind:this={canvas} use:initGradeChart={gradeChartData}></canvas>
+	<div class="chart-wrapper">
+		<canvas bind:this={canvas} use:initGradeChart={chartConfig}></canvas>
+	</div>
 {/if}
 
 <style>
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+    }
     canvas {
         width: 100%;
         height: 100%;

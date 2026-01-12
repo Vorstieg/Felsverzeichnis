@@ -1,23 +1,40 @@
 <script lang="ts">
-	import Chart from 'chart.js/auto';
+    import Chart from 'chart.js/auto';
+    import { _ } from 'svelte-i18n';
 
 	let { data } = $props();
-    let canvas: HTMLCanvasElement;
+	let canvas: HTMLCanvasElement;
 
-	function initSunChart(node: HTMLCanvasElement, data: any) {
-		if (!data) return;
-		
+	let t_sun_altitude = $derived($_('charts.sun_altitude'));
+	let chartConfig = $derived.by(() => {
+		return {
+			data,
+			translations: {
+				sun_altitude: t_sun_altitude,
+				conditions: {
+					'sun.sunny': $_('sun.sunny'),
+					'sun.shadow': $_('sun.shadow'),
+					'sun.low_sun': $_('sun.low_sun')
+				}
+			}
+		};
+	});
+
+	function initSunChart(node: HTMLCanvasElement, config: any) {
+		if (!config || !config.data) return;
+		const { data, translations } = config;
+
 		let conditions = [...data.conditions];
-		
+
 		const ctx = node.getContext('2d');
-        if(!ctx) return;
+		if (!ctx) return;
 
 		const chart = new Chart(ctx, {
 			type: 'bar',
 			data: {
 				labels: [...data.labels],
 				datasets: [{
-					label: 'Sonnenhöhe (°)',
+					label: translations.sun_altitude + ' (°)',
 					data: [...data.altitudes],
 					backgroundColor: [...data.colors],
 					borderRadius: 4,
@@ -31,7 +48,11 @@
 					legend: { display: false },
 					tooltip: {
 						callbacks: {
-							label: (ctx: any) => `${ctx.raw.toFixed(1)}° - ${conditions[ctx.dataIndex]}`
+							label: (ctx: any) => {
+								const key = conditions[ctx.dataIndex];
+								const label = translations.conditions[key] || key;
+								return `${ctx.raw.toFixed(1)}° - ${label}`;
+							}
 						}
 					}
 				},
@@ -52,12 +73,24 @@
 		});
 
 		return {
-			update(newData: any) {
-				if (!newData) return;
-				conditions = [...newData.conditions];
-				chart.data.labels = [...newData.labels];
-				chart.data.datasets[0].data = [...newData.altitudes];
-				chart.data.datasets[0].backgroundColor = [...newData.colors];
+			update(newConfig: any) {
+				if (!newConfig || !newConfig.data) return;
+				const { data, translations } = newConfig;
+
+				conditions = [...data.conditions];
+				chart.data.labels = [...data.labels];
+				chart.data.datasets[0].data = [...data.altitudes];
+				chart.data.datasets[0].backgroundColor = [...data.colors];
+				chart.data.datasets[0].label = translations.sun_altitude + ' (°)';
+
+				if (chart.options.plugins?.tooltip?.callbacks) {
+					chart.options.plugins.tooltip.callbacks.label = (ctx: any) => {
+						const key = conditions[ctx.dataIndex];
+						const label = translations.conditions[key] || key;
+						return `${ctx.raw.toFixed(1)}° - ${label}`;
+					};
+				}
+
 				chart.update();
 			},
 			destroy() {
@@ -67,9 +100,17 @@
 	}
 </script>
 
-<canvas bind:this={canvas} use:initSunChart={data}></canvas>
+<div class="chart-wrapper">
+	<canvas bind:this={canvas} use:initSunChart={chartConfig}></canvas>
+</div>
 
 <style>
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+    }
     canvas {
         width: 100%;
         height: 100%;

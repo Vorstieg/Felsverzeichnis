@@ -16,6 +16,7 @@ export const userState = $state({
 	},
 	// UI State for the editor
 	ui: {
-		selectedRouteId: null
+		selectedRouteId: null,
+		selectedFixpointId: null
 	}
 });

@@ -41,6 +41,7 @@
 		"leaflet-routing-machine": "^3.2.12",
 		"maplibre-gl": "^5.2.0",
 		"suncalc": "^1.9.0",
+		"svelte-i18n": "^4.0.1",
 		"three": "^0.175.0"
 	}
 }

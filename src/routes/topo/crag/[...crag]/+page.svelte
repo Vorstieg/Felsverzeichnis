@@ -1,19 +1,28 @@
 <script lang="ts">
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import { Canvas, useTask, useThrelte, T } from '@threlte/core';
-	import { HTML, OrbitControls, useProgress } from '@threlte/extras';
+	import { HTML, OrbitControls, useProgress, interactivity } from '@threlte/extras';
 	import { onMount } from 'svelte';
-    import { slide } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-	import { Vector3 } from 'three';
+	import { Vector3, WebGLRenderer, TOUCH, Box3, Sphere } from 'three';
+	import { cubicOut } from 'svelte/easing';
 	import Model from '$lib/components/topo/Model.svelte';
 	import RouteLine from '$lib/components/topo/RouteLine.svelte';
 	import CssObject from '$lib/components/topo/CssObject.svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
-    import { types, rockTypes } from '$lib/config.js';
+	import { _ } from 'svelte-i18n';
+	import { locale } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 
-	import { calculateBestSeason, calculateSunInfo, calculateWallDirection, calculateSunPositionVector } from '$lib/assets/js/sun-calculations';
+	import Tooltip from '$lib/components/ui/Tooltip.svelte';
+	import {
+		calculateBestSeason,
+		calculateSunInfo,
+		calculateSunPositionVector,
+		calculateWallDirection
+	} from '$lib/assets/js/sun-calculations';
 	import SunChart from '$lib/components/charts/SunChart.svelte';
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
 	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
@@ -32,7 +41,9 @@
 	let seasonChartData = $state(null);
 
 	let wallDirection = $state('Unknown');
-
+	let activeRenderer = $state('');
+	let isCameraMoving = $state(false);
+	let camera = $state();
 
 	let controls = $state();
 	// Daylight Simulation State
@@ -43,8 +54,97 @@
 
 	const { progress: progressStore } = useProgress();
 	let progress = $state(0);
+	let modelLoaded = $state(false);
 
-    const glbFiles = import.meta.glob('/src/entries/**/*.glb', { eager: true, query: '?url', import: 'default' });
+	const glbFiles = import.meta.glob('/src/entries/**/*.glb', { eager: true, query: '?url', import: 'default' });
+
+	let animationState = $state(null);
+
+	function getParentRoute(childId: string) {
+		if (!data.topo || !data.topo.routes) return null;
+		return data.topo.routes.find(r => r.id === childId || (r.pitches && r.pitches.some(p => p.id === childId)));
+	}
+
+	function focusRoute(route: any) {
+		if (!route || !controls || !camera) return;
+
+		// 1. Collect points
+		let points: number[][] = [];
+		if (route.type === 'multi-pitch' && route.pitches) {
+			route.pitches.forEach((p: any) => {
+				if (p.points) points.push(...p.points);
+			});
+		} else if (route.points) {
+			points = route.points;
+		}
+
+		if (!points || points.length === 0) return;
+
+		// 2. Calculate Bounding Sphere
+		const box = new Box3();
+		points.forEach(p => box.expandByPoint(new Vector3(p[0], p[1], p[2])));
+		const center = new Vector3();
+		box.getCenter(center);
+		const sphere = new Sphere();
+		box.getBoundingSphere(sphere);
+
+		// 3. Determine Orientation
+		let orientation = new Vector3(0, 0, 1);
+		const parent = getParentRoute(route.id);
+		const sourceRoute = parent || route;
+
+		if (sourceRoute.orientation) {
+			orientation.set(sourceRoute.orientation[0], sourceRoute.orientation[1], sourceRoute.orientation[2]);
+		}
+
+		orientation.normalize();
+
+		// 4. Calculate Distance
+		// FOV 75 deg
+		const fov = 75 * (Math.PI / 180);
+		// distance to fit sphere: radius / sin(fov/2)
+		// We use a slight padding factor
+		const dist = (sphere.radius * 1.5) / Math.sin(fov / 2);
+		const finalDist = Math.max(dist, 5); // Minimum distance
+
+		const targetPos = center.clone().add(orientation.multiplyScalar(finalDist));
+
+		// 5. Start Animation
+		if (camera) {
+			animationState = {
+				startPos: camera.position.clone(),
+				endPos: targetPos,
+				startTarget: controls.target.clone(),
+				endTarget: center,
+				startTime: Date.now(),
+				duration: 1000
+			};
+		}
+	}
+
+	let lastFocusedRouteId = $state(null);
+	let hoveredRouteId = $state(null);
+
+	$effect(() => {
+		if (data.route && modelLoaded && !isCameraMoving && data.route.id !== lastFocusedRouteId) {
+			lastFocusedRouteId = data.route.id;
+			hoveredRouteId = null;
+			focusRoute(data.route);
+		}
+	});
+
+	$effect(() => {
+		if (hoveredRouteId && modelLoaded && !isCameraMoving) {
+			const r = data.topo.routes.find(r => r.id === hoveredRouteId);
+			if (r) focusRoute(r);
+		}
+	});
+
+	$effect(() => {
+		if (isCameraMoving) {
+			animationState = null;
+		}
+	});
 
 	$effect(() => {
 		const unsubscribe = progressStore.subscribe(value => {
@@ -54,6 +154,14 @@
 	});
 
 	let { data } = $props();
+
+	let description = $derived($locale === 'de' ? data.topo.description_de : data.topo.description_en || data.topo.description_de);
+	let displayWallDirection = $derived(wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection);
+	let displaySunHours = $derived(
+		sunInfo.hours === 'shade_all_day' || sunInfo.hours === 'no_geodata'
+			? $_('sun.' + sunInfo.hours)
+			: sunInfo.hours
+	);
 
 	let sunLightPosition = $derived.by(() => {
 		if (!isDaylightSimulation) return [5, 10, 7];
@@ -84,22 +192,31 @@
 		return Math.max(0, Math.min(5.0, 0.1 + (y / 20) * 5));
 	});
 
+	let visualRoutes = $derived.by(() => {
+		if (!data || !data.topo || !data.topo.routes) return [];
+
+		return data.topo.routes.flatMap(route => {
+			if (route.type === 'multi-pitch' && route.pitches) {
+				return route.pitches.map((pitch, idx) => ({
+					...pitch,
+					id: pitch.id,
+					parentId: route.id,
+					name: `${route.name} P${idx + 1}`,
+					grade: pitch.grade,
+					points: pitch.points,
+					originalRoute: route
+				}));
+			}
+			return [route];
+		});
+	});
+
 	function countFixPoints(points: any[]) {
 		if (!points) return {};
 		return points.reduce((acc, p) => {
 			acc[p.type] = (acc[p.type] || 0) + 1;
 			return acc;
 		}, {});
-	}
-
-	function translateFixPoint(type: string) {
-		const map: Record<string, string> = {
-			'bolt': 'Bohrhaken',
-			'anchor': 'Umlenker',
-			'piton': 'Normalhaken',
-			'hourglass': 'Sanduhr'
-		};
-		return map[type] || type;
 	}
 
 	$effect(() => {
@@ -130,7 +247,7 @@
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: data.topo?.name || 'Felsverzeichnis',
+					title: data.topo?.name || $_('site.title'),
 					text: 'Check out this crag!',
 					url: window.location.href
 				});
@@ -147,7 +264,10 @@
 	}
 
 	function SceneSetup() {
-		const { scene, size, autoRenderTask, camera } = useThrelte();
+		const { scene, size, autoRenderTask, camera, renderer } = useThrelte();
+
+		interactivity({ filter: (hits) => hits.slice(0, 1) });
+
 		let cssRenderer: CSS2DRenderer;
 		let targetElement: HTMLElement | null;
 		onMount(() => {
@@ -159,19 +279,28 @@
 						cssRenderer.setSize(value.width, value.height);
 					}
 				});
-				scene.matrixWorldAutoUpdate = false;
 				return () => {
 					unsubscribeSize();
 					if (targetElement) targetElement.innerHTML = '';
-					scene.matrixWorldAutoUpdate = true;
 				};
 			}
 		});
 		useTask(() => {
-			if (!scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
-		}, { before: autoRenderTask, autoInvalidate: false });
-		useTask(() => {
 			if (cssRenderer && scene && camera?.current) cssRenderer.render(scene, camera.current);
+
+			if (animationState && camera?.current && controls) {
+				const elapsed = (Date.now() - animationState.startTime) / animationState.duration;
+				if (elapsed >= 1) {
+					camera.current.position.copy(animationState.endPos);
+					controls.target.copy(animationState.endTarget);
+					animationState = null;
+				} else {
+					const t = cubicOut(elapsed);
+					camera.current.position.lerpVectors(animationState.startPos, animationState.endPos, t);
+					controls.target.lerpVectors(animationState.startTarget, animationState.endTarget, t);
+				}
+				controls.update();
+			}
 		}, { after: autoRenderTask, autoInvalidate: false });
 		return null;
 	}
@@ -187,13 +316,19 @@
 	}
 </script>
 
-<div class="h-screen w-screen md:w-3/4 absolute">
+<div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden">
 	<div id="css-renderer-target"
-			 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1;"></div>
+			 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"></div>
 
 	<Canvas>
-		<T.PerspectiveCamera makeDefault position={[0, 1, 25]} fov={75} near={0.1} far={1000}>
-			<OrbitControls enableZoom={true} bind:ref={controls} />
+		<T.PerspectiveCamera makeDefault position={[0, 1, 25]} fov={75} near={0.1} far={1000} bind:ref={camera}>
+			<OrbitControls
+				enableZoom={true}
+				bind:ref={controls}
+				touches={{ ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE }}
+				onstart={() => isCameraMoving = true}
+				onend={() => isCameraMoving = false}
+			/>
 		</T.PerspectiveCamera>
 		<T.AmbientLight intensity={ambientIntensity} />
 		<T.DirectionalLight
@@ -212,7 +347,9 @@
 
 		{#if isDaylightSimulation}
 			<CssObject position={sunLightPosition}>
-				<div class="flex items-center justify-center w-10 h-10 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200" title="Sonne">
+				<div
+					class="flex items-center justify-center w-10 h-10 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
+					title={$_('ui.sun')}>
 					<i class="fa-solid fa-sun text-yellow-600 text-xl"></i>
 				</div>
 			</CssObject>
@@ -226,7 +363,8 @@
 			<div
 				class="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-3 transition-opacity duration-300">
 				<div class="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-				<div class="text-sm font-medium text-gray-600 whitespace-nowrap">Lade 3D Modell... {Math.round(progress * 100)}
+				<div
+					class="text-sm font-medium text-gray-600 whitespace-nowrap">{$_('topo.loading')} {Math.round(progress * 100)}
 					%
 				</div>
 			</div>
@@ -235,47 +373,50 @@
 
 		<Model
 			modelUrl={glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`]}
+			onload={() => modelLoaded = true}
 		/>
-		{#if data && data.topo.routes && progress >= 1}
-			{#each data.topo.routes as route (route.id)}
+		{#if visualRoutes && progress >= 1}
+			{#each visualRoutes as route (route.id)}
 				<RouteLine
-					link={base + "/topo/crag/" + data.path + "/" +route.id}
+					link={base + "/topo/crag/" + data.path + "/" + (route.parentId || route.id)}
 					points={route.points}
 					name={route.name}
 					grade={route.grade}
 					id={route.id}
-					color={data.route?.id === route.id ? "#ff0000" : getGradeColor(route.grade)}
-					width={data.route?.id === route.id ? 0.2 : 0.15}
-					isSelected={data.route?.id === route.id}
+					color={getGradeColor(route.grade)}
+					width={data.route?.id === (route.parentId || route.id) ? 0.1 : 0.08}
+					isSelected={data.route?.id === (route.parentId || route.id)}
+					isCameraMoving={isCameraMoving}
+					isHoveredExternally={hoveredRouteId === (route.parentId || route.id)}
 				/>
 			{/each}
 		{/if}
 
-		{#if data && data.topo.fixPoints && progress >= 1}
-			{#each data.topo.fixPoints as point}
+		{#if data && data.topo.fixPoints && progress >= 1 && data.route}
+			{#each data.topo.fixPoints.filter(fp => data.route.fixPoints?.includes(fp.id)) as point}
 				<CssObject position={point.position}>
 					{#if point.type === 'anchor'}
 						<div
 							class="flex items-center justify-center w-5 h-5 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-orange-200"
-							title="Umlenker/Stand">
+							title={$_('topo.fixpoints.anchor')}>
 							<i class="fa-solid fa-anchor text-xs text-orange-500"></i>
 						</div>
 					{:else if point.type === 'piton'}
 						<div
 							class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-gray-200"
-							title="Normalhaken">
+							title={$_('topo.fixpoints.piton')}>
 							<i class="fa-solid fa-thumb-tack text-[10px] text-gray-500"></i>
 						</div>
 					{:else if point.type === 'hourglass'}
 						<div
 							class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
-							title="Sanduhr">
+							title={$_('topo.fixpoints.hourglass')}>
 							<i class="fa-solid fa-hourglass-half text-[10px] text-yellow-600"></i>
 						</div>
 					{:else}
 						<div
 							class="flex items-center justify-center w-3 h-3 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-red-200"
-							title="Bohrhaken">
+							title={$_('topo.fixpoints.bolt')}>
 							<div class="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
 						</div>
 					{/if}
@@ -291,35 +432,36 @@
 <main class="z-[500] h-24">
 	<InfoPanel onShare={share}>
 		{#snippet controls()}
-			                        			{#if isDaylightSimulation}
-			                        				<div
-			                                            transition:slide={{ axis: 'x', duration: 300 }}
-			                        					class="bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-auto h-8">
-			                        					<input			            						type="date"
-			            						value={simulationDate}
-			            						oninput={(e) => simulationDate = e.currentTarget.value}
-			            						class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono"
-			            					/>
-			            					            					<div class="w-px h-4 bg-gray-300 mx-1"></div>
-			            					            					<span class="text-xs font-bold text-gray-500 w-8 text-right font-mono">
-			            					            						{Math.floor(simulationTime)}:{(Math.floor((simulationTime % 1) * 60)).toString().padStart(2, '0')}
-			            					            					</span>			            					<input
-			            						type="range"
-			            						min="0"
-			            						max="24"
-			            						step="0.25"
-			            						value={simulationTime}
-			            						oninput={(e) => simulationTime = parseFloat(e.currentTarget.value)}
-			            						class="w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-			            					/>
-			            				</div>
-			            			{/if}
-			            			
-			            			<button
-			            				class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
-			            				onclick={() => isDaylightSimulation = !isDaylightSimulation}
-			            				title="Daylight Simulator"
-			            			>
+			{#if isDaylightSimulation}
+				<div
+					transition:slide={{ axis: 'x', duration: 300 }}
+					class="bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-auto h-8">
+					<input type="date"
+								 value={simulationDate}
+								 oninput={(e) => simulationDate = e.currentTarget.value}
+								 class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono"
+					/>
+					<div class="w-px h-4 bg-gray-300 mx-1"></div>
+					<span class="text-xs font-bold text-gray-500 w-8 text-right font-mono">
+			            					            						{Math.floor(simulationTime)}
+						:{(Math.floor((simulationTime % 1) * 60)).toString().padStart(2, '0')}
+			            					            					</span> <input
+					type="range"
+					min="0"
+					max="24"
+					step="0.25"
+					value={simulationTime}
+					oninput={(e) => simulationTime = parseFloat(e.currentTarget.value)}
+					class="w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+				/>
+				</div>
+			{/if}
+
+			<button
+				class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
+				onclick={() => isDaylightSimulation = !isDaylightSimulation}
+				title="Daylight Simulator"
+			>
 				<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
 			</button>
 		{/snippet}
@@ -336,18 +478,22 @@
 			<div
 				class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
 				<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mb-6">
-					<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-						<i class="fa-solid fa-compass text-gray-500"></i>
-						<span>{wallDirection}</span>
-					</div>
-					<div class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
-						<i class="fa-solid fa-clock text-yellow-600"></i>
-						<span>{sunInfo.hours}</span>
-					</div>
+					<Tooltip text={$_('topo.wall_direction')}>
+						<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
+							<i class="fa-solid fa-compass text-gray-500"></i>
+							<span>{displayWallDirection}</span>
+						</div>
+					</Tooltip>
+					<Tooltip text={$_('topo.sun_hours')}>
+						<div class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
+							<i class="fa-solid fa-clock text-yellow-600"></i>
+							<span>{displaySunHours}</span>
+						</div>
+					</Tooltip>
 					{#if data.route.tags && data.route.tags.length > 0}
 						{#each data.route.tags as tag}
 							<span class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100">
-								{tag}
+								{$_('tags.' + tag)}
 							</span>
 						{/each}
 					{/if}
@@ -358,32 +504,36 @@
 							{data.route.description}
 						</div>
 					{/if}
-												{#if data.route.type}
-												<div class="border-b border-gray-200 p-3">Kletterart: {types.get(data.route.type) || data.route.type}</div>
-												{/if}					{#if data.route.grade}
-						<div class="border-b border-gray-200 p-3">Grad: {data.route.grade}</div>
+					{#if data.route.type}
+						<div class="border-b border-gray-200 p-3">{$_('topo.climbing_type')}
+							: {$_('types.' + data.route.type) || data.route.type}</div>
+					{/if}
+					{#if data.route.grade}
+						<div class="border-b border-gray-200 p-3">{$_('topo.grade')}: {data.route.grade}</div>
 					{/if}
 					{#if data.route.length}
-						<div class="border-b border-gray-200 p-3">Länge: {data.route.length} m</div>
+						<div class="border-b border-gray-200 p-3">{$_('topo.length')}: {data.route.length} m</div>
 					{/if}
 					{#if data.route.boltAmount}
-						<div class="border-b border-gray-200 p-3">Anzahl an benötigten Exen: {data.route.boltAmount}</div>
+						<div class="border-b border-gray-200 p-3">{$_('topo.required_draws')}: {data.route.boltAmount}</div>
 					{/if}
-												{#if data.topo.rock}
-												<div class="border-b border-gray-200 p-3">Steinart: {rockTypes.get(data.topo.rock) || data.topo.rock}</div>
-												{/if}				</div>
+					{#if data.topo.rock}
+						<div class="border-b border-gray-200 p-3">{$_('topo.rock_type')}
+							: {$_('rock_types.' + data.topo.rock) || data.topo.rock}</div>
+					{/if}
+				</div>
 				<div class="mt-6 w-full">
-					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Steilheitsverteilung</h3>
+					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.steepness_distribution')}</h3>
 					<div class="mb-8">
 						<SteepnessDistribution metrics={routeMetrics} />
 					</div>
-					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Steilheit</h3>
+					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.steepness')}</h3>
 					<div class="h-48 w-full mb-8">
 						<RouteSteepnessChart route={data.route} on:metrics={handleMetrics} />
 					</div>
 
 					{#if sunInfo.chartData}
-						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Sonnenverlauf</h3>
+						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.sun_course')}</h3>
 						<div class="h-32 w-full">
 							<SunChart data={sunInfo.chartData} />
 						</div>
@@ -403,18 +553,22 @@
 			<div
 				class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
 				<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mb-6">
-					<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-						<i class="fa-solid fa-compass text-gray-500"></i>
-						<span>{wallDirection}</span>
-					</div>
-					<div class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
-						<i class="fa-solid fa-clock text-yellow-600"></i>
-						<span>{sunInfo.hours}</span>
-					</div>
+					<Tooltip text={$_('topo.wall_direction')}>
+						<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
+							<i class="fa-solid fa-compass text-gray-500"></i>
+							<span>{displayWallDirection}</span>
+						</div>
+					</Tooltip>
+					<Tooltip text={$_('topo.sun_hours')}>
+						<div class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
+							<i class="fa-solid fa-clock text-yellow-600"></i>
+							<span>{displaySunHours}</span>
+						</div>
+					</Tooltip>
 					{#if data.topo.tags && data.topo.tags.length > 0}
 						{#each data.topo.tags as tag}
 							<span class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100">
-								{tag}
+								{$_('tags.' + tag)}
 							</span>
 						{/each}
 					{/if}
@@ -423,7 +577,7 @@
 
 					<!-- Stats & Description -->
 					<div class="prose text-slate-800 mb-4">
-						<p class="text-sm text-gray-600">{data.topo.description}</p>
+						<p class="text-sm text-gray-600">{description}</p>
 
 					</div>
 
@@ -431,19 +585,19 @@
 
 						<div class="mb-8 w-full">
 							{#if data.topo.routes}
-								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Schwierigkeitsverteilung</h3>
+								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.grade_distribution')}</h3>
 								<div class="h-32 w-full mb-6">
 									<GradeChart routes={data.topo.routes} />
 								</div>
 							{/if}
 							{#if seasonChartData}
-								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Saisonalität</h3>
+								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.seasonality')}</h3>
 								<div class="h-48 w-full mb-6">
 									<BestSeasonChart data={seasonChartData} />
 								</div>
 							{/if}
 							{#if sunInfo.chartData}
-								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Sonnenverlauf</h3>
+								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.sun_course')}</h3>
 								<div class="h-32 w-full">
 									<SunChart data={sunInfo.chartData} />
 								</div>
@@ -454,13 +608,13 @@
 					<!-- Fix Points List -->
 					{#if data.topo.fixPoints && data.topo.fixPoints.length > 0}
 						<div class="w-full mb-8">
-							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Absicherung</h3>
+							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.protection')}</h3>
 							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white p-4">
 								<div class="flex flex-wrap gap-2">
 									{#each Object.entries(countFixPoints(data.topo.fixPoints)) as [type, count]}
 										<span
 											class="px-3 py-1 rounded-full bg-gray-50 text-sm font-medium text-gray-700 border border-gray-200">
-											{count}x {translateFixPoint(type)}
+											{count}x {$_('topo.fixpoints.' + type) || type}
 										</span>
 									{/each}
 								</div>
@@ -470,24 +624,32 @@
 
 					<!-- Route List -->
 					<div class="w-full">
-						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Routen ({data.topo.routes.length})</h3>
+						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.routes')} ({data.topo.routes.length})</h3>
 						<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
 							<table class="min-w-full divide-y divide-gray-200 !m-0">
 								<thead class="bg-gray-50">
 								<tr>
-									{#each ["Name", "Grad", "Länge"] as column}
-										<th scope="col"
-												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-											{column}
-										</th>
-									{/each}
+									<th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+										{$_('topo.table.name')}
+									</th>
+									<th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+										{$_('topo.table.grade')}
+									</th>
+									<th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+										{$_('topo.table.length')}
+									</th>
 								</tr>
 								</thead>
 								<tbody class="bg-white divide-y divide-gray-200">
 								{#each data.topo.routes as route}
 									<tr
 										class="hover:bg-blue-50 cursor-pointer transition-colors"
-										onclick={() => goto(base + "/topo/crag/" + data.path + "/" +route.id)}>
+										onmouseenter={() => hoveredRouteId = route.id}
+										onmouseleave={() => hoveredRouteId = null}
+										onclick={() => {
+											hoveredRouteId = null;
+											goto(base + "/topo/crag/" + data.path + "/" +route.id);
+										}}>
 										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 											{route.name}
 										</td>
@@ -514,15 +676,24 @@
 
 <style>
     :global(.route-label) {
-        background-color: rgba(0, 0, 0, 0.65);
-        color: white;
-        padding: 3px 7px;
-        border-radius: 4px;
-        font-size: 9px;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: black;
+        padding: 4px 8px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: bold;
         font-family: sans-serif;
         white-space: nowrap;
         text-align: center;
         cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (min-width: 768px) {
+        .topo-container {
+            -webkit-mask-image: linear-gradient(to right, black 98%, transparent 100%);
+            mask-image: linear-gradient(to right, black 98%, transparent 100%);
+        }
     }
 
     .transition-transform {

@@ -7,7 +7,8 @@
     "path": "scheibbs/blassenstein",
     "name": "Blassenstein",
     "type": "sports-climbing",
-    "description": "Öffentlich ist der Blassenstein etwas schwierig erreichbar, dafür lockt er mit einer Wunderschönen Aussicht über das Mostviertel. Online ist leider kein Topo verfügbar. Um beim Blassenstein zu klettern ist es notwendig, sich ein stück abzuseilen.\n",
+    "description_de": "Öffentlich ist der Blassenstein etwas schwierig erreichbar, dafür lockt er mit einer Wunderschönen Aussicht über das Mostviertel. Online ist leider kein Topo verfügbar. Um beim Blassenstein zu klettern ist es notwendig, sich ein stück abzuseilen.\n",
+    "description_en": "Public transport to Blassenstein is somewhat difficult, but it entices with a beautiful view over the Mostviertel. Unfortunately, no topo is available online. To climb at Blassenstein, it is necessary to rappel down a bit.\n",
     "topo": {
       "site": "thecrag.com",
       "link": "https://www.thecrag.com/de/klettern/austria/wien-vienna-area/area/4287648768"

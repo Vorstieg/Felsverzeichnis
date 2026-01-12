@@ -1,4 +1,6 @@
 <script>
+	import { _ } from 'svelte-i18n';
+
 	/** @type {{data: any}} */
 	let { data } = $props();
 
@@ -21,7 +23,7 @@
 		<div class="flex mx-8 sm:max-w-120 shadow-md rounded-full">
 			<input bind:value={searchTerm}
 						 class="block p-2.5 w-full z-20 text-sm bg-white rounded-l-full border-3 border-white focus:border-ink"
-						 placeholder="Suchen ... " />
+						 placeholder={$_('page.list.search_placeholder')} />
 			<button type="submit"
 							class="top-0 w-12 p-2.5 bg-white text-sm font-medium border-3 border-white h-full hover:border-ink hover:bg-ink hover:text-white">
 				<i class="fa-solid fa-magnifying-glass"></i>

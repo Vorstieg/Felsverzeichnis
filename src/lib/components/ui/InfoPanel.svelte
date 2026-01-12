@@ -11,7 +11,7 @@
 </script>
 
 <div use:resize
-     class="box flex flex-col border-1 border-gray-200 fixed sm:left-auto left-0 right-0 sm:!right-10 sm:!h-auto top-1/2 lg:!top-30 sm:!top-25 bottom-0 lg:!bottom-20 sm:!bottom-10 w-auto sm:w-[25rem] lg:w-[40rem] bg-white rounded-t-3xl rounded-b-none sm:!rounded-3xl shadow-md z-[20000]">
+     class="box flex flex-col border-1 border-gray-200 fixed sm:left-auto left-0 right-0 sm:!right-10 sm:!h-auto top-1/2 lg:!top-30 sm:!top-25 bottom-0 lg:!bottom-20 sm:!bottom-10 w-full sm:w-[25rem] lg:w-[40rem] max-w-[100vw] bg-white rounded-t-3xl rounded-b-none sm:!rounded-3xl shadow-md z-[20000] overflow-hidden">
     
         <!-- Grabber (Mobile) -->
         <div class="bg-gray-200 h-1 w-12 rounded-full self-center mt-2 sm:hidden"></div>

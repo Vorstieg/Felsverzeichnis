@@ -7,7 +7,8 @@
     "path": "mödling/glocknergrat",
     "name": "Glocknergrat",
     "type": "sports-climbing",
-    "description": "Die Glocknergrat zu Fuß von Mödling erreichbar.",
+    "description_de": "Der Glocknergrat ist zu Fuß von Mödling erreichbar.",
+    "description_en": "The Glocknergrat is accessible on foot from Mödling.",
     "topo": {
       "site": "bergsteigen.com",
       "link": "https://www.bergsteigen.com/touren/klettergarten/glocknergrat-moedling/"

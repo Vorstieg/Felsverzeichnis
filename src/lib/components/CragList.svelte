@@ -1,5 +1,6 @@
 <script>
 	import { base } from '$app/paths';
+    import { locale } from 'svelte-i18n';
 
 	/** @type {{crags?: any}} */
 	let { crags = [] } = $props();
@@ -35,7 +36,7 @@
 					</div>
 					<p class="font-normal overflow-show h-28"
 						 style="-webkit-mask-image: linear-gradient(to bottom, white 0%, white 50%, transparent 90%);">
-						{crag.properties.description}
+						{$locale === 'de' ? crag.properties.description_de : crag.properties.description_en || crag.properties.description_de}
 					</p>
 				</div>
 			</div>

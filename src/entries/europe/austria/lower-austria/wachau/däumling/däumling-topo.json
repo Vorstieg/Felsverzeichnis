@@ -1,6 +1,7 @@
 {
     "name": "Däumling",
-    "description": "Der Däumling dominiert als höchster Turm den Burggraben und bietet eine der lohnendsten Klettereien des Gebiets. Das Spektrum reicht von kräftiger Ausdauerkletterei im Überhang (Südwand) bis zu wunderbaren Plaisir-Routen auf der Ostseite. Abgestiegen wird mittels Abseilen von den Einrichtungen am Gipfel.",
+    "description_de": "Der Däumling dominiert als höchster Turm den Burggraben und bietet eine der lohnendsten Klettereien des Gebiets. Das Spektrum reicht von kräftiger Ausdauerkletterei im Überhang (Südwand) bis zu wunderbaren Plaisir-Routen auf der Ostseite. Abgestiegen wird mittels Abseilen von den Einrichtungen am Gipfel.",
+    "description_en": "The Däumling dominates the Burggraben as the highest tower and offers some of the most rewarding climbing in the area. The spectrum ranges from powerful endurance climbing in the overhang (south wall) to wonderful plaisir routes on the east side. Descent is by abseiling from the facilities at the summit.",
     "rock": "granite",
     "tags": [
         "Beliebt",

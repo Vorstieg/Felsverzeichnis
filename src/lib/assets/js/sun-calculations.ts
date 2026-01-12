@@ -51,14 +51,14 @@ function calculateWallHeading(topo: any, route: any) {
 
 export function calculateWallDirection(topo: any, route: any) {
     const heading = calculateWallHeading(topo, route);
-    const dirs = ['Nord', 'Nord-Ost', 'Ost', 'Süd-Ost', 'Süd', 'Süd-West', 'West', 'Nord-West'];
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     const dirIndex = Math.round(heading / 45) % 8;
     return dirs[dirIndex];
 }
 
 export function calculateSunInfo(topo: any, route: any) {
     if (!topo || !topo.coordinates || (topo.coordinates[0] === 0 && topo.coordinates[1] === 0)) {
-        return { hours: 'Keine Geodaten', chartData: null };
+        return { hours: 'no_geodata', chartData: null };
     }
 
     const [lng, lat] = topo.coordinates;
@@ -101,14 +101,14 @@ export function calculateSunInfo(topo: any, route: any) {
         
         if (isInSun) {
             colors.push('#fbbf24'); // Sunny Yellow
-            conditions.push('Sonne');
+            conditions.push('sun.sunny');
             sunnyIntervals++;
         } else if (isUp) {
             colors.push('#9ca3af'); // Shady Gray
-            conditions.push('Schatten');
+            conditions.push('sun.shadow');
         } else {
             colors.push('#e5e7eb'); // Night/Low Light
-            conditions.push('Tiefstehende Sonne');
+            conditions.push('sun.low_sun');
         }
         totalIntervals++;
     }
@@ -126,7 +126,7 @@ export function calculateSunInfo(topo: any, route: any) {
         }
     }
     
-    let hoursStr = "Schatten den ganzen Tag";
+    let hoursStr = "shade_all_day";
     if (sunStart && sunEnd) {
         const format = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         hoursStr = `${format(sunStart)} - ${format(sunEnd)}`;
@@ -178,11 +178,6 @@ export function calculateBestSeason(topo: any, route: any) {
     // Amplitude (Seasonality strength)
     const yearlyAmp = 5 + 0.2 * absLat;
 
-    const months = [
-        'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
-    ];
-
     const targetAzimuthRad = (heading - 180) * (Math.PI / 180);
     const limit = Math.PI / 2; // +/- 90 degrees for direct sun exposure
 
@@ -220,7 +215,7 @@ export function calculateBestSeason(topo: any, route: any) {
         
         monthlyTemps.push(baseTemp);
         feelsLikeTemps.push(feelsLike);
-        labels.push(months[m]);
+        labels.push(m.toString());
     }
     
     return {
