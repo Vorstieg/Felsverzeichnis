@@ -20,9 +20,9 @@
 	
 	import { availableTopoTags, availableRouteTags } from '$lib/assets/js/topo-utils.js';
 	import { standardGrades, uiaaMap, getGradeLabel } from '$lib/assets/js/grades.js';
+	import { generate2DFromTopo } from '$lib/assets/js/topo-projection.js';
 
 	let activeTool = $state('route');
-	let activeTool2D = $state('route');
 	let selectedSymbol = $state('bolt');
 	let modelComponent;
 	let activeRenderer = $state('');
@@ -243,8 +243,6 @@
 		
 		// Clean up transient state
 		const finalTopo = JSON.parse(JSON.stringify(topoToSave));
-		delete finalTopo.selectedRouteId;
-		delete finalTopo.selectedOutlineId;
 		
 		const jsonContent = JSON.stringify(finalTopo, undefined, 4);
 		const blob = new Blob([jsonContent], { type: 'application/json' });
@@ -257,6 +255,28 @@
 
 		if (userState.topo.editorMode === '3d') {
 			modelComponent?.downloadClippedModel(`${baseName}.glb`);
+		}
+	}
+
+	let isGenerating2D = $state(false);
+	let generate2DResult = $state(null);
+
+	function handleGenerate2DTopo() {
+		isGenerating2D = true;
+		generate2DResult = null;
+		
+		try {
+			const result = generate2DFromTopo(userState.topo);
+			generate2DResult = result;
+			
+			if (result.updatedRoutes > 0 || result.updatedFixPoints > 0) {
+				// Switch to 2D view to show results
+				userState.topo.editorMode = '2d';
+			}
+		} catch (err) {
+			console.error('Error generating 2D topo:', err);
+		} finally {
+			isGenerating2D = false;
 		}
 	}
 
@@ -299,7 +319,7 @@
 		{/if}
 	{:else}
 		<ImageUploader />
-		<ToolPalette2D bind:activeTool={activeTool2D} bind:selectedSymbol />
+		<ToolPalette2D bind:activeTool bind:selectedSymbol />
 	{/if}
 
 	<button
@@ -331,8 +351,8 @@
 					Multi-Pitch
 				</button>
 				<button
-					class={`flex-1 font-semibold shadow-md border-1 cursor-pointer rounded-full py-2 px-2 text-center text-xs transition-colors ${activeTool === 'point' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}`}
-					onclick={() => { activeTool = 'point'; drawingTarget = null; }}>
+					class={`flex-1 font-semibold shadow-md border-1 cursor-pointer rounded-full py-2 px-2 text-center text-xs transition-colors ${activeTool === 'symbol' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}`}
+					onclick={() => { activeTool = 'symbol'; drawingTarget = null; }}>
 					{$_('ui.fixpoint')}
 				</button>
 			</div>
@@ -354,7 +374,7 @@
 						<span>Belay (Next Pitch)</span></div>
 					<div class="flex justify-between items-center"><span class="font-medium text-gray-800">Enter</span>
 						<span>Finish Route</span></div>
-				{:else if activeTool === 'point'}
+				{:else if activeTool === 'symbol'}
 					<div class="flex justify-between items-center"><span
 						class="font-medium text-gray-800">{$_('ui.double_click')}</span> <span>{$_('ui.set_fixpoint')}</span></div>
 				{/if}
@@ -392,7 +412,25 @@
 		</div>
 	{/if}
 
-	<div class="mt-auto pt-5">
+	<div class="mt-auto pt-5 space-y-3">
+		{#if userState.topo.editorMode === '3d' && userState.topo.routes.length > 0}
+			<button
+				class="w-full font-semibold shadow-md bg-purple-50 text-purple-700 border border-purple-200 px-6 py-3 rounded-full text-sm transition-all hover:bg-purple-100 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+				onclick={handleGenerate2DTopo}
+				disabled={isGenerating2D}
+			>
+				{#if isGenerating2D}
+					⏳ Generating...
+				{:else}
+					⬇️ Generate 2D Topo
+				{/if}
+			</button>
+			{#if generate2DResult}
+				<p class="text-xs text-center text-gray-500">
+					✓ {generate2DResult.updatedRoutes} routes, {generate2DResult.updatedFixPoints} fix points{#if generate2DResult.generatedOutline}, outline generated{/if}
+				</p>
+			{/if}
+		{/if}
 		<button
 			class="w-full font-bold shadow-lg bg-blue-600 text-white px-8 py-4 rounded-full text-base transition-all hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
 			onclick={combinedExport}>{$_('ui.save_topo')}</button>
@@ -402,7 +440,7 @@
 
 <div class="h-screen w-screen absolute overflow-hidden">
 	{#if userState.topo.editorMode === '2d'}
-		<Topo2DEditor activeTool={activeTool2D} {selectedSymbol} />
+		<Topo2DEditor {activeTool} {selectedSymbol} {drawingTarget} />
 	{:else}
 		<div id="css-renderer-target" bind:this={element}
 				 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1;"></div>

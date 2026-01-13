@@ -19,10 +19,15 @@
 	} = $props();
 
 	let routes = $derived(userState.topo.routes);
+	let lastSelectedId = $state(null);
+	let lastSelectedFpId = $state(null);
 
 	$effect(() => {
 		const selectedId = userState.ui.selectedRouteId;
-		if (selectedId) {
+		const selectedFpId = userState.ui.selectedFixpointId;
+
+		if (selectedId && selectedId !== lastSelectedId) {
+			lastSelectedId = selectedId;
 			const route = userState.topo.routes.find((r) => r.id === selectedId);
 			if (route) {
 				if (activeTab !== 'routes') activeTab = 'routes';
@@ -50,21 +55,30 @@
 					el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 				}, 100);
 			}
-		} else {
-			if (drawingTarget) drawingTarget = null;
+		} else if (!selectedId) {
+			lastSelectedId = null;
+			if (drawingTarget && drawingTarget.type === 'route') drawingTarget = null;
 		}
 
-		const selectedFpId = userState.ui.selectedFixpointId;
-		if (selectedFpId) {
+		if (selectedFpId && selectedFpId !== lastSelectedFpId) {
+			lastSelectedFpId = selectedFpId;
 			if (activeTab !== 'fixpoints') activeTab = 'fixpoints';
 			setTimeout(() => {
 				const el = document.getElementById('fixpoint-' + selectedFpId);
 				el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}, 100);
+		} else if (!selectedFpId) {
+			lastSelectedFpId = null;
 		}
 	});
 
 	let activeTab = $state('info'); // 'info' | 'routes' | 'fixpoints'
+
+	function switchTab(tab) {
+		activeTab = tab;
+		userState.ui.selectedRouteId = null;
+		userState.ui.selectedFixpointId = null;
+	}
 </script>
 
 <div class="fixed top-25 right-12 z-50 w-110 flex flex-col max-h-[85vh]">
@@ -77,7 +91,7 @@
 			'info'
 				? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
 				: 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}"
-			onclick={() => (activeTab = 'info')}
+			onclick={() => switchTab('info')}
 		>
 			<i class="fa-solid fa-circle-info mr-1.5 text-xs"></i>
 			{$_('menu.info')}
@@ -87,7 +101,7 @@
 			'routes'
 				? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
 				: 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}"
-			onclick={() => (activeTab = 'routes')}
+			onclick={() => switchTab('routes')}
 		>
 			<i class="fa-solid fa-route mr-1.5 text-xs"></i>
 			{$_('topo.routes')}
@@ -104,7 +118,7 @@
 			'fixpoints'
 				? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
 				: 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}"
-			onclick={() => (activeTab = 'fixpoints')}
+			onclick={() => switchTab('fixpoints')}
 		>
 			<i class="fa-solid fa-location-dot mr-1.5 text-xs"></i>
 			{$_('ui.fixpoints')}

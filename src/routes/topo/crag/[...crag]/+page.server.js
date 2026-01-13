@@ -7,14 +7,14 @@ export const entries = async () => {
 	for (const path in jsonFiles) {
 		if (path.endsWith('-topo.json')) {
 			const parts = path.split('/');
-			const dirPath = parts.slice(3, -1).join('/'); 
-			
+			const dirPath = parts.slice(3, -1).join('/');
+
 			entriesList.push({ crag: dirPath });
 
 			try {
 				const module = await jsonFiles[path]();
 				const topo = module.default;
-				
+
 				if (topo && topo.routes) {
 					for (const route of topo.routes) {
 						entriesList.push({ crag: `${dirPath}/${route.id}` });
@@ -41,24 +41,30 @@ export const load = async ({ params, url }) => {
 			topo = (await jsonFiles[`/src/entries/${params.crag}/${params.crag.split('/').at(-1)}-topo.json`]()).default;
 			path = params.crag;
 		}
-		else if (jsonFiles[`/src/entries/${params.crag.split('/').slice(0, -1).join("/")}/${params.crag.split('/').at(-2)}-topo.json`]){
-			 topo = (await jsonFiles[`/src/entries/${params.crag.split('/').slice(0, -1).join("/")}/${params.crag.split('/').at(-2)}-topo.json`]()).default;
-			 route = topo.routes.find((it) => it.id ===  params.crag.split('/').at(-1));
-			 path = params.crag.split('/').slice(0, -1).join("/");
+		else if (jsonFiles[`/src/entries/${params.crag.split('/').slice(0, -1).join("/")}/${params.crag.split('/').at(-2)}-topo.json`]) {
+			topo = (await jsonFiles[`/src/entries/${params.crag.split('/').slice(0, -1).join("/")}/${params.crag.split('/').at(-2)}-topo.json`]()).default;
+			route = topo.routes.find((it) => it.id === params.crag.split('/').at(-1));
+			path = params.crag.split('/').slice(0, -1).join("/");
 		}
+		const pojo = (obj) => obj ? JSON.parse(JSON.stringify(obj)) : obj;
+
+		if (!topo) {
+			error(404, `Crag or route not found: ${params.crag}`);
+		}
+
 		return {
 			path,
-			topo,
-			route,
-            name: topo.name,
-            description_de: topo.description_de,
-            description_en: topo.description_en,
+			topo: pojo(topo),
+			route: pojo(route),
+			name: topo?.name,
+			description_de: topo?.description_de,
+			description_en: topo?.description_en,
 			meta: {
 				lang: 'de',
-				title: topo.name + ' - Felsverzeichnis',
-				description: topo.description_de || '',
+				title: (topo?.name || 'Topo') + ' - Felsverzeichnis',
+				description: topo?.description_de || '',
 				type: 'article',
-				author: topo.author,
+				author: topo?.author,
 				url: url.href
 			}
 		};

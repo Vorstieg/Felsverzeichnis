@@ -3,7 +3,7 @@
 	import { zoom as d3Zoom } from 'd3-zoom';
 	import { select } from 'd3-selection';
 
-	let { topo, routes = [], selectedRouteId = null } = $props();
+	let { topo, routes = [], selectedRouteId = null, onRouteSelect = () => {}, hoveredRouteId = $bindable(null) } = $props();
 
 	let svgElement = $state(null);
 	let gElement = $state(null);
@@ -38,6 +38,15 @@
 		const ratio = topo.imageAspectRatio || 1.5;
 		baseWidth = 1000;
 		baseHeight = 1000 / ratio;
+	});
+
+	// Re-run rendering when selection or hover changes
+	$effect(() => {
+		// Dependencies: these must be referenced to trigger effect
+		const _sel = selectedRouteId;
+		const _hov = hoveredRouteId;
+		// Use requestAnimationFrame to avoid "flush" errors if state updates fast
+		requestAnimationFrame(updateD3Rendering);
 	});
 
 	function updateD3Rendering() {
@@ -106,17 +115,38 @@
 		const routes2D = routes.filter(r => r.points2D && r.points2D.length > 0);
 		routes2D.forEach((route, i) => {
 			const isSelected = selectedRouteId === route.id;
-			const group = routesLayer.append('g').attr('class', 'route-group');
+			const isHovered = hoveredRouteId === route.id;
+			const highlight = isSelected || isHovered;
+
+			const group = routesLayer.append('g')
+				.attr('class', 'route-group cursor-pointer')
+				.on('click', (e) => {
+					e.stopPropagation();
+					onRouteSelect(route);
+				})
+				.on('mouseenter', () => hoveredRouteId = route.id)
+				.on('mouseleave', () => hoveredRouteId = null);
+			
 			const pointsStr = route.points2D.map(p => `${p[0] * baseWidth},${p[1] * baseHeight}`).join(' ');
 
+			// Hit Area (Transparent)
 			group.append('polyline')
 				.attr('points', pointsStr)
 				.attr('fill', 'none')
-				.attr('stroke', isSelected ? '#3b82f6' : '#12538b')
-				.attr('stroke-width', isSelected ? 5 : 3)
+				.attr('stroke', 'transparent')
+				.attr('stroke-width', 20)
+				.attr('stroke-linecap', 'round')
+				.attr('stroke-linejoin', 'round');
+
+			// Visible Line
+			group.append('polyline')
+				.attr('points', pointsStr)
+				.attr('fill', 'none')
+				.attr('stroke', highlight ? '#3b82f6' : '#12538b') // Blue-500 if highlighted, else generic blue
+				.attr('stroke-width', highlight ? 5 : 3)
 				.attr('stroke-linecap', 'round')
 				.attr('stroke-linejoin', 'round')
-				.attr('opacity', isSelected ? 1 : 0.8)
+				.attr('opacity', highlight ? 1 : 0.8)
 				.style('transition', 'all 0.2s');
 
 			group.append('text')
@@ -124,7 +154,7 @@
 				.attr('y', route.points2D[0][1] * baseHeight - 10)
 				.attr('font-size', '20')
 				.attr('font-weight', 'bold')
-				.attr('fill', isSelected ? '#3b82f6' : '#12538b')
+				.attr('fill', highlight ? '#3b82f6' : '#12538b')
 				.attr('text-anchor', 'middle')
 				.text(i + 1);
 		});
@@ -134,15 +164,19 @@
 		symbolData.forEach(symbol => {
 			if (!symbol.position2D) return; // Skip if it only has 3D position
 			
+			const isFixpoint = ['abseil', 'belay', 'bolt', 'piton'].includes(symbol.type);
+			const baseSize = isFixpoint ? 6 : 40;
+			const radius = baseSize / 2;
+			
 			const group = symbolsLayer.append('g')
 				.attr('class', 'symbol-group')
 				.attr('transform', `translate(${symbol.position2D[0] * baseWidth}, ${symbol.position2D[1] * baseHeight}) rotate(${symbol.rotation2D || 0}) scale(${symbol.scale2D || 1})`);
 
 			group.append('image')
-				.attr('width', 30)
-				.attr('height', 30)
-				.attr('x', -15)
-				.attr('y', -15)
+				.attr('width', baseSize)
+				.attr('height', baseSize)
+				.attr('x', -radius)
+				.attr('y', -radius)
 				.attr('href', `/icons/topo-symbols/${symbol.type}.svg`);
 		});
 	}

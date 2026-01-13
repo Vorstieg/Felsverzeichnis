@@ -3,22 +3,83 @@
 	import { onMount } from 'svelte';
 	import { zoom as d3Zoom } from 'd3-zoom';
 	import { select } from 'd3-selection';
+    import { RouteTool } from './tools/RouteTool.svelte.js';
+    import { SymbolTool } from './tools/SymbolTool.svelte.js';
+    import { EraserTool } from './tools/EraserTool.svelte.js';
+    import { OutlineTool } from './tools/OutlineTool.svelte.js';
+    import { SelectTool } from './tools/SelectTool.svelte.js';
 
-	let { activeTool = 'route', selectedSymbol = 'bolt' } = $props();
+	let { activeTool = 'route', selectedSymbol = 'bolt', drawingTarget = null } = $props();
 
 	let svgElement = $state(null);
 	let gElement = $state(null);
-	let currentRoutePoints = $state([]);
-	let currentOutlinePoints = $state([]);
+
+    // Pass saveHistory callback to all tools
+    const toolConfig = { saveHistory };
+    const tools = {
+        route: new RouteTool(toolConfig),
+        multipitch: null,
+        symbol: new SymbolTool(toolConfig),
+        eraser: new EraserTool(toolConfig),
+        outline: new OutlineTool(toolConfig),
+        select: new SelectTool(toolConfig)
+    };
+    // Share the same instance for route and multipitch as they share logic in RouteTool
+    tools.multipitch = tools.route;
+
+    // Track previous tool for lifecycle
+    let previousTool = $state(null);
+
+    let currentTool = $derived(tools[activeTool] || tools.select);
+
+    // Synchronize drawingTarget to the tool
+    $effect(() => {
+        if (currentTool instanceof RouteTool) {
+            currentTool.drawingTarget = drawingTarget;
+        }
+    });
+
+    // Sync selectedSymbol to SymbolTool
+    $effect(() => {
+        if (tools.symbol) {
+            tools.symbol.selectedType = selectedSymbol;
+        }
+    });
+
+    // Tool lifecycle management
+    $effect(() => {
+        if (previousTool && previousTool !== currentTool) {
+            previousTool.onDeactivate?.();
+        }
+        currentTool.onActivate?.();
+        previousTool = currentTool;
+    });
+
+    // Derived state for rendering
+	let currentRoutePoints = $derived(currentTool instanceof RouteTool ? currentTool.currentPoints : []);
+	let currentOutlinePoints = $derived(currentTool instanceof OutlineTool ? currentTool.currentPoints : []);
+    // Symbol tool manages symbol creation directly into userState, so no "currentSymbolPoints" needed for preview distinct from cursor?
+    // RouteTool creates points as you click.
+
 	let transform = $state({ x: 0, y: 0, k: 1 }); // D3 zoom transform
 	let selectedSymbolInstance = $state(null);
 	let draggingPoint = $state(null); // { routeId, outlineId, pointIndex }
 	let draggingSymbol = $state(null); // symbolId
 	let rotatingSymbol = $state(null); // { id, startAngle, startRotation }
 	let scalingSymbol = $state(null); // { id, startDist, startScale }
-	let baseWidth = 1000;
-	let baseHeight = 667;
+	let draggingLabel = $state(null); // { routeId, pitchId }
+	let draggingRoute = $state(null); // { routes: [{routeId, pitchId, startPoints}], startMouse }
+	let draggingOutline = $state(null); // { outlines: [{outlineId, startPoints}], startMouse }
+	let draggingSymbols = $state(null); // { symbols: [{symbolId, startPos}], startMouse }
+	let baseWidth = $state(1000);
+	let baseHeight = $state(667);
 	let zoomBehavior = null;
+
+	// Multi-select state
+	let selectedRoutes = $state(new Set());
+	let selectedSymbols = $state(new Set());
+	let selectedOutlines = $state(new Set());
+	let isShiftPressed = $state(false);
 
 	// History management
 	let history = $state([]);
@@ -141,74 +202,15 @@
 	function handleSVGClick(event) {
 		const point = getSVGPoint(event);
 		if (!point) return;
-
-		// 1. Handle Deselection first
-		let deselectedSomething = false;
-
-		if (selectedSymbolInstance) {
-			selectedSymbolInstance = null;
-			deselectedSomething = true;
-		}
-
-		if (activeTool !== 'route' && userState.topo.selectedRouteId) {
-			userState.topo.selectedRouteId = null;
-			deselectedSomething = true;
-		}
-
-		if (activeTool !== 'outline' && userState.topo.selectedOutlineId) {
-			userState.topo.selectedOutlineId = null;
-			deselectedSomething = true;
-		}
-
-		if (deselectedSomething) return;
-		
-		saveHistory();
-
-		// 2. Handle Tool Actions
-		if (activeTool === 'route') {
-			if (userState.topo.selectedRouteId) {
-				const route = userState.topo.routes.find(r => r.id === userState.topo.selectedRouteId);
-				if (route) {
-					route.points2D = [...(route.points2D || []), [point.x, point.y]];
-				}
-			} else {
-				currentRoutePoints = [...currentRoutePoints, [point.x, point.y]];
-			}
-		} else if (activeTool === 'outline') {
-			if (userState.topo.selectedOutlineId) {
-				const outline = userState.topo.outlines.find(o => o.id === userState.topo.selectedOutlineId);
-				if (outline) {
-					outline.points2D = [...(outline.points2D || []), [point.x, point.y]];
-				}
-			} else {
-				currentOutlinePoints = [...currentOutlinePoints, [point.x, point.y]];
-			}
-		} else if (activeTool === 'symbol') {
-			const symbolId = crypto.randomUUID();
-			userState.topo.fixPoints.push({
-				id: symbolId,
-				type: selectedSymbol,
-				position2D: [point.x, point.y],
-				rotation2D: 0,
-				scale2D: 1
-			});
-		} else if (activeTool === 'eraser') {
-			// Check if clicking on a fixpoint (symbol)
-			const clickedSymbol = userState.topo.fixPoints.find(s => {
-				if (!s.position2D) return false;
-				const dx = Math.abs(s.position2D[0] - point.x);
-				const dy = Math.abs(s.position2D[1] - point.y);
-				return dx < 0.02 && dy < 0.02; // Tolerance
-			});
-			if (clickedSymbol) {
-				userState.topo.fixPoints = userState.topo.fixPoints.filter(s => s.id !== clickedSymbol.id);
-			}
-		}
+        currentTool.onMouseDown(event, point);
 	}
 
-	function handlePointMouseDown(event, { routeId, outlineId, pointIndex }) {
+    // Forward dragging events if tools support it (optional future step)
+	function handlePointMouseDown(event, { routeId, pitchId, outlineId, pointIndex }) {
 		const isEraser = activeTool === 'eraser';
-		const isRouteTool = activeTool === 'route';
+        // Tools should probably handle this check internally or we just allow dragging in 'route'/'select' modes?
+        // For now, preserving original check logic but mapped to tool types if needed.
+		const isRouteTool = activeTool === 'route' || activeTool === 'multipitch';
 		const isOutlineTool = activeTool === 'outline';
 		
 		if (!isRouteTool && !isEraser && !isOutlineTool) return;
@@ -218,9 +220,17 @@
 		if (event.altKey || isEraser) {
 			if (routeId) {
 				const route = userState.topo.routes.find(r => r.id === routeId);
-				if (route && route.points2D.length > 2) {
-					route.points2D = route.points2D.filter((_, i) => i !== pointIndex);
-					return;
+				if (route) {
+					if (pitchId && route.pitches) {
+						const pitch = route.pitches.find(p => p.id === pitchId);
+						if (pitch && pitch.points2D.length > 2) {
+							pitch.points2D = pitch.points2D.filter((_, i) => i !== pointIndex);
+							return;
+						}
+					} else if (route.points2D.length > 2) {
+						route.points2D = route.points2D.filter((_, i) => i !== pointIndex);
+						return;
+					}
 				}
 			} else if (outlineId) {
 				const outline = userState.topo.outlines.find(o => o.id === outlineId);
@@ -232,21 +242,89 @@
 		}
 
 		if (isRouteTool || isOutlineTool) {
-			draggingPoint = { routeId, outlineId, pointIndex };
+			draggingPoint = { routeId, pitchId, outlineId, pointIndex };
 		}
+	}
+
+	function handleMidpointClick(event, { routeId, pitchId, outlineId, insertIndex, point }) {
+		event.stopPropagation();
+		if (routeId) {
+			const route = userState.topo.routes.find(r => r.id === routeId);
+			if (route) {
+				if (pitchId && route.pitches) {
+					const pitch = route.pitches.find(p => p.id === pitchId);
+					if (pitch) {
+						const newPoints = [...pitch.points2D];
+						newPoints.splice(insertIndex, 0, [point.x, point.y]);
+						pitch.points2D = newPoints;
+					}
+				} else if (route.points2D) {
+					const newPoints = [...route.points2D];
+					newPoints.splice(insertIndex, 0, [point.x, point.y]);
+					route.points2D = newPoints;
+				}
+			}
+		} else if (outlineId) {
+			const outline = userState.topo.outlines.find(o => o.id === outlineId);
+			if (outline) {
+				const newPoints = [...outline.points2D];
+				newPoints.splice(insertIndex, 0, [point.x, point.y]);
+				outline.points2D = newPoints;
+			}
+		}
+		saveHistory();
 	}
 
 	function handleMouseMove(event) {
 		const mouse = getSVGPoint(event);
 		if (!mouse) return;
 
-		if (draggingPoint) {
+        // Delegate to tool for generic mouse move (e.g. hover effects)
+        currentTool.onMouseMove(event, mouse);
+
+		if (draggingRoute) {
+		// Move all routes in the dragging set
+		const deltaX = mouse.x - draggingRoute.startMouse.x;
+		const deltaY = mouse.y - draggingRoute.startMouse.y;
+		
+		draggingRoute.routes.forEach(({ routeId, pitchId, startPoints }) => {
+			const route = userState.topo.routes.find(r => r.id === routeId);
+			if (route) {
+				if (pitchId && route.pitches) {
+					const pitch = route.pitches.find(p => p.id === pitchId);
+					if (pitch && pitch.points2D) {
+						pitch.points2D = startPoints.map(p => [p[0] + deltaX, p[1] + deltaY]);
+					}
+				} else if (route.points2D) {
+					route.points2D = startPoints.map(p => [p[0] + deltaX, p[1] + deltaY]);
+				}
+			}
+		});
+	} else if (draggingOutline) {
+			// Move entire outline
+			const deltaX = mouse.x - draggingOutline.startMouse.x;
+			const deltaY = mouse.y - draggingOutline.startMouse.y;
+			
+			const outline = userState.topo.outlines.find(o => o.id === draggingOutline.outlineId);
+			if (outline && outline.points2D) {
+				outline.points2D = draggingOutline.startPoints.map(p => [p[0] + deltaX, p[1] + deltaY]);
+			}
+		} else if (draggingPoint) {
 			if (draggingPoint.routeId) {
 				const route = userState.topo.routes.find(r => r.id === draggingPoint.routeId);
 				if (route) {
-					const newPoints = [...route.points2D];
-					newPoints[draggingPoint.pointIndex] = [mouse.x, mouse.y];
-					route.points2D = newPoints;
+					if (draggingPoint.pitchId && route.pitches) {
+						const pitch = route.pitches.find(p => p.id === draggingPoint.pitchId);
+						if (pitch) {
+							const newPoints = [...pitch.points2D];
+							newPoints[draggingPoint.pointIndex] = [mouse.x, mouse.y];
+							pitch.points2D = newPoints;
+						}
+					} else if (route.points2D) {
+						const newPoints = [...route.points2D];
+						newPoints[draggingPoint.pointIndex] = [mouse.x, mouse.y];
+						route.points2D = newPoints;
+					}
 				}
 			} else if (draggingPoint.outlineId) {
 				const outline = userState.topo.outlines.find(o => o.id === draggingPoint.outlineId);
@@ -283,18 +361,39 @@
 				const scaleFactor = currentDist / scalingSymbol.startDist;
 				symbol.scale2D = Math.max(0.2, Math.min(5, (scalingSymbol.startScale || 1) * scaleFactor));
 			}
+		} else if (draggingLabel) {
+			const route = userState.topo.routes.find(r => r.id === draggingLabel.routeId);
+			if (route) {
+				const target = draggingLabel.pitchId ? route.pitches.find(p => p.id === draggingLabel.pitchId) : route;
+				if (target && target.points2D?.length > 0) {
+					const basePoint = target.points2D[0];
+					if (!target.labelOffset2D) target.labelOffset2D = [0, 0.05];
+					target.labelOffset2D = [
+						mouse.x - basePoint[0],
+						mouse.y - basePoint[1]
+					];
+				}
+			}
 		}
 	}
 
-	function handleMouseUp() {
-		if (draggingPoint || draggingSymbol || rotatingSymbol || scalingSymbol) {
-			saveHistory();
-		}
+	function handleMouseUp(event) {
+        const point = getSVGPoint(event);
+        if (point) currentTool.onMouseUp(event, point);
+
+		if (draggingPoint || draggingSymbol || rotatingSymbol || scalingSymbol || draggingLabel || draggingRoute || draggingOutline || draggingSymbols) {
+ 			saveHistory();
+ 		}
 		draggingPoint = null;
 		draggingSymbol = null;
 		rotatingSymbol = null;
 		scalingSymbol = null;
-	}
+
+		draggingLabel = null;
+	draggingRoute = null;
+	draggingOutline = null;
+	draggingSymbols = null;
+ 	}
 
 	function handleSymbolMouseDown(event, symbol) {
 		const isSymbolTool = activeTool === 'symbol';
@@ -303,6 +402,11 @@
 		event.stopPropagation();
 		draggingSymbol = symbol.id;
 		handleSymbolClick(symbol); // Also select it
+	}
+
+	function handleLabelMouseDown(event, { routeId, pitchId }) {
+		event.stopPropagation();
+		draggingLabel = { routeId, pitchId };
 	}
 
 	function handleRotateGizmoMouseDown(event, symbol) {
@@ -322,103 +426,148 @@
 		scalingSymbol = { 
 			id: symbol.id, 
 			startDist,
-			startScale: symbol.rotation2D || 1 
+			startScale: symbol.scale2D || 1 
 		};
 	}
 
 	function handleRouteClick(event, routeId) {
 		event.stopPropagation();
-		if (currentRoutePoints.length > 0) cancelRoute();
-		if (currentOutlinePoints.length > 0) cancelOutline();
-		userState.topo.selectedRouteId = routeId;
+		// Don't allow selecting or switching if we are currently drawing
+		if (currentRoutePoints.length > 0 || currentOutlinePoints.length > 0) return;
+		
+        if (currentTool instanceof RouteTool) currentTool.cancel();
+        if (currentTool instanceof OutlineTool) currentTool.cancel();
+
+		// Multi-select logic
+		if (isShiftPressed) {
+			if (selectedRoutes.has(routeId)) {
+				selectedRoutes.delete(routeId);
+			} else {
+				selectedRoutes.add(routeId);
+			}
+			// Keep the last clicked as the "primary" selection
+			userState.ui.selectedRouteId = routeId;
+		} else {
+			// Single select - clear multi-selection
+			selectedRoutes.clear();
+			userState.ui.selectedRouteId = routeId;
+		}
 	}
 
 	function handleOutlineClick(event, outlineId) {
 		event.stopPropagation();
-		if (currentRoutePoints.length > 0) cancelRoute();
-		if (currentOutlinePoints.length > 0) cancelOutline();
-		userState.topo.selectedOutlineId = outlineId;
+		if (currentRoutePoints.length > 0 || currentOutlinePoints.length > 0) return;
+
+        if (currentTool instanceof RouteTool) currentTool.cancel();
+        if (currentTool instanceof OutlineTool) currentTool.cancel();
+
+		// Multi-select logic
+		if (isShiftPressed) {
+			if (selectedOutlines.has(outlineId)) {
+				selectedOutlines.delete(outlineId);
+			} else {
+				selectedOutlines.add(outlineId);
+			}
+			userState.ui.selectedOutlineId = outlineId;
+		} else {
+			selectedOutlines.clear();
+			userState.ui.selectedOutlineId = outlineId;
+		}
 	}
 
 	// D3 zoom handles all pan/zoom - no custom handlers needed
 
-	function finalizeRoute() {
-		if (currentRoutePoints.length < 2) {
-			console.log('Route needs at least 2 points');
-			return;
-		}
-
-		const routeId = crypto.randomUUID();
-		userState.topo.routes.push({
-			id: routeId,
-			points2D: currentRoutePoints,
-			points: [], // Empty 3D points
-			tags: [],
-			name: `Route ${routeId}`,
-			grade: '5a',
-			type: 'sports-climbing'
-		});
-
-		currentRoutePoints = [];
-		saveHistory();
-	}
-
-	function finalizeOutline() {
-		if (currentOutlinePoints.length < 2) {
-			console.log('Outline needs at least 2 points');
-			return;
-		}
-
-		const outlineId = crypto.randomUUID();
-		userState.topo.outlines.push({
-			id: outlineId,
-			points2D: currentOutlinePoints
-		});
-
-		currentOutlinePoints = [];
-		saveHistory();
-	}
-
-	function cancelRoute() {
-		currentRoutePoints = [];
-	}
-
-	function cancelOutline() {
-		currentOutlinePoints = [];
-	}
+    // Finalize/Cancel functions delegated to Tools (removed local versions)
 
 	function handleKeyDown(event) {
-		if (event.key === 'n' || event.key === 'N') {
-			if (activeTool === 'route') finalizeRoute();
-			else if (activeTool === 'outline') finalizeOutline();
-		} else if (event.key === 'Escape') {
-			if (selectedSymbolInstance) {
-				selectedSymbolInstance = null;
-			} else if (userState.topo.selectedRouteId) {
-				userState.topo.selectedRouteId = null;
-			} else if (userState.topo.selectedOutlineId) {
-				userState.topo.selectedOutlineId = null;
-			} else {
-				cancelRoute();
-				cancelOutline();
+		// Track shift key for multi-select
+		if (event.key === 'Shift') {
+			isShiftPressed = true;
+		}
+
+        // Global delete handler
+        if (event.key === 'Escape') {
+			// Clear all selections
+            userState.ui.selectedFixpointId = null;
+            userState.ui.selectedRouteId = null;
+            userState.ui.selectedOutlineId = null;
+            selectedSymbolInstance = null;
+			selectedRoutes.clear();
+			selectedSymbols.clear();
+			selectedOutlines.clear();
+        }
+
+        if (event.key === 'Delete' || event.key === 'Backspace') {
+			// Delete multi-selected routes
+			if (selectedRoutes.size > 0) {
+				userState.topo.routes = userState.topo.routes.filter(r => !selectedRoutes.has(r.id));
+				selectedRoutes.clear();
+				userState.ui.selectedRouteId = null;
+				saveHistory();
+				return;
 			}
-		} else if (event.key === 'Delete' || event.key === 'Del') {
-			let deleted = false;
-			if (selectedSymbolInstance) {
-				userState.topo.fixPoints = userState.topo.fixPoints.filter(s => s.id !== selectedSymbolInstance.id);
-				selectedSymbolInstance = null;
-				deleted = true;
-			} else if (userState.topo.selectedRouteId) {
-				userState.topo.routes = userState.topo.routes.filter(r => r.id !== userState.topo.selectedRouteId);
-				userState.topo.selectedRouteId = null;
-				deleted = true;
-			} else if (userState.topo.selectedOutlineId) {
-				userState.topo.outlines = userState.topo.outlines.filter(o => o.id !== userState.topo.selectedOutlineId);
-				userState.topo.selectedOutlineId = null;
-				deleted = true;
+
+			// Delete multi-selected symbols
+			if (selectedSymbols.size > 0) {
+				const idsToDelete = Array.from(selectedSymbols);
+				userState.topo.fixPoints = userState.topo.fixPoints.filter(p => !selectedSymbols.has(p.id));
+				// Remove references from routes
+				userState.topo.routes.forEach(route => {
+					if (route.fixPoints) {
+						route.fixPoints = route.fixPoints.filter(id => !idsToDelete.includes(id));
+					}
+					if (route.pitches) {
+						route.pitches.forEach(pitch => {
+							idsToDelete.forEach(id => {
+								if (pitch.startNodeId === id) pitch.startNodeId = null;
+								if (pitch.endNodeId === id) pitch.endNodeId = null;
+							});
+						});
+					}
+				});
+				selectedSymbols.clear();
+				userState.ui.selectedFixpointId = null;
+				saveHistory();
+				return;
 			}
-			if (deleted) saveHistory();
-		} else if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+
+			// Delete multi-selected outlines
+			if (selectedOutlines.size > 0) {
+				userState.topo.outlines = userState.topo.outlines.filter(o => !selectedOutlines.has(o.id));
+				selectedOutlines.clear();
+				userState.ui.selectedOutlineId = null;
+				saveHistory();
+				return;
+			}
+
+			// Single delete (existing logic)
+            if (userState.ui.selectedFixpointId) {
+                const idToDelete = userState.ui.selectedFixpointId;
+                // Remove from global fixpoints
+                userState.topo.fixPoints = userState.topo.fixPoints.filter(p => p.id !== idToDelete);
+                
+                // Remove references from routes
+                userState.topo.routes.forEach(route => {
+                    if (route.fixPoints) {
+                        route.fixPoints = route.fixPoints.filter(id => id !== idToDelete);
+                    }
+                    if (route.pitches) {
+                        route.pitches.forEach(pitch => {
+                            if (pitch.startNodeId === idToDelete) pitch.startNodeId = null;
+                            if (pitch.endNodeId === idToDelete) pitch.endNodeId = null;
+                        });
+                    }
+                });
+                
+                userState.ui.selectedFixpointId = null;
+                selectedSymbolInstance = null;
+                return;
+            }
+        }
+
+        currentTool.onKeyDown(event);
+        
+		if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
 			event.preventDefault();
 			undo();
 		} else if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
@@ -428,7 +577,22 @@
 	}
 
 	function handleSymbolClick(symbol) {
-		selectedSymbolInstance = symbol;
+		// Multi-select logic
+		if (isShiftPressed) {
+			if (selectedSymbols.has(symbol.id)) {
+				selectedSymbols.delete(symbol.id);
+			} else {
+				selectedSymbols.add(symbol.id);
+			}
+			selectedSymbolInstance = symbol;
+			userState.ui.selectedFixpointId = symbol.id;
+		} else {
+			selectedSymbols.clear();
+			selectedSymbolInstance = symbol;
+			userState.ui.selectedFixpointId = symbol.id;
+		}
+		// Deselect route to allow deletion of symbol
+		userState.ui.selectedRouteId = null; 
 	}
 
 	function updateSymbolRotation(delta) {
@@ -449,6 +613,11 @@
 
 	onMount(() => {
 		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('keyup', (event) => {
+			if (event.key === 'Shift') {
+				isShiftPressed = false;
+			}
+		});
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
@@ -517,7 +686,7 @@
 
 		// 1.5 Rock Outlines Rendering
 		userState.topo.outlines.forEach(outline => {
-			const isSelected = userState.topo.selectedOutlineId === outline.id;
+			const isSelected = userState.ui.selectedOutlineId === outline.id || selectedOutlines.has(outline.id);
 			const pointsStr = outline.points2D.map(p => `${p[0] * baseWidth},${p[1] * baseHeight}`).join(' ');
 
 			outlinesLayer.append('polyline')
@@ -526,60 +695,233 @@
 				.attr('stroke', isSelected ? '#b45309' : '#d97706') // Amber-700 / Amber-600
 				.attr('stroke-width', isSelected ? 4 : 3)
 				.attr('stroke-dasharray', '5,5')
-				.attr('class', 'cursor-pointer rock-outline')
-				.style('pointer-events', activeTool === 'route' || activeTool === 'symbol' ? 'none' : 'auto')
+				.attr('class', 'cursor-move rock-outline')
+				.style('pointer-events', (activeTool === 'route' || activeTool === 'symbol' || currentRoutePoints.length > 0 || currentOutlinePoints.length > 0) ? 'none' : 'auto')
+				.on('mousedown', (e) => {
+				e.stopPropagation();
+				if (activeTool === 'select' || activeTool === 'outline') {
+					const mouse = getSVGPoint(e);
+					if (mouse) {
+						const isMultiSelected = selectedOutlines.has(outline.id) && selectedOutlines.size > 1;
+						
+						if (isMultiSelected) {
+							// Collect all selected outlines for dragging
+							const outlines = [];
+							selectedOutlines.forEach(oId => {
+								const o = userState.topo.outlines.find(ol => ol.id === oId);
+								if (o && o.points2D) {
+									outlines.push({
+										outlineId: o.id,
+										startPoints: JSON.parse(JSON.stringify(o.points2D))
+									});
+								}
+							});
+							draggingOutline = { outlines, startMouse: mouse };
+						} else {
+							// Single outline dragging
+							draggingOutline = {
+								outlines: [{
+									outlineId: outline.id,
+									startPoints: JSON.parse(JSON.stringify(outline.points2D))
+								}],
+								startMouse: mouse
+							};
+						}
+					}
+				}
+			})
 				.on('click', (e) => handleOutlineClick(e, outline.id));
 
 			// Handles for selected outline
-			if (isSelected && (activeTool === 'outline' || activeTool === 'eraser')) {
+		if (isSelected && (activeTool === 'outline' || activeTool === 'eraser') && selectedOutlines.size <= 1) {
 				outline.points2D.forEach((p, i) => {
 					handlesLayer.append('circle')
 						.attr('cx', p[0] * baseWidth)
 						.attr('cy', p[1] * baseHeight)
-						.attr('r', activeTool === 'eraser' ? 10 : 6)
+						.attr('r', activeTool === 'eraser' ? 7 : 4)
 						.attr('fill', activeTool === 'eraser' ? '#fee2e2' : '#b45309')
 						.attr('stroke', activeTool === 'eraser' ? '#ef4444' : 'none')
 						.attr('stroke-width', 2)
 						.attr('class', 'cursor-move')
 						.on('mousedown', (e) => handlePointMouseDown(e, { outlineId: outline.id, pointIndex: i }));
 				});
+
+				// Midpoint handles for point insertion
+				for (let j = 0; j < outline.points2D.length - 1; j++) {
+					const p1 = outline.points2D[j];
+					const p2 = outline.points2D[j+1];
+					const midX = (p1[0] + p2[0]) / 2;
+					const midY = (p1[1] + p2[1]) / 2;
+
+					handlesLayer.append('circle')
+						.attr('class', 'midpoint-handle cursor-pointer')
+						.attr('cx', midX * baseWidth)
+						.attr('cy', midY * baseHeight)
+						.attr('r', 3)
+						.attr('fill', '#d97706')
+						.attr('opacity', 0.6)
+						.attr('stroke', 'white')
+						.attr('stroke-width', 1)
+						.on('mouseover', function() { select(this).attr('opacity', 1).attr('r', 4); })
+						.on('mouseout', function() { select(this).attr('opacity', 0.6).attr('r', 2); })
+						.on('click', (e) => handleMidpointClick(e, {
+							outlineId: outline.id,
+							insertIndex: j + 1,
+							point: { x: midX, y: midY }
+						}));
+				}
 			}
 		});
 
 		// 2. Routes Rendering
-		routes2D.forEach((route, i) => {
-			const group = routesLayer.append('g').attr('class', 'route-group');
-			const pointsStr = route.points2D.map(p => `${p[0] * baseWidth},${p[1] * baseHeight}`).join(' ');
+		userState.topo.routes.forEach((route, i) => {
+			const renderLine = (points, id, label, isPitch = false, parentRouteId = null) => {
+				if (!points || points.length < 1) return;
+				
+				const group = routesLayer.append('g').attr('class', isPitch ? 'pitch-group' : 'route-group');
+				const pointsStr = points.map(p => `${p[0] * baseWidth},${p[1] * baseHeight}`).join(' ');
 
-			group.append('polyline')
-				.attr('class', 'hit-area cursor-pointer')
-				.attr('points', pointsStr)
-				.attr('fill', 'none')
-				.attr('stroke', 'transparent')
-				.attr('stroke-width', 20)
-				.on('mousedown', (e) => e.stopPropagation()) // Prevent pan start
-				.on('click', (e) => handleRouteClick(e, route.id));
+				const isSelected = userState.ui.selectedRouteId === (parentRouteId || id) || 
+								 selectedRoutes.has(parentRouteId || id) ||
+								 (drawingTarget?.type === 'pitch' && drawingTarget.pitchId === id);
 
-			group.append('polyline')
-				.attr('class', 'main-path cursor-pointer')
-				.attr('points', pointsStr)
-				.attr('fill', 'none')
-				.attr('stroke', userState.topo.selectedRouteId === route.id ? '#3b82f6' : '#12538b')
-				.attr('stroke-width', userState.topo.selectedRouteId === route.id ? 5 : 3)
-				.attr('stroke-linecap', 'round')
-				.attr('stroke-linejoin', 'round')
-				.on('mousedown', (e) => e.stopPropagation()) // Prevent pan start
-				.on('click', (e) => handleRouteClick(e, route.id));
+				group.append('polyline')
+					.attr('class', 'hit-area cursor-pointer')
+					.attr('points', pointsStr)
+					.attr('fill', 'none')
+					.attr('stroke', 'transparent')
+					.attr('stroke-width', 7)
+					.style('pointer-events', (currentRoutePoints.length > 0 || currentOutlinePoints.length > 0) ? 'none' : 'auto')
+					.on('mousedown', (e) => e.stopPropagation())
+					.on('click', (e) => isPitch ? null : handleRouteClick(e, id));
 
-			group.append('text')
-				.attr('class', 'route-label pointer-events-none')
-				.attr('x', route.points2D[0][0] * baseWidth)
-				.attr('y', route.points2D[0][1] * baseHeight - 10)
-				.attr('font-size', '20')
-				.attr('font-weight', 'bold')
-				.attr('fill', userState.topo.selectedRouteId === route.id ? '#3b82f6' : '#12538b')
-				.attr('text-anchor', 'middle')
-				.text(i + 1);
+				group.append('polyline')
+					.attr('class', 'main-path cursor-move')
+					.attr('points', pointsStr)
+					.attr('fill', 'none')
+					.attr('stroke', isSelected ? '#3b82f6' : '#12538b')
+					.attr('stroke-width', isSelected ? 5 : 3)
+					.attr('stroke-linecap', 'round')
+					.attr('stroke-linejoin', 'round')
+					.style('pointer-events', (currentRoutePoints.length > 0 || currentOutlinePoints.length > 0) ? 'none' : 'auto')
+					.on('mousedown', (e) => {
+				e.stopPropagation();
+				if (activeTool === 'select' || activeTool === 'route' || activeTool === 'multipitch') {
+					const mouse = getSVGPoint(e);
+					if (mouse) {
+						const routeId = parentRouteId || id;
+						const isMultiSelected = selectedRoutes.has(routeId) && selectedRoutes.size > 1;
+						
+						if (isMultiSelected) {
+							// Collect all selected routes for dragging
+							const routes = [];
+							selectedRoutes.forEach(rId => {
+								const r = userState.topo.routes.find(rt => rt.id === rId);
+								if (r && r.points2D) {
+									routes.push({
+										routeId: r.id,
+										pitchId: null,
+										startPoints: JSON.parse(JSON.stringify(r.points2D))
+									});
+								}
+							});
+							draggingRoute = { routes, startMouse: mouse };
+						} else {
+							// Single route dragging
+							draggingRoute = {
+								routes: [{
+									routeId: routeId,
+									pitchId: isPitch ? id : null,
+									startPoints: JSON.parse(JSON.stringify(points))
+								}],
+								startMouse: mouse
+							};
+						}
+					}
+				}
+			})
+					.on('click', (e) => isPitch ? null : handleRouteClick(e, id));
+
+				if (label) {
+					const routeObj = isPitch ? route.pitches.find(p => p.id === id) : route;
+					const offsetX = routeObj?.labelOffset2D ? routeObj.labelOffset2D[0] : 0;
+					const offsetY = routeObj?.labelOffset2D ? routeObj.labelOffset2D[1] : (10 / baseHeight);
+
+					group.append('text')
+						.attr('class', 'route-label cursor-move')
+						.attr('x', (points[0][0] + offsetX) * baseWidth)
+						.attr('y', (points[0][1] + offsetY) * baseHeight)
+						.attr('font-size', '20')
+						.attr('font-weight', 'bold')
+						.attr('fill', isSelected ? '#3b82f6' : '#12538b')
+						.attr('text-anchor', 'middle')
+						.style('pointer-events', 'all')
+						.style('user-select', 'none')
+						.on('mousedown', (e) => handleLabelMouseDown(e, { routeId: parentRouteId || id, pitchId: isPitch ? id : null }))
+						.on('click', (e) => e.stopPropagation())
+						.text(label);
+				}
+
+				// Midpoint handles for selected route/pitch
+				if (isSelected && (activeTool === 'route' || activeTool === 'multipitch' || activeTool === 'select')) {
+					if (points && points.length > 1) {
+						for (let j = 0; j < points.length - 1; j++) {
+							const p1 = points[j];
+							const p2 = points[j+1];
+							const midX = (p1[0] + p2[0]) / 2;
+							const midY = (p1[1] + p2[1]) / 2;
+
+							// Hide midpoint handles if multiple routes are selected
+							if (selectedRoutes.size > 1) continue;
+
+							handlesLayer.append('circle')
+								.attr('class', 'midpoint-handle cursor-pointer')
+								.attr('cx', midX * baseWidth)
+								.attr('cy', midY * baseHeight)
+								.attr('r', 2)
+								.attr('fill', '#3b82f6')
+								.attr('opacity', 0.6)
+								.attr('stroke', 'white')
+								.attr('stroke-width', 1)
+								.on('mouseover', function() { select(this).attr('opacity', 1).attr('r', 4); })
+								.on('mouseout', function() { select(this).attr('opacity', 0.6).attr('r', 2); })
+								.on('click', (e) => handleMidpointClick(e, {
+									routeId: parentRouteId || id,
+									pitchId: isPitch ? id : null,
+									insertIndex: j + 1,
+									point: { x: midX, y: midY }
+								}));
+						}
+					}
+				}
+			};
+
+			if (route.type === 'multi-pitch' && route.pitches) {
+				route.pitches.forEach((pitch, pitchIdx) => {
+					renderLine(pitch.points2D, pitch.id, null, true, route.id);
+				});
+				// Add a label for the whole route at the start of the first pitch
+				if (route.pitches[0]?.points2D?.length > 0) {
+					const offsetX = route.labelOffset2D ? route.labelOffset2D[0] : 0;
+					const offsetY = route.labelOffset2D ? route.labelOffset2D[1] : (10 / baseHeight);
+					
+					routesLayer.append('text')
+						.attr('class', 'route-label cursor-move')
+						.attr('x', (route.pitches[0].points2D[0][0] + offsetX) * baseWidth)
+						.attr('y', (route.pitches[0].points2D[0][1] + offsetY) * baseHeight)
+						.attr('font-size', '20')
+						.attr('font-weight', 'bold')
+						.attr('fill', userState.ui.selectedRouteId === route.id ? '#3b82f6' : '#12538b')
+						.attr('text-anchor', 'middle')
+						.style('pointer-events', 'all')
+						.style('user-select', 'none')
+						.on('mousedown', (e) => handleLabelMouseDown(e, { routeId: route.id, pitchId: null }))
+						.on('click', (e) => e.stopPropagation())
+						.text(i + 1);
+				}
+			} else {
+				renderLine(route.points2D, route.id, i + 1);
+			}
 		});
 
 		// 3. Current Drawing Rendering
@@ -598,7 +940,7 @@
 					.attr('class', 'current-point')
 					.attr('cx', p[0] * baseWidth)
 					.attr('cy', p[1] * baseHeight)
-					.attr('r', 5)
+					.attr('r', 3)
 					.attr('fill', '#ff00ff');
 			});
 		}
@@ -623,26 +965,53 @@
 		}
 
 		// 4. Handles Rendering (Selected Route)
-		const selectedRoute = userState.topo.selectedRouteId ? routes2D.find(r => r.id === userState.topo.selectedRouteId) : null;
-		if (selectedRoute && (activeTool === 'route' || activeTool === 'eraser')) {
-			selectedRoute.points2D.forEach((p, index) => {
+		const renderHandles = (points, routeId, pitchId = null) => {
+			if (!points) return;
+			
+			const isMultiSelected = selectedRoutes.size > 1;
+			
+			points.forEach((p, index) => {
+				// If multi-selected, only show start and end points
+				if (isMultiSelected && index !== 0 && index !== points.length - 1) return;
+
 				handlesLayer.append('circle')
-					.attr('class', `handle ${activeTool === 'route' ? 'cursor-move' : 'cursor-pointer'}`)
+					.attr('class', `handle ${activeTool === 'route' || activeTool === 'multipitch' ? 'cursor-move' : 'cursor-pointer'}`)
 					.attr('cx', p[0] * baseWidth)
 					.attr('cy', p[1] * baseHeight)
-					.attr('r', activeTool === 'eraser' ? 10 : 8) // Slightly larger target for eraser
+					.attr('r', activeTool === 'eraser' ? 5 : 3)
 					.attr('fill', activeTool === 'eraser' ? '#fee2e2' : 'white')
 					.attr('stroke', activeTool === 'eraser' ? '#ef4444' : '#3b82f6')
 					.attr('stroke-width', 2)
-					.on('mousedown', (e) => handlePointMouseDown(e, { routeId: selectedRoute.id, pointIndex: index }));
+					.on('mousedown', (e) => handlePointMouseDown(e, { routeId, pitchId, pointIndex: index }));
 			});
+		};
+
+		if (userState.ui.selectedRouteId && (activeTool === 'route' || activeTool === 'eraser')) {
+			const route = userState.topo.routes.find(r => r.id === userState.ui.selectedRouteId);
+			if (route && route.points2D) {
+				renderHandles(route.points2D, route.id);
+			}
+		}
+
+		if (activeTool === 'multipitch' && drawingTarget?.type === 'pitch') {
+			const route = userState.topo.routes.find(r => r.id === drawingTarget.routeId);
+			if (route && route.pitches) {
+				const pitch = route.pitches.find(p => p.id === drawingTarget.pitchId);
+				if (pitch && pitch.points2D) {
+					renderHandles(pitch.points2D, route.id, pitch.id);
+				}
+			}
 		}
 
 		// 5. Symbols (FixPoints) Rendering
 		userState.topo.fixPoints.forEach(symbol => {
 			if (!symbol.position2D) return; // Skip if it only has 3D position
 			
-			const isSelected = selectedSymbolInstance?.id === symbol.id;
+			const isFixpoint = ['abseil', 'belay', 'bolt', 'piton'].includes(symbol.type);
+			const baseSize = isFixpoint ? 6 : 40;
+			const radius = baseSize / 2;
+
+			const isSelected = selectedSymbolInstance?.id === symbol.id || selectedSymbols.has(symbol.id);
 			const group = symbolsLayer.append('g')
 				.attr('class', 'symbol-group cursor-pointer')
 				.attr('transform', `translate(${symbol.position2D[0] * baseWidth}, ${symbol.position2D[1] * baseHeight}) rotate(${symbol.rotation2D || 0}) scale(${symbol.scale2D || 1})`)
@@ -655,19 +1024,23 @@
 				});
 
 			group.append('image')
-				.attr('width', 30)
-				.attr('height', 30)
-				.attr('x', -15)
-				.attr('y', -15)
+				.attr('width', baseSize)
+				.attr('height', baseSize)
+				.attr('x', -radius)
+				.attr('y', -radius)
 				.attr('href', `/icons/topo-symbols/${symbol.type}.svg`);
 
 			if (isSelected && activeTool === 'symbol') {
+				const boxPadding = 5;
+				const boxSize = baseSize + boxPadding * 2;
+				const boxOffset = -(radius + boxPadding);
+
 				// Bounding Box
 				group.append('rect')
-					.attr('x', -20)
-					.attr('y', -20)
-					.attr('width', 40)
-					.attr('height', 40)
+					.attr('x', boxOffset)
+					.attr('y', boxOffset)
+					.attr('width', boxSize)
+					.attr('height', boxSize)
 					.attr('fill', 'none')
 					.attr('stroke', '#3b82f6')
 					.attr('stroke-width', 1)
@@ -676,27 +1049,31 @@
 				// Rotation Stalk
 				group.append('line')
 					.attr('x1', 0)
-					.attr('y1', -20)
+					.attr('y1', boxOffset)
 					.attr('x2', 0)
-					.attr('y2', -40)
+					.attr('y2', boxOffset - 20)
 					.attr('stroke', '#3b82f6')
 					.attr('stroke-width', 1);
 
 				// Rotation Handle
 				group.append('circle')
 					.attr('cx', 0)
-					.attr('cy', -40)
+					.attr('cy', boxOffset - 20)
 					.attr('r', 6)
 					.attr('fill', '#3b82f6')
 					.attr('class', 'cursor-pointer')
 					.on('mousedown', (e) => handleRotateGizmoMouseDown(e, symbol));
 
 				// Scaling Handle (Bottom Right)
+				// Position at (radius + padding, radius + padding)
+				const handlePos = radius + boxPadding - 1; // Slight inset
+				const handleSize = 10;
+				
 				group.append('rect')
-					.attr('x', 14)
-					.attr('y', 14)
-					.attr('width', 12)
-					.attr('height', 12)
+					.attr('x', handlePos)
+					.attr('y', handlePos)
+					.attr('width', handleSize)
+					.attr('height', handleSize)
 					.attr('fill', '#3b82f6')
 					.attr('class', 'cursor-nwse-resize')
 					.on('mousedown', (e) => handleScaleGizmoMouseDown(e, symbol));
@@ -706,12 +1083,12 @@
 				.attr('class', 'selection-circle')
 				.attr('cx', 0)
 				.attr('cy', 0)
-				.attr('r', 20)
+				.attr('r', radius + 10)
 				.attr('fill', 'none')
 				.attr('stroke', '#3b82f6')
 				.attr('stroke-width', 2)
 				.attr('stroke-dasharray', '4')
-				.style('display', isSelected ? 'block' : 'none');
+				.style('display', isSelected || selectedSymbols.has(symbol.id) ? 'block' : 'none');
 		});
 	}
 
@@ -720,9 +1097,20 @@
 		// Explicitly track deep reactive dependencies for D3 rendering
 		// Svelte 5 needs to see these accessed synchronously to track them
 		for (const r of userState.topo.routes) {
+			if (r.labelOffset2D) { r.labelOffset2D[0]; r.labelOffset2D[1]; }
 			if (r.points2D) {
 				for (const p of r.points2D) {
 					p[0]; p[1];
+				}
+			}
+			if (r.pitches) {
+				for (const pitch of r.pitches) {
+					if (pitch.labelOffset2D) { pitch.labelOffset2D[0]; pitch.labelOffset2D[1]; }
+					if (pitch.points2D) {
+						for (const p of pitch.points2D) {
+							p[0]; p[1];
+						}
+					}
 				}
 			}
 		}
@@ -747,7 +1135,7 @@
 		// Map these as dependencies too
 		const _deps = {
 			active: activeTool,
-			selected: userState.topo.selectedRouteId,
+			selected: userState.ui.selectedRouteId,
 			transform: transform,
 			base: { baseWidth, baseHeight }
 		};

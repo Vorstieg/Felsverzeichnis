@@ -30,6 +30,8 @@
 	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
 
+	let { data } = $props();
+
 	let routeMetrics = $state({
 		slab: 'N/A',
 		vertical: 'N/A',
@@ -59,19 +61,19 @@
 
 	const glbFiles = import.meta.glob('/src/entries/**/*.glb', { eager: true, query: '?url', import: 'default' });
 
-	let has3D = $derived(!!glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`]);
+	let has3D = $derived(data.path ? !!glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`] : false);
 	let has2D = $derived(
-		!!data.topo.image2D || 
-		data.topo.routes?.some(r => r.points2D?.length > 0) || 
-		data.topo.outlines?.length > 0 ||
-		data.topo.fixPoints?.some(fp => fp.position2D)
+		!!data.topo?.image2D || 
+		data.topo?.routes?.some(r => r.points2D?.length > 0) || 
+		data.topo?.outlines?.length > 0 ||
+		data.topo?.fixPoints?.some(fp => fp.position2D)
 	);
 	let displayMode = $state('3d');
-
+	
 	let lastPath = $state('');
 	$effect(() => {
 		if (data.path !== lastPath) {
-			lastPath = data.path;
+			lastPath = data.path || '';
 			if (has3D) {
 				displayMode = '3d';
 			} else if (has2D) {
@@ -175,9 +177,9 @@
 		return unsubscribe;
 	});
 
-	let { data } = $props();
 
-	let description = $derived($locale === 'de' ? data.topo.description_de : data.topo.description_en || data.topo.description_de);
+
+	let description = $derived($locale === 'de' ? data.topo?.description_de : data.topo?.description_en || data.topo?.description_de);
 	let displayWallDirection = $derived(wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection);
 	let displaySunHours = $derived(
 		sunInfo.hours === 'shade_all_day' || sunInfo.hours === 'no_geodata'
@@ -348,11 +350,13 @@
 </script>
 
 <div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden">
-	{#if displayMode === '2d'}
+	{#if displayMode === '2d' && data.topo}
 		<Topo2DViewer 
 			topo={data.topo} 
-			routes={data.topo.routes} 
+			routes={data.topo?.routes} 
 			selectedRouteId={data.route?.id}
+			onRouteSelect={(route) => goto(`${base}/topo/crag/${data.path || ''}/${route.id}`)}
+			bind:hoveredRouteId
 		/>
 	{:else}
 		<div id="css-renderer-target"
