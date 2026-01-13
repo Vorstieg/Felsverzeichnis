@@ -7,8 +7,6 @@
     "path": "wachau/don-bosco-grat",
     "name": "Don Bosco Grat",
     "type": "multi-pitch",
-    "grade": "5",
-    "security": "Sehr Gut",
     "description_de": "",
     "description_en": "",
     "equipment": [
@@ -24,6 +22,7 @@
         "amount": 12
       }
     ],
+    "security": "Sehr Gut",
     "topo": {
       "site": "bergsteigen.com",
       "link": "https://www.bergsteigen.com/touren/klettern/don-bosco-grat-wachau/"

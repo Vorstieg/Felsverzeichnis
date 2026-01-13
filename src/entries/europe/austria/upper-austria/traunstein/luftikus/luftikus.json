@@ -7,10 +7,9 @@
     "path": "traunstein/luftikus",
     "name": "Luftikus",
     "type": "multi-pitch",
-    "grade": "6",
-    "security": "Sehr Gut",
     "description_de": "Um zum Traunstein zu gelangen ist das Traunstein Shuttle (https://traunsee-almtal.salzkammergut.at/anreise-nahverkehr/regionale-mobilitaet/gmunden-mobilitaet.html) zu empfehlen.",
     "description_en": "To get to the Traunstein, we recommend using the Traunstein Shuttle (https://traunsee-almtal.salzkammergut.at/anreise-nahverkehr/regionale-mobilitaet/gmunden-mobilitaet.html).",
+    "security": "Sehr Gut",
     "topo": {
       "site": "bergsteigen.com",
       "link": "https://www.bergsteigen.com/touren/klettern/luftikus/"

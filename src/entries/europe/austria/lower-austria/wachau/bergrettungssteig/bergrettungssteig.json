@@ -7,10 +7,13 @@
     "path": "wachau/bergrettungssteig",
     "name": "Bergrettungssteig",
     "type": "multi-pitch",
-    "grade": "6+",
-    "security": "Sehr Gut",
+<<<<<<< HEAD:src/entries/europe/austria/lower-austria/wachau/bergrettungssteig/bergrettungssteig.json
     "description_de": "",
     "description_en": "",
+=======
+    "description": "",
+    "security": "Sehr Gut",
+>>>>>>> 049095a (add security):src/lib/entries/europe/austria/lower-austria/wachau/bergrettungssteig/bergrettungssteig.json
     "topo": {
       "site": "bergsteigen.com",
       "link": "https://www.bergsteigen.com/touren/klettern/bergrettungsweg-duernstein-wachau/"

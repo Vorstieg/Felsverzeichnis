@@ -112,11 +112,6 @@
 					 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
 					{$_('types.' + type)}
 				</a>
-				{#if grade}
-					<span class="px-3 py-1.5 rounded-lg border bg-slate-700 text-white text-sm font-semibold border-slate-800 inline-flex items-center justify-center">
-						{grade}
-					</span>
-				{/if}
 				{#if tags && tags.length > 0}
 					{#each tags as tag}
 						<span class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100">
