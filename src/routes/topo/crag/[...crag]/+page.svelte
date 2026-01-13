@@ -59,6 +59,27 @@
 
 	const glbFiles = import.meta.glob('/src/entries/**/*.glb', { eager: true, query: '?url', import: 'default' });
 
+	let has3D = $derived(!!glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`]);
+	let has2D = $derived(
+		!!data.topo.image2D || 
+		data.topo.routes?.some(r => r.points2D?.length > 0) || 
+		data.topo.outlines?.length > 0 ||
+		data.topo.fixPoints?.some(fp => fp.position2D)
+	);
+	let displayMode = $state('3d');
+
+	let lastPath = $state('');
+	$effect(() => {
+		if (data.path !== lastPath) {
+			lastPath = data.path;
+			if (has3D) {
+				displayMode = '3d';
+			} else if (has2D) {
+				displayMode = '2d';
+			}
+		}
+	});
+
 	let animationState = $state(null);
 
 	function getParentRoute(childId: string) {
@@ -327,7 +348,7 @@
 </script>
 
 <div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden">
-	{#if data.topo.editorMode === '2d'}
+	{#if displayMode === '2d'}
 		<Topo2DViewer 
 			topo={data.topo} 
 			routes={data.topo.routes} 
@@ -450,7 +471,7 @@
 <main class="z-[500] h-24">
 	<InfoPanel onShare={share}>
 		{#snippet controls()}
-			{#if isDaylightSimulation}
+			{#if isDaylightSimulation && displayMode === '3d'}
 				<div
 					transition:slide={{ axis: 'x', duration: 300 }}
 					class="bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-auto h-8">
@@ -475,13 +496,34 @@
 				</div>
 			{/if}
 
-			<button
-				class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
-				onclick={() => isDaylightSimulation = !isDaylightSimulation}
-				title="Daylight Simulator"
-			>
-				<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
-			</button>
+			{#if displayMode === '3d'}
+				<button
+					class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
+					onclick={() => isDaylightSimulation = !isDaylightSimulation}
+					title="Daylight Simulator"
+				>
+					<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
+				</button>
+			{/if}
+
+			{#if has2D && has3D}
+				<div class="flex bg-white/90 backdrop-blur rounded-full p-1 shadow-sm border border-gray-200 pointer-events-auto ml-2 h-8 items-center">
+					<button 
+						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode === '3d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
+						onclick={() => displayMode = '3d'}
+					>
+						<i class="fa-solid fa-cube text-[8px]"></i>
+						3D
+					</button>
+					<button 
+						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode === '2d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
+						onclick={() => displayMode = '2d'}
+					>
+						<i class="fa-solid fa-image text-[8px]"></i>
+						2D
+					</button>
+				</div>
+			{/if}
 		{/snippet}
 
 		{#if data.route}

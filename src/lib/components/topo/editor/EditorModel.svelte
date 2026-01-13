@@ -570,7 +570,7 @@
 
 				const anchorId = crypto.randomUUID();
 				const lastPoint = allPointsWithNormals[allPointsWithNormals.length - 1];
-				userState.topo.fixPoints.push({ id: anchorId, position: lastPoint.point.clone().sub(modelOffset).toArray(), type: 'anchor' });
+				userState.topo.fixPoints.push({ id: anchorId, position: lastPoint.point.clone().sub(modelOffset).toArray(), type: 'belay' });
 
 				const currentPitch = { id: crypto.randomUUID(), pitchNumber: route.pitches.length + 1, points: finalPoints, type: 'pitch', endNodeId: anchorId };
 				route.pitches.push(currentPitch);
@@ -713,7 +713,7 @@
 {#each visualFixPoints as point (point.id)}
 	<CssObject position={point.renderPosition}>
 		<div
-			class="flex items-center justify-center w-6 h-6 bg-white/90 rounded-full shadow-lg backdrop-blur-sm border-2 transition-all cursor-pointer hover:scale-110 active:scale-95 {(point.type === 'anchor' || point.type === 'belay' || point.type === 'abseil') ? 'border-sky-400' : 'border-red-400'} {point.isAssigned ? '!border-green-500' : ''}"
+			class="flex items-center justify-center w-6 h-6 bg-white/90 rounded-full shadow-lg backdrop-blur-sm border-2 transition-all cursor-pointer hover:scale-110 active:scale-95 {(point.type === 'belay' || point.type === 'abseil') ? 'border-sky-400' : 'border-red-400'} {point.isAssigned ? '!border-green-500' : ''}"
 			onclick={(e) => {
 				handleFixPointClick(e, point.id);
 				if (activeTool === 'symbol') {
@@ -723,10 +723,7 @@
 			ondblclick={(e) => handleFixPointDblClick(e, point.id)}
 		>
 			<img 
-				src="/icons/topo-symbols/{point.type === 'anchor' ? 'belay' : point.type}.svg" 
-				alt={point.type}
-				class="w-4 h-4"
-			/>
+				src="/icons/topo-symbols/{point.type}.svg" 
 				alt={point.type}
 				class="w-4 h-4"
 			/>
