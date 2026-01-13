@@ -14,10 +14,22 @@
 
 	/** @type {{data: any}} */
 	let { data } = $props();
-<<<<<<< HEAD:src/routes/map/crag/[...crag]/+page.svelte
-	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security, grade } = data;
-=======
-	const { type, name, path, topo, description, transit, parking, meta, security, grade, equipment } = data;
+	let description = $derived($locale === 'de' ? data.description_de : data.description_en || data.description_de);
+	let displayWallDirection = $derived(wallDirection !== 'N/A' && wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection);
+	let displaySunHours = $derived(
+		sunInfo.hours === 'shade_all_day' || sunInfo.hours === 'no_geodata'
+			? $_('sun.' + sunInfo.hours)
+			: sunInfo.hours
+	);
+
+	$effect(() => {
+		if (data.topoJson) {
+			sunInfo = calculateSunInfo(data.topoJson);
+			wallDirection = calculateWallDirection(data.topoJson);
+		}
+	});
+
+	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security, grade, equipment } = data;
 
 	const equipmentIcons = {
 		'Expressschlingen': `${base}/icons/quickdraw.png`,
@@ -28,7 +40,6 @@
 		'Seil': 'fa-solid fa-infinity',
 		'Helm': 'fa-solid fa-hard-hat'
 	};
->>>>>>> ed9ddf6 (feat: display crag equipment details on post pages using new icons and add equipment data to crag entries.):src/routes/map/post/[...post]/+page.svelte
 
 	afterNavigate((_navigation) => {
 		if (location.hash) onMarkerClicked();
@@ -98,7 +109,6 @@
 			{/if}
 			<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mt-5 mb-6">
 				<a href="{base}/map/{type}/"
-<<<<<<< HEAD:src/routes/map/crag/[...crag]/+page.svelte
 					 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
 					{$_('types.' + type)}
 				</a>
@@ -137,46 +147,29 @@
 					</div>
 				{/if}
 			</div>
-=======
-					 class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded-full border border-blue-400 inline-flex items-center justify-center">{types.get(type)}</a>
-				<div class="flex items-center ml-2 mt-1" >
-					{#if data.grade}
-						<span class="bg-slate-700 text-sm text-white font-semibold me-2 px-2.5 py-0.5 rounded-full border border-slate-800 inline-flex items-center justify-center">{data.grade}</span>
-					{/if}
-					{#if data.security && securityRatings.has(data.security)}
-							<span class="inline-block" title="Absicherung">
-								{#each Array(securityRatings.get(data.security)).fill(0) as _, i}
-									<i class="fa-solid fa-star text-yellow-400" title="Absicherung"></i>
-								{/each}
-								{#each Array(4 - securityRatings.get(security)).fill(0) as _, i}
-									<i class="fa-regular fa-star text-gray-300" title="Absicherung"></i>
-								{/each}
-							</span>
-					{/if}
+
+			{#if equipment}
+				<div class="mt-3 mb-6 px-1">
+					<h3 class="text-sm font-bold text-slate-700 mb-2">Ausrüstung:</h3>
+					<ul class="list-none p-0 flex flex-wrap gap-x-6 gap-y-2">
+						{#each equipment as item}
+							<li class="text-sm text-slate-600 flex items-center">
+								{#if equipmentIcons[item.name] && equipmentIcons[item.name].startsWith(base)}
+									<img src={equipmentIcons[item.name]} alt={item.name} class="w-5 h-5 mr-2 object-contain" />
+								{:else}
+									<i class="{equipmentIcons[item.name] || 'fa-solid fa-circle'} w-5 text-center mr-2 text-slate-500"></i>
+								{/if}
+								<span>
+									{#if item.amount}{item.amount}x {/if}
+									{item.name}
+									{#if item.sizes} ({item.sizes}){/if}
+								</span>
+							</li>
+						{/each}
+					</ul>
 				</div>
-				{#if equipment}
-					<div class="mt-3 ml-2">
-						<h3 class="text-sm font-bold text-slate-700 mb-1">Ausrüstung:</h3>
-						<ul class="list-none p-0">
-							{#each equipment as item}
-								<li class="text-sm text-slate-600 flex items-center mb-1">
-									{#if equipmentIcons[item.name] && equipmentIcons[item.name].startsWith(base)}
-										<img src={equipmentIcons[item.name]} alt={item.name} class="w-5 h-5 mr-2 object-contain" />
-									{:else}
-										<i class="{equipmentIcons[item.name] || 'fa-solid fa-circle'} w-5 text-center mr-2 text-slate-500"></i>
-									{/if}
-									<span>
-										{#if item.amount}{item.amount}x {/if}
-										{item.name}
-										{#if item.sizes} ({item.sizes}){/if}
-									</span>
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
-			</aside>
->>>>>>> ed9ddf6 (feat: display crag equipment details on post pages using new icons and add equipment data to crag entries.):src/routes/map/post/[...post]/+page.svelte
+			{/if}
+
 			<div class="flex items-center mt-10 mb-10">
 				<div class="prose text-slate-800 w-full">
 					<div class="mb-5 w-full">

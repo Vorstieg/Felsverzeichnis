@@ -238,24 +238,28 @@
 		});
 	});
 
-	let visualFixPoints = $derived(userState.topo.fixPoints.map(pt => {
-		const offset = props.position ? new Vector3(...props.position) : new Vector3(0, 0, 0);
-		const pos = new Vector3(pt.position[0], pt.position[1], pt.position[2]).add(offset);
-		
-		let isAssigned = false;
-		if (userState.ui.selectedRouteId) {
-			const route = userState.topo.routes.find(r => r.id === userState.ui.selectedRouteId);
-			if (route && route.fixPoints && route.fixPoints.includes(pt.id)) {
-				isAssigned = true;
+	const FIXPOINT_TYPES = ['bolt', 'belay', 'abseil', 'piton', 'tree'];
+	let visualFixPoints = $derived(userState.topo.fixPoints
+		.filter(pt => pt.position && FIXPOINT_TYPES.includes(pt.type))
+		.map(pt => {
+			const offset = props.position ? new Vector3(...props.position) : new Vector3(0, 0, 0);
+			const pos = new Vector3(pt.position[0], pt.position[1], pt.position[2]).add(offset);
+			
+			let isAssigned = false;
+			if (userState.ui.selectedRouteId) {
+				const route = userState.topo.routes.find(r => r.id === userState.ui.selectedRouteId);
+				if (route && route.fixPoints && route.fixPoints.includes(pt.id)) {
+					isAssigned = true;
+				}
 			}
-		}
-		
-		return {
-			...pt,
-			renderPosition: pos.toArray(),
-			isAssigned
-		};
-	}));
+			
+			return {
+				...pt,
+				renderPosition: pos.toArray(),
+				isAssigned
+			};
+		})
+	);
 
 	const cssRenderer = new CSS2DRenderer({ element })
 	$effect(() => {
@@ -706,14 +710,20 @@
 	</T.Mesh>
 {/each}
 
-{#each visualFixPoints as point, idx (point.id)}
+{#each visualFixPoints as point (point.id)}
 	<CssObject position={point.renderPosition}>
-		{#snippet content()} <div class={"fixpoint-label " + (point.isAssigned ? "!bg-green-500 !text-white" : "")}> {idx + 1} </div> {/snippet}
+		<div
+			class="flex items-center justify-center w-6 h-6 bg-white/90 rounded-full shadow-lg backdrop-blur-sm border-2 transition-all cursor-pointer hover:scale-110 active:scale-95 {(point.type === 'anchor' || point.type === 'belay' || point.type === 'abseil') ? 'border-sky-400' : 'border-red-400'} {point.isAssigned ? '!border-green-500' : ''}"
+			onclick={(e) => handleFixPointClick(e, point.id)}
+			ondblclick={(e) => handleFixPointDblClick(e, point.id)}
+		>
+			<img
+				src="/icons/topo-symbols/{point.type === 'anchor' ? 'belay' : point.type}.svg"
+				alt={point.type}
+				class="w-4 h-4"
+			/>
+		</div>
 	</CssObject>
-	<T.Mesh position={point.renderPosition} onclick={(e) => handleFixPointClick(e, point.id)} ondblclick={(e) => handleFixPointDblClick(e, point.id)} onpointerenter={() => document.body.style.cursor = 'pointer'} onpointerleave={() => document.body.style.cursor = 'default'}>
-		<T.SphereGeometry args={[0.25]} />
-		<T.MeshBasicMaterial color={point.isAssigned ? '#22c55e' : (point.type === 'anchor' ? 'orange' : '#ef4444')} />
-	</T.Mesh>
 {/each}
 
 {#each visualRoutes as route (route.id)}
