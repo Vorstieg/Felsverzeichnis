@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <!-- Overhang symbol - curved roof -->
+  <path d="M4 12 L8 8 Q12 4 16 8 L20 12" stroke-linecap="round" fill="none"/>
+  <path d="M6 14 L6 20 M18 14 L18 20" stroke-linecap="round"/>
+</svg>

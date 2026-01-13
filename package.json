@@ -38,6 +38,8 @@
 		"@threlte/core": "^8.0.1",
 		"@threlte/extras": "^9.0.1",
 		"chart.js": "^3.9.1",
+		"d3-selection": "^3.0.0",
+		"d3-zoom": "^3.0.0",
 		"leaflet-routing-machine": "^3.2.12",
 		"maplibre-gl": "^5.2.0",
 		"suncalc": "^1.9.0",

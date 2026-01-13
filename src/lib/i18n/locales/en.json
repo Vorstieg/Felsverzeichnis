@@ -52,7 +52,7 @@
     "climbing_type": "Climbing Type",
     "fixpoints": {
       "bolt": "Bolt",
-      "anchor": "Anchor/Belay",
+      "belay": "Belay",
       "piton": "Piton",
       "hourglass": "Hourglass"
     },
@@ -73,8 +73,18 @@
     "NW": "North-West"
   },
   "months": {
-    "0": "Jan", "1": "Feb", "2": "Mar", "3": "Apr", "4": "May", "5": "Jun",
-    "6": "Jul", "7": "Aug", "8": "Sep", "9": "Oct", "10": "Nov", "11": "Dec"
+    "0": "Jan",
+    "1": "Feb",
+    "2": "Mar",
+    "3": "Apr",
+    "4": "May",
+    "5": "Jun",
+    "6": "Jul",
+    "7": "Aug",
+    "8": "Sep",
+    "9": "Oct",
+    "10": "Nov",
+    "11": "Dec"
   },
   "sun": {
     "no_geodata": "No Geodata",
@@ -169,6 +179,8 @@
     "3d_topo": "3D Topo",
     "topo": "Topo",
     "google_maps": "Google Maps",
-    "scotty": "Scotty"
+    "scotty": "Scotty",
+    "view_2d": "2D View",
+    "view_3d": "3D View"
   }
 }

@@ -9,6 +9,20 @@
     "type": "multi-pitch",
     "description_de": "",
     "description_en": "",
+    "equipment": [
+      {
+        "name": "Keile"
+      },
+      {
+        "name": "Friends",
+        "sizes": "0.5-3"
+      },
+      {
+        "name": "Expressschlingen",
+        "amount": 12
+      }
+    ],
+    "security": "Sehr Gut",
     "topo": {
       "site": "bergsteigen.com",
       "link": "https://www.bergsteigen.com/touren/klettern/don-bosco-grat-wachau/"

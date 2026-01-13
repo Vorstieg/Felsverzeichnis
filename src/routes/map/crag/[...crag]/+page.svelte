@@ -6,6 +6,7 @@
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
 	import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
 	import { _, locale } from 'svelte-i18n';
+	import { securityRatings } from '$lib/config.js';
 
 	let fullscreenImage = $state();
 	let sunInfo = $state({ hours: 'N/A' });
@@ -13,8 +14,7 @@
 
 	/** @type {{data: any}} */
 	let { data } = $props();
-    
-    let description = $derived($locale === 'de' ? data.description_de : data.description_en || data.description_de);
+	let description = $derived($locale === 'de' ? data.description_de : data.description_en || data.description_de);
 	let displayWallDirection = $derived(wallDirection !== 'N/A' && wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection);
 	let displaySunHours = $derived(
 		sunInfo.hours === 'shade_all_day' || sunInfo.hours === 'no_geodata'
@@ -29,7 +29,17 @@
 		}
 	});
 
-	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags } = data;
+	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security, grade, equipment } = data;
+
+	const equipmentIcons = {
+		'Expressschlingen': `${base}/icons/quickdraw.png`,
+		'Friends': `${base}/icons/friend.png`,
+		'Keile': `${base}/icons/nut.png`,
+		'Eisschrauben': `${base}/icons/ice-screw.png`,
+		'Eisgeräte': `${base}/icons/ice-axe.png`,
+		'Seil': 'fa-solid fa-infinity',
+		'Helm': 'fa-solid fa-hard-hat'
+	};
 
 	afterNavigate((_navigation) => {
 		if (location.hash) onMarkerClicked();
@@ -109,6 +119,18 @@
 						</span>
 					{/each}
 				{/if}
+				{#if security && securityRatings.has(security)}
+					<div class="flex items-center ml-2 mt-1" title="Absicherung">
+						<span class="inline-block">
+							{#each Array(securityRatings.get(security)).fill(0) as _, i}
+								<i class="fa-solid fa-star text-yellow-400" title="Absicherung"></i>
+							{/each}
+							{#each Array(4 - securityRatings.get(security)).fill(0) as _, i}
+								<i class="fa-regular fa-star text-gray-300" title="Absicherung"></i>
+							{/each}
+						</span>
+					</div>
+				{/if}
 				{#if topoJson}
 					<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
 						<i class="fa-solid fa-compass text-gray-500"></i>
@@ -120,6 +142,29 @@
 					</div>
 				{/if}
 			</div>
+
+			{#if equipment}
+				<div class="mt-3 mb-6 px-1">
+					<h3 class="text-sm font-bold text-slate-700 mb-2">Ausrüstung:</h3>
+					<ul class="list-none p-0 flex flex-wrap gap-x-6 gap-y-2">
+						{#each equipment as item}
+							<li class="text-sm text-slate-600 flex items-center">
+								{#if equipmentIcons[item.name] && equipmentIcons[item.name].startsWith(base)}
+									<img src={equipmentIcons[item.name]} alt={item.name} class="w-5 h-5 mr-2 object-contain" />
+								{:else}
+									<i class="{equipmentIcons[item.name] || 'fa-solid fa-circle'} w-5 text-center mr-2 text-slate-500"></i>
+								{/if}
+								<span>
+									{#if item.amount}{item.amount}x {/if}
+									{item.name}
+									{#if item.sizes} ({item.sizes}){/if}
+								</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
 			<div class="flex items-center mt-10 mb-10">
 				<div class="prose text-slate-800 w-full">
 					<div class="mb-5 w-full">
