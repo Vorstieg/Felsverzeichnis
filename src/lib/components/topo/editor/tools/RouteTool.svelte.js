@@ -1,4 +1,5 @@
 import { userState } from '$lib/state/editor.svelte.js';
+import { generateRouteId } from '$lib/assets/js/id-utils.js';
 
 export class RouteTool {
     id = 'route';
@@ -78,7 +79,7 @@ export class RouteTool {
             return;
         }
 
-        const routeId = crypto.randomUUID();
+        const routeId = generateRouteId();
         userState.topo.routes.push({
             id: routeId,
             points2D: $state.snapshot(this.currentPoints),

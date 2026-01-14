@@ -2,6 +2,7 @@
 	import { userState } from '$lib/state/editor.svelte.js';
 	import TagSelector from '$lib/components/ui/TagSelector.svelte';
 	import { _ } from 'svelte-i18n';
+	import { onMount } from 'svelte';
 	import {
 		availableTopoTags,
 		availableRouteTags,
@@ -11,6 +12,8 @@
 	} from '$lib/assets/js/topo-utils.js';
 
 	import { uiaaMap, standardGrades, getGradeLabel } from '$lib/assets/js/grades.js';
+	import { isMobileViewport } from '$lib/assets/js/mobile-utils.js';
+	import { resize, snapToBiggestHeight } from '$lib/assets/js/resize.js';
 
 	let {
 		showMapModal = $bindable(false),
@@ -73,15 +76,31 @@
 	});
 
 	let activeTab = $state('info'); // 'info' | 'routes' | 'fixpoints'
+	let isMobile = $state(false);
+	let expandedRouteId = $state(null);
+	
+	onMount(() => {
+		isMobile = isMobileViewport();
+		const handleResize = () => {
+			isMobile = isMobileViewport();
+		};
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	});
 
 	function switchTab(tab) {
 		activeTab = tab;
 		userState.ui.selectedRouteId = null;
 		userState.ui.selectedFixpointId = null;
 	}
+
+	function toggleRouteExpand(routeId) {
+		expandedRouteId = expandedRouteId === routeId ? null : routeId;
+	}
 </script>
 
-<div class="fixed top-25 right-12 z-50 w-110 flex flex-col max-h-[85vh]">
+<!-- Desktop Layout -->
+<div class="hidden md:flex fixed top-25 right-12 z-50 w-110 flex-col max-h-[85vh]">
 	<!-- Tab Bar (Fixed Header) -->
 	<div
 		class="bg-white rounded-t-[2.5rem] shadow-sm p-1.5 border-x border-t border-gray-200 flex gap-1.5 z-10"
@@ -551,7 +570,229 @@
 	</div>
 </div>
 
+<!-- Mobile Bottom Sheet -->
+{#if isMobile}
+	<div 
+		use:resize
+		class="fixed left-0 right-0 top-1/2 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 overflow-hidden" 
+	>
+		<!-- Grabber (Mobile) -->
+		<div class="bg-gray-200 h-1 w-12 rounded-full self-center mt-2 sm:hidden mx-auto"></div>
+
+		<!-- Compact Tabs -->
+		<div class="flex gap-1 p-2 border-b border-gray-100 bg-gray-50 mt-2">
+			<button
+				class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all {activeTab === 'info' ? 'bg-blue-600 text-white' : 'text-gray-400'}"
+				onclick={() => switchTab('info')}
+			>
+				<i class="fa-solid fa-circle-info"></i>
+			</button>
+			<button
+				class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all {activeTab === 'routes' ? 'bg-blue-600 text-white' : 'text-gray-400'}"
+				onclick={() => switchTab('routes')}
+			>
+				<i class="fa-solid fa-route"></i>
+				<span class="ml-1 text-[10px]">{routes.length}</span>
+			</button>
+			<button
+				class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all {activeTab === 'fixpoints' ? 'bg-blue-600 text-white' : 'text-gray-400'}"
+				onclick={() => switchTab('fixpoints')}
+			>
+				<i class="fa-solid fa-location-dot"></i>
+				<span class="ml-1 text-[10px]">{userState.topo.fixPoints.length}</span>
+			</button>
+		</div>
+
+		<!-- Scrollable Content -->
+		<div class="overflow-y-auto" style="height: calc(100% - 90px);">
+			<div class="p-3 space-y-2">
+				{#if activeTab === 'routes'}
+					{#if routes.length === 0}
+						<div class="text-center py-8 text-sm text-gray-400">
+							<i class="fa-solid fa-route text-2xl mb-2"></i>
+							<p>No routes yet</p>
+						</div>
+					{:else}
+						{#each routes as route, i (route.id)}
+							<div 
+								class="bg-white rounded-2xl border-2 transition-all {userState.ui.selectedRouteId === route.id ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'}"
+							>
+								<!-- Compact Header -->
+								<div 
+									class="flex items-center gap-2 p-3 cursor-pointer"
+									onclick={() => {
+										if (userState.ui.selectedRouteId === route.id) {
+											userState.ui.selectedRouteId = null;
+											drawingTarget = null;
+										} else {
+											userState.ui.selectedRouteId = route.id;
+											if (route.type !== 'multi-pitch') {
+												drawingTarget = { type: 'route', id: route.id };
+											}
+											expandedRouteId = route.id;
+											
+											// Auto-expand to full height on select if on mobile
+											if (isMobile) {
+												snapToBiggestHeight();
+											}
+										}
+									}}
+								>
+									<div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold flex-shrink-0">
+										{i + 1}
+									</div>
+									<div class="flex-1 min-w-0">
+										<div class="font-bold text-sm truncate {userState.ui.selectedRouteId === route.id ? 'text-blue-600' : 'text-gray-700'}">
+											{route.name || `Route ${i+1}`}
+										</div>
+										<div class="text-xs text-gray-500 truncate">
+											{#if route.grade}{getGradeLabel(route.grade, route._gradeScale || 'french')} · {/if}
+											{#if route.length}{route.length}m · {/if}
+											{route.type === 'sports-climbing' ? 'Sport' : route.type === 'bouldering' ? 'Boulder' : route.type === 'multi-pitch' ? 'Multi' : 'Trad'}
+										</div>
+									</div>
+									<button
+										class="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+										onclick={(e) => {
+											e.stopPropagation();
+											const index = userState.topo.routes.indexOf(route);
+											if (index > -1) {
+												userState.topo.routes.splice(index, 1);
+												if (userState.ui.selectedRouteId === route.id) {
+													userState.ui.selectedRouteId = null;
+													drawingTarget = null;
+												}
+											}
+										}}
+									>
+										<i class="fa-solid fa-trash-can text-sm"></i>
+									</button>
+								</div>
+
+								<!-- Expandable Details (only when selected) -->
+								{#if userState.ui.selectedRouteId === route.id}
+									<div class="px-3 pb-3 pt-1 space-y-2 border-t border-gray-100">
+										<div class="flex gap-2">
+											<input
+												type="text"
+												bind:value={route.name}
+												class="flex-1 px-3 py-2 rounded-xl text-xs border border-gray-200 focus:border-blue-500 outline-none"
+												placeholder="Route name"
+											/>
+										</div>
+										{#if route.type !== 'multi-pitch'}
+											<div class="flex gap-2">
+												<select
+													bind:value={route.grade}
+													class="flex-1 px-3 py-2 rounded-xl text-xs border border-gray-200 outline-none"
+												>
+													{#each standardGrades as g}
+														<option value={g}>{getGradeLabel(g, route._gradeScale || 'french')}</option>
+													{/each}
+												</select>
+												<input
+													type="number"
+													bind:value={route.length}
+													class="w-16 px-2 py-2 rounded-xl text-xs border border-gray-200 outline-none"
+													placeholder="m"
+												/>
+											</div>
+										{/if}
+									</div>
+								{/if}
+							</div>
+						{/each}
+					{/if}
+				{:else if activeTab === 'fixpoints'}
+					{#if userState.topo.fixPoints.length === 0}
+						<div class="text-center py-8 text-sm text-gray-400">
+							<i class="fa-solid fa-location-dot text-2xl mb-2"></i>
+							<p>No fixpoints yet</p>
+						</div>
+					{:else}
+						{#each userState.topo.fixPoints as point, i (point.id)}
+							<div class="bg-white rounded-2xl border-2 border-gray-200 p-3 flex items-center gap-3">
+								<div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-600 text-xs font-bold flex-shrink-0">
+									{i + 1}
+								</div>
+								<select
+									bind:value={point.type}
+									class="flex-1 bg-transparent text-sm font-bold text-gray-700 outline-none"
+								>
+									<option value="bolt">Bolt</option>
+									<option value="belay">Belay</option>
+									<option value="piton">Piton</option>
+								</select>
+								<button
+									class="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50"
+									onclick={() => {
+										userState.topo.fixPoints.splice(i, 1);
+									}}
+								>
+									<i class="fa-solid fa-trash-can text-sm"></i>
+								</button>
+							</div>
+						{/each}
+					{/if}
+				{:else}
+					<div class="space-y-4">
+						<div class="space-y-1.5 px-1">
+							<label for="name-mobile" class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+								{$_('ui.name')}
+							</label>
+							<input
+								type="text"
+								id="name-mobile"
+								bind:value={userState.topo.name}
+								class="w-full px-4 py-2.5 rounded-2xl text-sm border border-gray-200 focus:border-blue-500 bg-white outline-none"
+								placeholder="e.g. Dream Wall"
+							/>
+						</div>
+
+						<div class="space-y-1.5 px-1">
+							<label for="rock-mobile" class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+								{$_('ui.rock_type')}
+							</label>
+							<select
+								id="rock-mobile"
+								bind:value={userState.topo.rock}
+								class="w-full px-4 py-2.5 rounded-2xl text-sm border border-gray-200 focus:border-blue-500 bg-white outline-none appearance-none"
+							>
+								<option value="granite">Granit</option>
+								<option value="gneiss">Gneis</option>
+								<option value="limestone">Kalkstein</option>
+								<option value="dolomite">Dolomit</option>
+								<option value="sandstone">Sandstein</option>
+								<option value="basalt">Basalt</option>
+								<option value="tuff">Tuff</option>
+								<option value="rhyolite">Rhyolith</option>
+								<option value="quartzite">Quarzit</option>
+								<option value="conglomerate">Konglomerat</option>
+								<option value="schist">Schiefer</option>
+							</select>
+						</div>
+
+						<div class="text-center pt-4 text-[10px] text-gray-400">
+							<p>Open desktop for full metadata editing</p>
+						</div>
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/if}
+
 <style>
+	:global(.grabber.top) {
+		height: 100px;
+		width: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		cursor: pointer;
+		z-index: 10;
+	}
+
 	.custom-scrollbar::-webkit-scrollbar {
 		width: 4px;
 	}

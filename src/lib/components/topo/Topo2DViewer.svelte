@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { zoom as d3Zoom } from 'd3-zoom';
 	import { select } from 'd3-selection';
+	import { getHitAreaSize } from '$lib/assets/js/mobile-utils.js';
 
 	let { topo, routes = [], selectedRouteId = null, onRouteSelect = () => {}, hoveredRouteId = $bindable(null) } = $props();
 
@@ -24,6 +25,8 @@
 			.scaleExtent([0.1, 10])
 			.on('zoom', (event) => {
 				transform = event.transform;
+				// Apply transform directly to the g element via D3
+				select(gElement).attr('transform', event.transform);
 			});
 
 		select(svgElement).call(zoomBehavior);
@@ -72,30 +75,6 @@
 				.attr('width', baseWidth)
 				.attr('height', baseHeight)
 				.attr('preserveAspectRatio', 'none');
-		} else {
-			bgLayer.append('rect')
-				.attr('width', baseWidth)
-				.attr('height', baseHeight)
-				.attr('fill', '#f9fafb');
-			
-			const defs = svg.select('defs');
-			if (defs.empty()) svg.append('defs');
-			if (svg.select('#grid-pattern-viewer').empty()) {
-				svg.select('defs').append('pattern')
-					.attr('id', 'grid-pattern-viewer')
-					.attr('width', 50)
-					.attr('height', 50)
-					.attr('patternUnits', 'userSpaceOnUse')
-					.append('path')
-					.attr('d', 'M 50 0 L 0 0 0 50')
-					.attr('fill', 'none')
-					.attr('stroke', '#e5e7eb')
-					.attr('stroke-width', 1);
-			}
-			bgLayer.append('rect')
-				.attr('width', baseWidth)
-				.attr('height', baseHeight)
-				.attr('fill', 'url(#grid-pattern-viewer)');
 		}
 
 		// 1.5 Rock Outlines
@@ -130,11 +109,12 @@
 			const pointsStr = route.points2D.map(p => `${p[0] * baseWidth},${p[1] * baseHeight}`).join(' ');
 
 			// Hit Area (Transparent)
+			const hitAreaSize = getHitAreaSize(20);
 			group.append('polyline')
 				.attr('points', pointsStr)
 				.attr('fill', 'none')
 				.attr('stroke', 'transparent')
-				.attr('stroke-width', 20)
+				.attr('stroke-width', hitAreaSize)
 				.attr('stroke-linecap', 'round')
 				.attr('stroke-linejoin', 'round');
 
@@ -221,8 +201,9 @@
 		bind:this={svgElement}
 		viewBox="0 0 {baseWidth} {baseHeight}"
 		class="w-full h-full cursor-grab"
+		style="touch-action: none;"
 	>
-		<g bind:this={gElement} transform="translate({transform.x}, {transform.y}) scale({transform.k})">
+		<g bind:this={gElement}>
 		</g>
 	</svg>
 </div>

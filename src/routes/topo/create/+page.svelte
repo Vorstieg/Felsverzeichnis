@@ -280,9 +280,33 @@
 		}
 	}
 
+	let editor2D = $state();
+
+	// Mobile action button callbacks
+	function handleFinishRoute() {
+		if (editor2D) {
+			editor2D.finalize();
+		} else {
+			// Fallback for 3D or other cases
+			const event = new KeyboardEvent('keydown', { key: 'n', bubbles: true });
+			window.dispatchEvent(event);
+		}
+	}
+
+	function handleCancelAction() {
+		if (editor2D) {
+			editor2D.cancel();
+		} else {
+			// Fallback for 3D or other cases
+			const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+			window.dispatchEvent(event);
+		}
+	}
+
 </script>
 
-<div class="fixed top-25 left-15 z-50 flex flex-col max-h-[85vh] overflow-y-auto pr-2">
+<!-- Sidebar - hidden on mobile for 2D mode -->
+<div class="fixed top-25 left-15 z-50 flex flex-col max-h-[85vh] overflow-y-auto pr-2 {userState.topo.editorMode === '2d' ? 'hidden md:flex' : 'flex'}">
 	<!-- Editor Mode Toggle -->
 	<div class="bg-white rounded-full shadow-md border border-gray-200 p-1 mb-3 flex">
 		<button
@@ -319,7 +343,10 @@
 		{/if}
 	{:else}
 		<ImageUploader />
-		<ToolPalette2D bind:activeTool bind:selectedSymbol />
+		<!-- Desktop tool palette (hidden on mobile since sidebar is hidden) -->
+		<div class="hidden md:block">
+			<ToolPalette2D bind:activeTool bind:selectedSymbol onFinishRoute={handleFinishRoute} onCancelAction={handleCancelAction} />
+		</div>
 	{/if}
 
 	<button
@@ -437,10 +464,16 @@
 	</div>
 </div>
 
+<!-- Mobile Tool Palette - only shows on mobile (<768px) in 2D mode -->
+<div class="md:hidden">
+	{#if userState.topo.editorMode === '2d'}
+		<ToolPalette2D bind:activeTool bind:selectedSymbol onFinishRoute={handleFinishRoute} onCancelAction={handleCancelAction} />
+	{/if}
+</div>
 
 <div class="h-screen w-screen absolute overflow-hidden">
 	{#if userState.topo.editorMode === '2d'}
-		<Topo2DEditor {activeTool} {selectedSymbol} {drawingTarget} />
+		<Topo2DEditor bind:this={editor2D} {activeTool} {selectedSymbol} {drawingTarget} />
 	{:else}
 		<div id="css-renderer-target" bind:this={element}
 				 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1;"></div>

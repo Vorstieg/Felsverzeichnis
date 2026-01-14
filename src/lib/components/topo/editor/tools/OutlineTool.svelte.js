@@ -1,4 +1,5 @@
 import { userState } from '$lib/state/editor.svelte.js';
+import { generateOutlineId } from '$lib/assets/js/id-utils.js';
 
 export class OutlineTool {
     id = 'outline';
@@ -52,7 +53,7 @@ export class OutlineTool {
             return;
         }
 
-        const outlineId = crypto.randomUUID();
+        const outlineId = generateOutlineId();
         userState.topo.outlines.push({
             id: outlineId,
             points2D: $state.snapshot(this.currentPoints)

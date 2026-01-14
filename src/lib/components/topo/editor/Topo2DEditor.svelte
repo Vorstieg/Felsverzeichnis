@@ -8,6 +8,14 @@
     import { EraserTool } from './tools/EraserTool.svelte.js';
     import { OutlineTool } from './tools/OutlineTool.svelte.js';
     import { SelectTool } from './tools/SelectTool.svelte.js';
+	import { 
+		isTouchDevice, 
+		getTouchTargetSize, 
+		getHitAreaSize,
+		getTouchPoint,
+		createLongPressDetector,
+		vibrateOnAction
+	} from '$lib/assets/js/mobile-utils.js';
 
 	let { activeTool = 'route', selectedSymbol = 'bolt', drawingTarget = null } = $props();
 
@@ -75,6 +83,13 @@
 	let baseHeight = $state(667);
 	let zoomBehavior = null;
 
+	// Touch interaction state
+	let activeTouch = $state(null); // Track active touch ID
+	// Disabled long-press auto-finish - was triggering too easily when drawing slowly
+	let longPressDetector = createLongPressDetector(() => {
+		// No-op: User should explicitly tap finish button
+	}, 5000); // Very long timeout so it never triggers during normal use
+
 	// Multi-select state
 	let selectedRoutes = $state(new Set());
 	let selectedSymbols = $state(new Set());
@@ -125,16 +140,7 @@
 		}
 	}
 
-	// Update D3 zoom filter (Always allow wheel, allow drag panning in most tools)
-	$effect(() => {
-		if (zoomBehavior) {
-			zoomBehavior.filter((event) => {
-				if (event.type === 'wheel') return true;
-				// Allow panning always now that 'pan' mode is removed
-				return true;
-			});
-		}
-	});
+
 
 	// Compute viewBox from D3 transform
 	let viewBox = $derived({
@@ -154,11 +160,46 @@
 		baseWidth = 1000;
 		baseHeight = 1000 / ratio;
 		
-		// Create D3 zoom behavior
+		// Create D3 zoom behavior with smooth mobile pinch support
 		zoomBehavior = d3Zoom()
-			.scaleExtent([0.1, 10])
+			.scaleExtent([0.5, 5]) // Limit zoom from 50% to 500% for better UX
+			.translateExtent([[-baseWidth * 0.5, -baseHeight * 0.5], [baseWidth * 1.5, baseHeight * 1.5]]) // Prevent panning too far
+			.extent([[0, 0], [baseWidth, baseHeight]]) // Viewport extent
+			.wheelDelta((event) => {
+				// Smoother wheel zoom with better sensitivity
+				return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+			})
+			.interpolate(() => (t) => t) // No interpolation - follow fingers immediately
+			.duration(0) // No transition delay - respond instantly to touch
+			.constrain((transform, extent, translateExtent) => {
+				// Allow smooth continuous zoom without stepping
+				return transform;
+			})
+			.filter((event) => {
+				// Always allow mouse wheel zoom (desktop)
+				if (event.type === 'wheel') return true;
+				
+				// TOUCH EVENTS (Mobile):
+				// - 2+ fingers: Enable d3-zoom for pinch-to-zoom and two-finger panning
+				// - 1 finger: Return false to let our drawing handlers work
+				if (event.type === 'touchstart' || event.type === 'touchmove' || event.type === 'touchend') {
+					return event.touches && event.touches.length >= 2;
+				}
+				
+				// MOUSE EVENTS (Desktop):
+				// - Left button drag: Enable panning (d3-zoom handles it)
+				// - Drawing is done via SVG click handler, which doesn't conflict with drag
+				if (event.type === 'mousedown') {
+					return event.button === 0; // Allow left mouse button for panning
+				}
+				
+				return false;
+			})
+			.touchable(() => true) // Enable touch events
 			.on('zoom', (event) => {
 				transform = event.transform;
+				// Apply transform directly to the g element via D3
+				select(gElement).attr('transform', event.transform);
 			});
 		
 		// Apply zoom to SVG
@@ -197,6 +238,89 @@
 			x: transformedX / baseWidth,
 			y: transformedY / baseHeight
 		};
+	}
+
+	// Touch event helpers
+	function handleTouchStart(event) {
+		if (event.touches.length === 1) {
+			// Single touch - treat as mouse down
+			const touch = event.touches[0];
+			activeTouch = touch.identifier;
+			
+			// Start long press detection
+			longPressDetector.start(event);
+			
+			const point = getTouchPoint(event, svgElement, transform, baseWidth, baseHeight);
+			if (point) {
+				// Simulate mouse event for tool
+				const mouseEvent = {
+					clientX: touch.clientX,
+					clientY: touch.clientY,
+					stopPropagation: () => event.stopPropagation(),
+					preventDefault: () => event.preventDefault(),
+					altKey: false,
+					shiftKey: false
+				};
+				currentTool.onMouseDown(mouseEvent, point);
+				vibrateOnAction('selection');
+			}
+		} else if (event.touches.length >= 2) {
+			// Multi-touch: prevent default browser zoom/scroll
+			event.preventDefault();
+			// d3-zoom will handle this for pinch-to-zoom
+		}
+		// Two+ fingers are handled by D3 zoom for pan/pinch
+	}
+
+	function handleTouchMove(event) {
+		// Prevent default browser behavior for multi-touch (zooming the whole page)
+		if (event.touches.length >= 2) {
+			event.preventDefault();
+			// d3-zoom handles multi-touch pan/zoom
+			return;
+		}
+		
+		// Single touch movement
+		longPressDetector.cancel();
+		
+		if (event.touches.length === 1 && activeTouch !== null) {
+			const touch = Array.from(event.touches).find(t => t.identifier === activeTouch);
+			if (!touch) return;
+			
+			const mouseEvent = {
+				clientX: touch.clientX,
+				clientY: touch.clientY,
+				stopPropagation: () => event.stopPropagation(),
+				preventDefault: () => event.preventDefault()
+			};
+			handleMouseMove(mouseEvent);
+		}
+	}
+
+	function handleTouchEnd(event) {
+		longPressDetector.cancel();
+		
+		if (activeTouch !== null) {
+			// Find if our tracked touch ended
+			const touchStillActive = Array.from(event.touches).some(t => t.identifier === activeTouch);
+			if (!touchStillActive) {
+				// Simulate mouse up
+				const changedTouch = Array.from(event.changedTouches).find(t => t.identifier === activeTouch);
+				if (changedTouch) {
+					const point = getTouchPoint({ touches: [changedTouch] }, svgElement, transform, baseWidth, baseHeight);
+					if (point) {
+						const mouseEvent = {
+							clientX: changedTouch.clientX,
+							clientY: changedTouch.clientY,
+							stopPropagation: () => event.stopPropagation(),
+							preventDefault: () => event.preventDefault()
+						};
+						handleMouseUp(mouseEvent);
+					}
+				}
+				activeTouch = null;
+			}
+		}
 	}
 
 	function handleSVGClick(event) {
@@ -479,6 +603,22 @@
 
     // Finalize/Cancel functions delegated to Tools (removed local versions)
 
+	export function finalize() {
+		if (currentTool && typeof currentTool.finalize === 'function') {
+			currentTool.finalize();
+		} else {
+			currentTool.onKeyDown?.({ key: 'n' });
+		}
+	}
+
+	export function cancel() {
+		if (currentTool && typeof currentTool.cancel === 'function') {
+			currentTool.cancel();
+		} else {
+			currentTool.onKeyDown?.({ key: 'Escape' });
+		}
+	}
+
 	function handleKeyDown(event) {
 		// Track shift key for multi-select
 		if (event.key === 'Shift') {
@@ -734,11 +874,12 @@
 
 			// Handles for selected outline
 		if (isSelected && (activeTool === 'outline' || activeTool === 'eraser') && selectedOutlines.size <= 1) {
+				const handleSize = getTouchTargetSize(activeTool === 'eraser' ? 7 : 4);
 				outline.points2D.forEach((p, i) => {
 					handlesLayer.append('circle')
 						.attr('cx', p[0] * baseWidth)
 						.attr('cy', p[1] * baseHeight)
-						.attr('r', activeTool === 'eraser' ? 7 : 4)
+						.attr('r', handleSize)
 						.attr('fill', activeTool === 'eraser' ? '#fee2e2' : '#b45309')
 						.attr('stroke', activeTool === 'eraser' ? '#ef4444' : 'none')
 						.attr('stroke-width', 2)
@@ -747,6 +888,7 @@
 				});
 
 				// Midpoint handles for point insertion
+				const midpointSize = getTouchTargetSize(3);
 				for (let j = 0; j < outline.points2D.length - 1; j++) {
 					const p1 = outline.points2D[j];
 					const p2 = outline.points2D[j+1];
@@ -757,7 +899,7 @@
 						.attr('class', 'midpoint-handle cursor-pointer')
 						.attr('cx', midX * baseWidth)
 						.attr('cy', midY * baseHeight)
-						.attr('r', 3)
+						.attr('r', midpointSize)
 						.attr('fill', '#d97706')
 						.attr('opacity', 0.6)
 						.attr('stroke', 'white')
@@ -785,12 +927,13 @@
 								 selectedRoutes.has(parentRouteId || id) ||
 								 (drawingTarget?.type === 'pitch' && drawingTarget.pitchId === id);
 
+				const hitAreaSize = getHitAreaSize(7);
 				group.append('polyline')
 					.attr('class', 'hit-area cursor-pointer')
 					.attr('points', pointsStr)
 					.attr('fill', 'none')
 					.attr('stroke', 'transparent')
-					.attr('stroke-width', 7)
+					.attr('stroke-width', hitAreaSize)
 					.style('pointer-events', (currentRoutePoints.length > 0 || currentOutlinePoints.length > 0) ? 'none' : 'auto')
 					.on('mousedown', (e) => e.stopPropagation())
 					.on('click', (e) => isPitch ? null : handleRouteClick(e, id));
@@ -858,6 +1001,12 @@
 						.style('pointer-events', 'all')
 						.style('user-select', 'none')
 						.on('mousedown', (e) => handleLabelMouseDown(e, { routeId: parentRouteId || id, pitchId: isPitch ? id : null }))
+						.on('touchstart', (e) => {
+							if (e.touches.length === 1) {
+								e.stopPropagation();
+								handleLabelMouseDown(e.touches[0], { routeId: parentRouteId || id, pitchId: isPitch ? id : null });
+							}
+						})
 						.on('click', (e) => e.stopPropagation())
 						.text(label);
 				}
@@ -865,6 +1014,7 @@
 				// Midpoint handles for selected route/pitch
 				if (isSelected && (activeTool === 'route' || activeTool === 'multipitch' || activeTool === 'select')) {
 					if (points && points.length > 1) {
+						const midpointSize = getTouchTargetSize(2);
 						for (let j = 0; j < points.length - 1; j++) {
 							const p1 = points[j];
 							const p2 = points[j+1];
@@ -878,7 +1028,7 @@
 								.attr('class', 'midpoint-handle cursor-pointer')
 								.attr('cx', midX * baseWidth)
 								.attr('cy', midY * baseHeight)
-								.attr('r', 2)
+								.attr('r', midpointSize)
 								.attr('fill', '#3b82f6')
 								.attr('opacity', 0.6)
 								.attr('stroke', 'white')
@@ -916,6 +1066,12 @@
 						.style('pointer-events', 'all')
 						.style('user-select', 'none')
 						.on('mousedown', (e) => handleLabelMouseDown(e, { routeId: route.id, pitchId: null }))
+						.on('touchstart', (e) => {
+							if (e.touches.length === 1) {
+								e.stopPropagation();
+								handleLabelMouseDown(e.touches[0], { routeId: route.id, pitchId: null });
+							}
+						})
 						.on('click', (e) => e.stopPropagation())
 						.text(i + 1);
 				}
@@ -974,15 +1130,22 @@
 				// If multi-selected, only show start and end points
 				if (isMultiSelected && index !== 0 && index !== points.length - 1) return;
 
+				const handleSize = getTouchTargetSize(activeTool === 'eraser' ? 5 : 3);
 				handlesLayer.append('circle')
 					.attr('class', `handle ${activeTool === 'route' || activeTool === 'multipitch' ? 'cursor-move' : 'cursor-pointer'}`)
 					.attr('cx', p[0] * baseWidth)
 					.attr('cy', p[1] * baseHeight)
-					.attr('r', activeTool === 'eraser' ? 5 : 3)
+					.attr('r', handleSize)
 					.attr('fill', activeTool === 'eraser' ? '#fee2e2' : 'white')
 					.attr('stroke', activeTool === 'eraser' ? '#ef4444' : '#3b82f6')
 					.attr('stroke-width', 2)
-					.on('mousedown', (e) => handlePointMouseDown(e, { routeId, pitchId, pointIndex: index }));
+					.on('mousedown', (e) => handlePointMouseDown(e, { routeId, pitchId, pointIndex: index }))
+					.on('touchstart', (e) => {
+						if (e.touches.length === 1) {
+							e.stopPropagation();
+							handlePointMouseDown(e.touches[0], { routeId, pitchId, pointIndex: index });
+						}
+					});
 			});
 		};
 
@@ -1010,18 +1173,24 @@
 			const isFixpoint = ['abseil', 'belay', 'bolt', 'piton'].includes(symbol.type);
 			const baseSize = isFixpoint ? 6 : 40;
 			const radius = baseSize / 2;
-
-			const isSelected = selectedSymbolInstance?.id === symbol.id || selectedSymbols.has(symbol.id);
+			const touchRadius = getTouchTargetSize(radius);
+			
 			const group = symbolsLayer.append('g')
-				.attr('class', 'symbol-group cursor-pointer')
+				.attr('class', 'symbol-group cursor-move')
 				.attr('transform', `translate(${symbol.position2D[0] * baseWidth}, ${symbol.position2D[1] * baseHeight}) rotate(${symbol.rotation2D || 0}) scale(${symbol.scale2D || 1})`)
-				.attr('opacity', isSelected ? 0.9 : 1)
-				.style('pointer-events', activeTool === 'route' || activeTool === 'eraser' ? 'none' : 'auto')
 				.on('mousedown', (e) => handleSymbolMouseDown(e, symbol))
-				.on('click', (e) => {
-					e.stopPropagation();
-					handleSymbolClick(symbol);
+				.on('touchstart', (e) => {
+					if (e.touches.length === 1) {
+						e.stopPropagation();
+						handleSymbolMouseDown(e.touches[0], symbol);
+					}
 				});
+
+			// Invisible hit area for easier selecting on mobile
+			group.append('circle')
+				.attr('r', touchRadius)
+				.attr('fill', 'transparent')
+				.style('pointer-events', 'all');
 
 			group.append('image')
 				.attr('width', baseSize)
@@ -1029,6 +1198,15 @@
 				.attr('x', -radius)
 				.attr('y', -radius)
 				.attr('href', `/icons/topo-symbols/${symbol.type}.svg`);
+			
+			const isSelected = selectedSymbolInstance?.id === symbol.id || selectedSymbols.has(symbol.id);
+			group
+				.attr('opacity', isSelected ? 0.9 : 1)
+				.style('pointer-events', activeTool === 'route' || activeTool === 'eraser' ? 'none' : 'auto')
+				.on('click', (e) => {
+					e.stopPropagation();
+					handleSymbolClick(symbol);
+				});
 
 			if (isSelected && activeTool === 'symbol') {
 				const boxPadding = 5;
@@ -1055,28 +1233,41 @@
 					.attr('stroke', '#3b82f6')
 					.attr('stroke-width', 1);
 
-				// Rotation Handle
-				group.append('circle')
-					.attr('cx', 0)
-					.attr('cy', boxOffset - 20)
-					.attr('r', 6)
-					.attr('fill', '#3b82f6')
-					.attr('class', 'cursor-pointer')
-					.on('mousedown', (e) => handleRotateGizmoMouseDown(e, symbol));
-
-				// Scaling Handle (Bottom Right)
-				// Position at (radius + padding, radius + padding)
-				const handlePos = radius + boxPadding - 1; // Slight inset
-				const handleSize = 10;
+				const gizmoSize = getTouchTargetSize(10);
 				
-				group.append('rect')
-					.attr('x', handlePos)
-					.attr('y', handlePos)
-					.attr('width', handleSize)
-					.attr('height', handleSize)
+				// Rotate gizmo (top)
+				symbolsLayer.append('circle')
+					.attr('class', 'gizmo rotate-gizmo cursor-alias')
+					.attr('cx', symbol.position2D[0] * baseWidth)
+					.attr('cy', symbol.position2D[1] * baseHeight - (40 * symbol.scale2D))
+					.attr('r', gizmoSize)
+					.attr('fill', '#f59e0b')
+					.attr('stroke', 'white')
+					.attr('stroke-width', 2)
+					.on('mousedown', (e) => handleRotateGizmoMouseDown(e, symbol))
+					.on('touchstart', (e) => {
+						if (e.touches.length === 1) {
+							e.stopPropagation();
+							handleRotateGizmoMouseDown(e.touches[0], symbol);
+						}
+					});
+
+				// Scale gizmo (bottom right)
+				symbolsLayer.append('circle')
+					.attr('class', 'gizmo scale-gizmo cursor-nwse-resize')
+					.attr('cx', symbol.position2D[0] * baseWidth + (30 * symbol.scale2D))
+					.attr('cy', symbol.position2D[1] * baseHeight + (30 * symbol.scale2D))
+					.attr('r', gizmoSize)
 					.attr('fill', '#3b82f6')
-					.attr('class', 'cursor-nwse-resize')
-					.on('mousedown', (e) => handleScaleGizmoMouseDown(e, symbol));
+					.attr('stroke', 'white')
+					.attr('stroke-width', 2)
+					.on('mousedown', (e) => handleScaleGizmoMouseDown(e, symbol))
+					.on('touchstart', (e) => {
+						if (e.touches.length === 1) {
+							e.stopPropagation();
+							handleScaleGizmoMouseDown(e.touches[0], symbol);
+						}
+					});
 			}
 
 			group.append('circle')
@@ -1144,16 +1335,21 @@
 	});
 </script>
 
-<div class="relative w-full h-full bg-gray-100 rounded-lg overflow-hidden">
+<div class="relative w-full h-full bg-gray-100 rounded-lg overflow-hidden" style="touch-action: none;">
 	<svg
 		bind:this={svgElement}
 		viewBox="0 0 {baseWidth} {baseHeight}"
 		class="w-full h-full cursor-{activeTool === 'eraser' ? 'crosshair' : 'crosshair'}"
+		style="touch-action: none;"
 		onmousemove={handleMouseMove}
 		onmouseup={handleMouseUp}
 		onmouseleave={handleMouseUp}
+		ontouchstart={handleTouchStart}
+		ontouchmove={handleTouchMove}
+		ontouchend={handleTouchEnd}
+		ontouchcancel={handleTouchEnd}
 	>
-		<g bind:this={gElement} transform="translate({transform.x},{transform.y}) scale({transform.k})" onclick={handleSVGClick}>
+		<g bind:this={gElement} onclick={handleSVGClick}>
 		</g>
 	</svg>
 
