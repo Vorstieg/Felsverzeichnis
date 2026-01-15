@@ -1,4 +1,5 @@
 import { userState } from '$lib/state/editor.svelte.js';
+import { generateOutlineId } from '$lib/assets/js/id-utils.js';
 
 export class OutlineTool {
     id = 'outline';
@@ -17,11 +18,13 @@ export class OutlineTool {
             if (outline) {
                 outline.points2D = [...(outline.points2D || []), [point.x, point.y]];
                 this.saveHistory();
+                return;
             }
-        } else {
-            // New outline
-            this.currentPoints = [...this.currentPoints, [point.x, point.y]];
         }
+
+        // Otherwise start/continue a new outline instance
+        this.currentPoints = [...this.currentPoints, [point.x, point.y]];
+        this.saveHistory();
     }
 
     onMouseMove(event, point) { }
@@ -36,6 +39,7 @@ export class OutlineTool {
         } else if (event.key === 'Delete' || event.key === 'Backspace') {
             if (this.currentPoints.length > 0) {
                 this.currentPoints.pop();
+                this.saveHistory();
             }
         }
     }
@@ -52,7 +56,7 @@ export class OutlineTool {
             return;
         }
 
-        const outlineId = crypto.randomUUID();
+        const outlineId = generateOutlineId();
         userState.topo.outlines.push({
             id: outlineId,
             points2D: $state.snapshot(this.currentPoints)
@@ -64,8 +68,5 @@ export class OutlineTool {
 
     cancel() {
         this.currentPoints = [];
-        if (userState.ui.selectedOutlineId) {
-            userState.ui.selectedOutlineId = null;
-        }
     }
 }

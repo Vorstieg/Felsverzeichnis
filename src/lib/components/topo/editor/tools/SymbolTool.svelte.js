@@ -1,4 +1,5 @@
 import { userState } from '$lib/state/editor.svelte.js';
+import { generateSymbolId } from '$lib/assets/js/id-utils.js';
 
 export class SymbolTool {
     id = 'symbol';
@@ -11,7 +12,7 @@ export class SymbolTool {
     selectedType = 'bolt';
 
     onMouseDown(event, point) {
-        const symbolId = crypto.randomUUID();
+        const symbolId = generateSymbolId();
         userState.topo.fixPoints.push({
             id: symbolId,
             type: this.selectedType,

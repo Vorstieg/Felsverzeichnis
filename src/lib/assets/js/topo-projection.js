@@ -7,6 +7,8 @@
 
 const DEG_TO_RAD = Math.PI / 180;
 
+import { generateOutlineId } from './id-utils.js';
+
 /**
  * Calculate the centroid (geometric center) of a set of points
  */
@@ -611,7 +613,7 @@ export function generate2DFromTopo_OLD(topo) {
                 }
 
                 topo.outlines.push({
-                    id: crypto.randomUUID(),
+                    id: generateOutlineId(),
                     points2D: expandedHull
                 });
 

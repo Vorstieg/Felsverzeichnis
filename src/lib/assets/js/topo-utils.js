@@ -1,5 +1,6 @@
 import { Vector3 } from 'three';
 import { userState } from '$lib/state/editor.svelte.js';
+import { generateId } from './id-utils.js';
 
 export const availableTopoTags = [
     'Kinderfreundlich', 'Regensicher', 'Kurzer Zustieg', 'Alpin',
@@ -15,7 +16,7 @@ export function convertRouteType(route, newType) {
     if (newType === 'multi-pitch' && route.type !== 'multi-pitch') {
         // Convert to multi-pitch: Move current properties to first pitch
         route.pitches = [{
-            id: crypto.randomUUID(),
+            id: generateId('pitch'),
             pitchNumber: 1,
             grade: route.grade,
             _gradeScale: route._gradeScale || 'french',
@@ -45,9 +46,9 @@ export function convertRouteType(route, newType) {
 export function calculateRouteLength(route) {
     if (!route.points || route.points.length < 2) return 0;
     let len = 0;
-    for(let i=0; i<route.points.length-1; i++) {
+    for (let i = 0; i < route.points.length - 1; i++) {
         const p1 = new Vector3(...route.points[i]);
-        const p2 = new Vector3(...route.points[i+1]);
+        const p2 = new Vector3(...route.points[i + 1]);
         len += p1.distanceTo(p2);
     }
     return parseFloat((len * (userState.topo.scale || 1)).toFixed(1));

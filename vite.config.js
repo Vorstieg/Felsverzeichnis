@@ -10,6 +10,9 @@ const config = {
 		fs: {
 			allow: ['.']
 		}
+	},
+	optimizeDeps: {
+		exclude: ['three', 'd3-zoom', 'd3-selection']
 	}
 };
 
