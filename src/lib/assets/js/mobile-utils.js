@@ -20,7 +20,7 @@ export function isTouchDevice() {
  * @returns {number} Adjusted size for touch devices
  */
 export function getTouchTargetSize(baseSize) {
-    return isTouchDevice() ? Math.max(baseSize * 3, 12) : baseSize;
+    return isTouchDevice() ? Math.max(baseSize * 2, 12) : baseSize;
 }
 
 /**
@@ -29,7 +29,7 @@ export function getTouchTargetSize(baseSize) {
  * @returns {number} Adjusted size for touch devices
  */
 export function getHitAreaSize(baseSize) {
-    return isTouchDevice() ? Math.max(baseSize * 2.5, 20) : baseSize;
+    return isTouchDevice() ? Math.max(baseSize * 2, 18) : baseSize;
 }
 
 /**

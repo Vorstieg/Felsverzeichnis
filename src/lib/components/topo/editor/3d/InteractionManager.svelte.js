@@ -1,6 +1,7 @@
 import { userState } from '$lib/state/editor.svelte.js';
 import * as THREE from 'three';
 import { Vector3, Raycaster } from 'three';
+import { generateRouteId, generateSymbolId, generateId } from '$lib/assets/js/id-utils.js';
 
 export class Topo3DInteractionManager {
     // State
@@ -98,7 +99,7 @@ export class Topo3DInteractionManager {
 
         if (activeTool === 'symbol') {
             const modelOffset = new Vector3(...this.modelPosition);
-            userState.topo.fixPoints.push({ id: crypto.randomUUID(), position: event.point.clone().sub(modelOffset).toArray(), type: 'bolt' });
+            userState.topo.fixPoints.push({ id: generateSymbolId(), position: event.point.clone().sub(modelOffset).toArray(), type: 'bolt' });
             return;
         }
 
@@ -252,7 +253,7 @@ export class Topo3DInteractionManager {
                 allPointsWithNormals.forEach(pd => averageNormal.add(pd.normal));
                 averageNormal.normalize();
                 const newRoute = {
-                    id: crypto.randomUUID(),
+                    id: generateRouteId(),
                     name: 'New Route',
                     points: finalPoints,
                     orientation: [averageNormal.x, averageNormal.y, averageNormal.z],
@@ -282,7 +283,7 @@ export class Topo3DInteractionManager {
                     this.currentLineSegments = [];
                     this.firstPointVisual = startClick.point.toArray();
                     this.previewLineSegment = null;
-                    const newPitch = { id: crypto.randomUUID(), startNodeId: pointId, points: [], type: 'climb' };
+                    const newPitch = { id: generateId('pitch'), startNodeId: pointId, points: [], type: 'climb' };
                     route.pitches = [...(route.pitches || []), newPitch];
                     this.localDrawingState = { routeId: route.id, pitchId: newPitch.id };
                     this.updateTick += 1;
@@ -347,18 +348,18 @@ export class Topo3DInteractionManager {
 
         let route = userState.topo.routes.find(r => r.id === (this.localDrawingState?.routeId || userState.ui.selectedRouteId));
         if (!route) {
-            route = { id: crypto.randomUUID(), type: 'multi-pitch', pitches: [], tags: [], fixPoints: [] };
+            route = { id: generateRouteId(), type: 'multi-pitch', pitches: [], tags: [], fixPoints: [] };
             userState.topo.routes.push(route);
         }
 
-        const anchorId = crypto.randomUUID();
+        const anchorId = generateId('anchor');
         const lastPoint = allPointsWithNormals[allPointsWithNormals.length - 1];
         userState.topo.fixPoints.push({ id: anchorId, position: lastPoint.point.clone().sub(modelOffset).toArray(), type: 'belay' });
 
-        const currentPitch = { id: crypto.randomUUID(), pitchNumber: route.pitches.length + 1, points: finalPoints, type: 'pitch', endNodeId: anchorId };
+        const currentPitch = { id: generateId('pitch'), pitchNumber: route.pitches.length + 1, points: finalPoints, type: 'pitch', endNodeId: anchorId };
         route.pitches.push(currentPitch);
 
-        const nextPitch = { id: crypto.randomUUID(), pitchNumber: route.pitches.length + 1, startNodeId: anchorId, points: [], type: 'climb' };
+        const nextPitch = { id: generateId('pitch'), pitchNumber: route.pitches.length + 1, startNodeId: anchorId, points: [], type: 'climb' };
         route.pitches.push(nextPitch);
 
         this.currentClickData = [{ point: lastPoint.point.clone(), normal: lastPoint.normal.clone(), mesh: null }];
@@ -388,7 +389,7 @@ export class Topo3DInteractionManager {
                     let route = userState.topo.routes.find(r => r.id === (this.localDrawingState?.routeId || userState.ui.selectedRouteId));
                     if (!route) {
                         route = {
-                            id: crypto.randomUUID(),
+                            id: generateRouteId(),
                             name: 'New Multi-Pitch',
                             type: 'multi-pitch',
                             pitches: [],
@@ -399,12 +400,12 @@ export class Topo3DInteractionManager {
                         userState.topo.routes = [...userState.topo.routes, route];
                         userState.ui.selectedRouteId = route.id;
                     }
-                    const endId = crypto.randomUUID();
+                    const endId = generateId('anchor');
                     userState.topo.fixPoints.push({ id: endId, position: finalPoints[finalPoints.length - 1], type: 'bolt' });
-                    route.pitches.push({ id: crypto.randomUUID(), pitchNumber: route.pitches.length + 1, points: finalPoints, type: 'climb', endNodeId: endId });
+                    route.pitches.push({ id: generateId('pitch'), pitchNumber: route.pitches.length + 1, points: finalPoints, type: 'climb', endNodeId: endId });
                 } else {
                     const newRoute = {
-                        id: crypto.randomUUID(),
+                        id: generateRouteId(),
                         name: 'New Route',
                         points: finalPoints,
                         orientation: [averageNormal.x, averageNormal.y, averageNormal.z],
