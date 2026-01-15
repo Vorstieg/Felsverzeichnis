@@ -34,14 +34,8 @@
 			const route = userState.topo.routes.find((r) => r.id === selectedId);
 			if (route) {
 				if (activeTab !== 'routes') activeTab = 'routes';
-				// Auto-switch tool based on route type
-				if (route.type === 'multi-pitch') {
-					if (activeTool !== 'multipitch') activeTool = 'multipitch';
-				} else {
-					if (activeTool !== 'route') activeTool = 'route';
-				}
 
-				// Set drawing target
+				// Set drawing target (removed auto-tool-selection)
 				if (route.type !== 'multi-pitch') {
 					if (drawingTarget?.id !== selectedId) {
 						drawingTarget = { type: 'route', id: selectedId };

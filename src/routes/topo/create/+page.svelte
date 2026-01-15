@@ -22,7 +22,7 @@
 	import { standardGrades, uiaaMap, getGradeLabel } from '$lib/assets/js/grades.js';
 	import { generate2DFromTopo } from '$lib/assets/js/topo-projection.js';
 
-	let activeTool = $state('route');
+	let activeTool = $state(null);
 	let selectedSymbol = $state('bolt');
 	let modelComponent;
 	let activeRenderer = $state('');
@@ -473,7 +473,7 @@
 
 <div class="h-screen w-screen absolute overflow-hidden">
 	{#if userState.topo.editorMode === '2d'}
-		<Topo2DEditor bind:this={editor2D} {activeTool} {selectedSymbol} {drawingTarget} />
+		<Topo2DEditor bind:this={editor2D} bind:activeTool {selectedSymbol} {drawingTarget} />
 	{:else}
 		<div id="css-renderer-target" bind:this={element}
 				 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1;"></div>

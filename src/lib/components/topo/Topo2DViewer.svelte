@@ -26,7 +26,8 @@
 			.on('zoom', (event) => {
 				transform = event.transform;
 				// Apply transform directly to the g element via D3
-				select(gElement).attr('transform', event.transform);
+				// Convert transform object to SVG transform string
+				select(gElement).attr('transform', `translate(${event.transform.x},${event.transform.y}) scale(${event.transform.k})`);
 			});
 
 		select(svgElement).call(zoomBehavior);

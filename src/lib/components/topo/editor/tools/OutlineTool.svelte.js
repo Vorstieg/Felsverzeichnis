@@ -18,11 +18,13 @@ export class OutlineTool {
             if (outline) {
                 outline.points2D = [...(outline.points2D || []), [point.x, point.y]];
                 this.saveHistory();
+                return;
             }
-        } else {
-            // New outline
-            this.currentPoints = [...this.currentPoints, [point.x, point.y]];
         }
+
+        // Otherwise start/continue a new outline instance
+        this.currentPoints = [...this.currentPoints, [point.x, point.y]];
+        this.saveHistory();
     }
 
     onMouseMove(event, point) { }
@@ -37,6 +39,7 @@ export class OutlineTool {
         } else if (event.key === 'Delete' || event.key === 'Backspace') {
             if (this.currentPoints.length > 0) {
                 this.currentPoints.pop();
+                this.saveHistory();
             }
         }
     }
@@ -65,8 +68,5 @@ export class OutlineTool {
 
     cancel() {
         this.currentPoints = [];
-        if (userState.ui.selectedOutlineId) {
-            userState.ui.selectedOutlineId = null;
-        }
     }
 }

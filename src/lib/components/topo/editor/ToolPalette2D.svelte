@@ -68,7 +68,7 @@
 		<!-- Tools -->
 		<button 
 			class="w-12 h-12 flex items-center justify-center rounded-full transition-colors {activeTool === 'route' ? 'bg-blue-100 text-blue-700' : 'bg-white text-slate-600 hover:bg-gray-50'}"
-			onclick={() => activeTool = 'route'}
+			onclick={() => activeTool = activeTool === 'route' ? null : 'route'}
 			title="Route"
 		>
 			<i class="fa-solid fa-route"></i>
@@ -76,7 +76,7 @@
 
 		<button 
 			class="w-12 h-12 flex items-center justify-center rounded-full transition-colors {activeTool === 'outline' ? 'bg-amber-100 text-amber-700' : 'bg-white text-slate-600 hover:bg-gray-50'}"
-			onclick={() => activeTool = 'outline'}
+			onclick={() => activeTool = activeTool === 'outline' ? null : 'outline'}
 			title="Umriss"
 		>
 			<i class="fa-solid fa-draw-polygon"></i>
@@ -84,7 +84,15 @@
 
 		<button 
 			class="w-12 h-12 flex items-center justify-center rounded-full transition-colors {activeTool === 'symbol' ? 'bg-blue-100 text-blue-700' : 'bg-white text-slate-600 hover:bg-gray-50'}"
-			onclick={() => { activeTool = 'symbol'; showSymbolPicker = !showSymbolPicker; }}
+			onclick={() => { 
+			if (activeTool === 'symbol') {
+				activeTool = null;
+				showSymbolPicker = false;
+			} else {
+				activeTool = 'symbol';
+				showSymbolPicker = !showSymbolPicker;
+			}
+		}}
 			title="Symbol"
 		>
 			<i class="fa-solid fa-icons"></i>
@@ -92,7 +100,7 @@
 
 		<button 
 			class="w-12 h-12 flex items-center justify-center rounded-full transition-colors {activeTool === 'eraser' ? 'bg-pink-100 text-pink-700' : 'bg-white text-slate-600 hover:bg-gray-50'}"
-			onclick={() => activeTool = 'eraser'}
+			onclick={() => activeTool = activeTool === 'eraser' ? null : 'eraser'}
 			title="Löschen"
 		>
 			<i class="fa-solid fa-eraser"></i>
@@ -146,7 +154,7 @@
 		<div class="flex flex-col gap-2">
 			<button 
 				class="flex items-center gap-2 font-semibold shadow-sm border-1 cursor-pointer rounded-full py-2 px-4 text-sm transition-colors {activeTool === 'route' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}"
-				onclick={() => activeTool = 'route'}
+				onclick={() => activeTool = activeTool === 'route' ? null : 'route'}
 			>
 				<i class="fa-solid fa-route"></i>
 				<span>Route</span>
@@ -154,7 +162,7 @@
 
 			<button 
 				class="flex items-center gap-2 font-semibold shadow-sm border-1 cursor-pointer rounded-full py-2 px-4 text-sm transition-colors {activeTool === 'outline' ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}"
-				onclick={() => activeTool = 'outline'}
+				onclick={() => activeTool = activeTool === 'outline' ? null : 'outline'}
 			>
 				<i class="fa-solid fa-draw-polygon"></i>
 				<span>Umriss</span>
@@ -162,7 +170,15 @@
 
 			<button 
 				class="flex items-center gap-2 font-semibold shadow-sm border cursor-pointer rounded-full py-2 px-4 text-sm transition-colors {activeTool === 'symbol' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}"
-				onclick={() => { activeTool = 'symbol'; showSymbolPicker = !showSymbolPicker; }}
+				onclick={() => { 
+				if (activeTool === 'symbol') {
+					activeTool = null;
+					showSymbolPicker = false;
+				} else {
+					activeTool = 'symbol';
+					showSymbolPicker = !showSymbolPicker;
+				}
+			}}
 			>
 				<i class="fa-solid fa-icons"></i>
 				<span>Symbol</span>
@@ -186,7 +202,7 @@
 
 			<button 
 				class="flex items-center gap-2 font-semibold shadow-sm border cursor-pointer rounded-full py-2 px-4 text-sm transition-colors {activeTool === 'eraser' ? 'bg-pink-100 border-pink-300 text-pink-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}"
-				onclick={() => activeTool = 'eraser'}
+				onclick={() => activeTool = activeTool === 'eraser' ? null : 'eraser'}
 			>
 				<i class="fa-solid fa-eraser"></i>
 				<span>Löschen</span>
