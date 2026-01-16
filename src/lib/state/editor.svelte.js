@@ -23,6 +23,8 @@ export const userState = $state({
 	ui: {
 		selectedRouteId: null,  // ID of the route currently selected for editing
 		selectedOutlineId: null, // ID of the rock outline currently selected for editing
-		selectedFixpointId: null
+		selectedFixpointId: null,
+		activeDraftId: null,
+		lastSaved: null
 	}
 });
