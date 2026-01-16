@@ -12,6 +12,7 @@
 	import TagSelector from '$lib/components/ui/TagSelector.svelte';
 	import TopoPropertiesPanel from '$lib/components/topo/editor/TopoPropertiesPanel.svelte';
 	import { userState } from '$lib/state/editor.svelte.js';
+	import { draftsState } from '$lib/state/drafts.svelte.js';
 
 	// 2D Editor imports
 	import Topo2DEditor from '$lib/components/topo/editor/Topo2DEditor.svelte';
@@ -70,7 +71,87 @@
 
 	let showExportModal = $state(false);
 	let showMapModal = $state(false);
+	let showDraftsModal = $state(false);
 	let isCutting = $state(false);
+
+	// --- Initialization ---
+	onMount(() => {
+		draftsState.init();
+
+		// Restoration logic: Load the most recent draft if we don't have one active
+		if (!userState.ui.activeDraftId && draftsState.drafts.length > 0) {
+			const mostRecent = draftsState.drafts[0];
+			handleLoadDraft(mostRecent);
+			console.log('Restored most recent draft:', mostRecent.name);
+		}
+	});
+
+	// --- Auto-save logic ---
+	let saveTimeout;
+	$effect(() => {
+		// Watch topo changes (routes, fixPoints, outlines, image2D, etc.)
+		const topoString = JSON.stringify({
+			routes: userState.topo.routes,
+			fixPoints: userState.topo.fixPoints,
+			outlines: userState.topo.outlines,
+			image2D: userState.topo.image2D,
+			name: userState.topo.name
+		});
+
+		if (topoString) {
+			clearTimeout(saveTimeout);
+			saveTimeout = setTimeout(async () => {
+				const id = await draftsState.save(userState.topo, userState.ui.activeDraftId);
+				if (!userState.ui.activeDraftId) {
+					userState.ui.activeDraftId = id;
+				}
+				userState.ui.lastSaved = new Date().toISOString();
+			}, 2000); // 2 second debounce
+		}
+	});
+
+	async function handleLoadDraft(draft) {
+		const fullTopo = await draftsState.getById(draft.id);
+		if (fullTopo) {
+			userState.topo = { ...userState.topo, ...fullTopo };
+			userState.ui.activeDraftId = draft.id;
+			userState.ui.lastSaved = draft.updated;
+			initializeIdCounters(userState.topo);
+		}
+		showDraftsModal = false;
+	}
+
+	function handleNewTopo() {
+		if (
+			confirm(
+				'Bist du sicher? Alle ungespeicherten Änderungen am aktuellen Entwurf gehen verloren.'
+			)
+		) {
+			// Reset userState.topo to defaults
+			userState.topo = {
+				name: '',
+				description: '',
+				rock: 'granite',
+				tags: [],
+				routes: [],
+				fixPoints: [],
+				outlines: [],
+				date: '',
+				updated: '',
+				modelOffset: [0, 0, 0],
+				coordinates: [0, 0],
+				wallAzimuth: 0,
+				altitude: 0,
+				scale: 1,
+				image2D: null,
+				imageAspectRatio: 1.5,
+				editorMode: userState.topo.editorMode
+			};
+			userState.ui.activeDraftId = null;
+			userState.ui.lastSaved = null;
+			showDraftsModal = false;
+		}
+	}
 
 	function handleFileSelect(event) {
 		const file = event.target.files?.[0];
@@ -404,6 +485,13 @@
 		onchange={handleJsonImport}
 	/>
 
+	<button
+		class="mt-3 font-semibold grid shadow-md border-1 border-gray-200 sm:w-auto w-1/3 cursor-pointer rounded-full bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+		onclick={() => (showDraftsModal = true)}
+	>
+		📂 Meine Entwürfe
+	</button>
+
 	{#if userState.topo.editorMode === '3d'}
 		<div class="mt-5 border-t pt-5 border-gray-200">
 			<h4 class="text-xs font-bold text-gray-500 uppercase mb-3">{$_('ui.tools')}</h4>
@@ -544,6 +632,11 @@
 			class="w-full font-bold shadow-lg bg-blue-600 text-white px-8 py-4 rounded-full text-base transition-all hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
 			onclick={combinedExport}>{$_('ui.save_topo')}</button
 		>
+		{#if userState.ui.lastSaved}
+			<p class="text-[10px] text-center text-gray-400">
+				Auto-Save: {new Date(userState.ui.lastSaved).toLocaleTimeString()}
+			</p>
+		{/if}
 	</div>
 </div>
 
@@ -615,6 +708,88 @@
 {/if}
 
 <TopoPropertiesPanel bind:showMapModal bind:drawingTarget bind:activeTool />
+
+{#if showDraftsModal}
+	<div
+		class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+	>
+		<div
+			class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]"
+		>
+			<div class="p-6 border-b border-gray-100 flex justify-between items-center">
+				<h2 class="text-xl font-bold text-gray-800">Gespeicherte Entwürfe</h2>
+				<button
+					onclick={() => (showDraftsModal = false)}
+					class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+				>
+					✕
+				</button>
+			</div>
+
+			<div class="p-6 overflow-y-auto flex-1">
+				<button
+					onclick={handleNewTopo}
+					class="w-full mb-6 py-4 px-6 border-2 border-dashed border-blue-200 rounded-2xl text-blue-600 font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+				>
+					＋ Neuer Entwurf
+				</button>
+
+				{#if draftsState.drafts.length === 0}
+					<div class="text-center py-12 text-gray-400">
+						<span class="text-4xl block mb-2">📄</span>
+						Noch keine Entwürfe vorhanden.
+					</div>
+				{:else}
+					<div class="space-y-3">
+						{#each draftsState.drafts as draft (draft.id)}
+							<div
+								class="group relative bg-gray-50 hover:bg-blue-50 border border-gray-100 p-4 rounded-2xl transition-all cursor-pointer"
+								role="button"
+								tabindex="0"
+								onclick={() => handleLoadDraft(draft)}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										handleLoadDraft(draft);
+									}
+								}}
+							>
+								<div class="flex justify-between items-start">
+									<div>
+										<h3 class="font-bold text-gray-800">{draft.name || 'Unbenanntes Topo'}</h3>
+										<p class="text-xs text-gray-500 mt-1">
+											Geändert: {new Date(draft.updated).toLocaleString()}
+										</p>
+									</div>
+									<button
+										onclick={(e) => {
+											e.stopPropagation();
+											if (confirm('Entwurf wirklich löschen?')) draftsState.delete(draft.id);
+										}}
+										class="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 hover:bg-white rounded-xl transition-all"
+									>
+										🗑️
+									</button>
+								</div>
+								{#if userState.ui.activeDraftId === draft.id}
+									<div class="mt-2 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+										Aktuell geladen
+									</div>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+
+			<div class="p-4 bg-gray-50 text-center">
+				<p class="text-[10px] text-gray-400 italic">
+					Entwürfe werden nur lokal in deinem Browser gespeichert.
+				</p>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	:global(.route-label) {
