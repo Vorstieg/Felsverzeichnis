@@ -33,7 +33,7 @@
 	<span class="px-4"></span>
 	{#each types as type}
 		<a href="{base}/list/{type}"
-			 class="cursor-pointer bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md items-center justify-center">{$_('types.' + type)}</a>
+			 class="bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md items-center justify-center">{$_('types.' + type)}</a>
 	{/each}
 	<span class="px-4"></span>
 </div>

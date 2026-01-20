@@ -137,8 +137,80 @@
 		map.addImage('bus', (await map.loadImage(base + '/icons/bus.png')).data);
 		map.addImage('cluster', (await map.loadImage(base + '/icons/cluster.png')).data);
 		map.addImage('parking-space', (await map.loadImage(base + '/icons/parking.png')).data);
+
+		// Generate 3D badge
+		const canvas3d = document.createElement('canvas');
+		canvas3d.width = 24;
+		canvas3d.height = 14;
+		const ctx3d = canvas3d.getContext('2d');
+		ctx3d.fillStyle = 'rgba(255, 255, 255, 0.95)';
+		ctx3d.beginPath();
+		ctx3d.roundRect(0, 0, 24, 14, 4);
+		ctx3d.fill();
+		ctx3d.strokeStyle = 'rgba(29, 78, 216, 0.2)';
+		ctx3d.lineWidth = 1;
+		ctx3d.stroke();
+		ctx3d.fillStyle = 'rgb(29, 78, 216)';
+		ctx3d.font = 'bold 10px sans-serif';
+		ctx3d.textAlign = 'center';
+		ctx3d.textBaseline = 'middle';
+		ctx3d.fillText('3D', 12, 7);
+		
+		map.addImage('3d-badge', { width: 24, height: 14, data: ctx3d.getImageData(0, 0, 24, 14).data });
+
+		// Generate Topo badge
+		const canvasTopo = document.createElement('canvas');
+		canvasTopo.width = 28;
+		canvasTopo.height = 14;
+		const ctxTopo = canvasTopo.getContext('2d');
+		ctxTopo.fillStyle = 'rgba(255, 255, 255, 0.95)';
+		ctxTopo.beginPath();
+		ctxTopo.roundRect(0, 0, 28, 14, 4);
+		ctxTopo.fill();
+		ctxTopo.strokeStyle = 'rgba(4, 120, 87, 0.2)';
+		ctxTopo.lineWidth = 1;
+		ctxTopo.stroke();
+		ctxTopo.fillStyle = 'rgb(4, 120, 87)';
+		ctxTopo.font = 'bold 10px sans-serif';
+		ctxTopo.textAlign = 'center';
+		ctxTopo.textBaseline = 'middle';
+		ctxTopo.fillText('Topo', 14, 7);
+		
+		map.addImage('topo-badge', { width: 28, height: 14, data: ctxTopo.getImageData(0, 0, 28, 14).data });
+
 		map.getSource('places').setData(places);
 		map.getSource('routes').setData(routes);
+
+		if (!map.getLayer('places-3d-tag')) {
+			map.addLayer({
+				'id': 'places-3d-tag',
+				'type': 'symbol',
+				'source': 'places',
+				'filter': ['==', ['get', 'has3DTopo'], true],
+				'layout': {
+					'icon-image': '3d-badge',
+					'icon-size': 1,
+					'icon-offset': [15, -15],
+					'icon-allow-overlap': true,
+                    'icon-ignore-placement': true
+				}
+			});
+		}
+		if (!map.getLayer('places-topo-tag')) {
+			map.addLayer({
+				'id': 'places-topo-tag',
+				'type': 'symbol',
+				'source': 'places',
+				'filter': ['all', ['!', ['get', 'has3DTopo']], ['get', 'hasTopo']],
+				'layout': {
+					'icon-image': 'topo-badge',
+					'icon-size': 1,
+					'icon-offset': [15, -15],
+					'icon-allow-overlap': true,
+                    'icon-ignore-placement': true
+				}
+			});
+		}
 	}
 
 	function setTransportTileLayer() {
@@ -160,21 +232,21 @@
 <div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement}></div>
 <div class="fixed sm:left-15 left-5 top-35 sm:top-37 z-[1000]" onmouseleave={() => tileLayerMenuOpen = false}>
 	<button
-		class="cursor-pointer bg-white p-3 px-4 sm:p-2 sm:px-3 hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md"
+		class="bg-white p-3 px-4 sm:p-2 sm:px-3 hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md"
 		onmouseenter={() => tileLayerMenuOpen = !tileLayerMenuOpen} class:rounded-b-none={tileLayerMenuOpen}><i
 		class="fa-solid fa-layer-group"></i></button>
 	{#if tileLayerMenuOpen}
 		<div class="flex flex-col justify-center" in:slide={{duration: 200}} out:slide={{duration: 200}}>
-			<button class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
+			<button class="p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
 							onclick={setTransportTileLayer}>
 				<i class="fa-solid fa-bus-simple"></i>
 			</button>
-			<button class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
+			<button class="p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
 							onclick={setSatelliteTileLayer}>
 				<i class="fa-solid fa-satellite"></i>
 			</button>
 			<button
-				class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-full rounded-t-none"
+				class="p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-full rounded-t-none"
 				onclick={setTerrainTileLayer}>
 				<i class="fa-solid fa-mountain"></i>
 			</button>
@@ -198,11 +270,11 @@
     }
 
     :global(.maplibregl-ctrl-group) {
-        @apply cursor-pointer bg-white rounded-full border-1 border-gray-200 transition-all;
+        @apply bg-white rounded-full border-1 border-gray-200 transition-all;
     }
 
     :global(.maplibregl-ctrl-group button) {
-        @apply cursor-pointer bg-white rounded-full w-12 h-12;
+        @apply bg-white rounded-full w-12 h-12;
     }
 
     :global(.maplibregl-ctrl-group button) {

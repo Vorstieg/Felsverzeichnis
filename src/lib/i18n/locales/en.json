@@ -12,6 +12,19 @@
     "list": {
       "title": "Climbing Areas",
       "search_placeholder": "Search ..."
+    },
+    "about": {
+      "title": "Imprint & Info",
+      "intro": "Felsverzeichnis is an open-source platform for climbing areas focused on sustainability and public accessibility. We provide detailed information on travel, routes, and topos, including interactive 3D views.",
+      "github_text": "Want to add a new climbing area or contribute to the code? Check us out on GitHub!",
+      "mobility_text": "Highly recommended: the Alpine Club's mobility guide, showing you how to reach climbing spots in an eco-friendly way without a car.",
+      "mobility_link_text": "Alpine Club Mobility Guide",
+      "imprint_title": "Imprint",
+      "publisher": "Publisher:",
+      "publisher_address": "Vorstieg Software FlexCo,<br>Hinterleiten 10<br>3263 Randegg",
+      "project_by": "A project by",
+      "contact": "Contact",
+      "email": "Email:"
     }
   },
   "types": {
@@ -181,6 +194,10 @@
     "google_maps": "Google Maps",
     "scotty": "Scotty",
     "view_2d": "2D View",
-    "view_3d": "3D View"
+    "view_3d": "3D View",
+    "topo_3d": "3D Topo",
+    "topo_2d": "2D Topo",
+    "interactive_view": "Interactive View",
+    "schematic_view": "Schematic View"
   }
 }

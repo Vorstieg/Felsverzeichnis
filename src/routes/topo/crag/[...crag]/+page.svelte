@@ -478,17 +478,16 @@
 			{#if isDaylightSimulation && displayMode === '3d'}
 				<div
 					transition:slide={{ axis: 'x', duration: 300 }}
-					class="bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-auto h-8">
+					class="hidden sm:flex bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 items-center gap-2 pointer-events-auto h-8">
 					<input type="date"
 								 value={simulationDate}
 								 oninput={(e) => simulationDate = e.currentTarget.value}
 								 class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono"
 					/>
 					<div class="w-px h-4 bg-gray-300 mx-1"></div>
-					<span class="text-xs font-bold text-gray-500 w-8 text-right font-mono">
-			            					            						{Math.floor(simulationTime)}
-						:{(Math.floor((simulationTime % 1) * 60)).toString().padStart(2, '0')}
-			            					            					</span> <input
+					<span class="text-xs font-bold text-gray-500 w-10 text-right font-mono whitespace-nowrap">
+						{Math.floor(simulationTime)}:{(Math.floor((simulationTime % 1) * 60)).toString().padStart(2, '0')}
+					</span> <input
 					type="range"
 					min="0"
 					max="24"
@@ -502,7 +501,7 @@
 
 			{#if displayMode === '3d'}
 				<button
-					class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
+					class="hidden sm:block pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
 					onclick={() => isDaylightSimulation = !isDaylightSimulation}
 					title="Daylight Simulator"
 				>
@@ -513,17 +512,15 @@
 			{#if has2D && has3D}
 				<div class="flex bg-white/90 backdrop-blur rounded-full p-1 shadow-sm border border-gray-200 pointer-events-auto ml-2 h-8 items-center">
 					<button 
-						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode === '3d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
+						class="px-3 h-6 rounded-full text-xs font-bold transition-all flex items-center gap-1 {displayMode === '3d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
 						onclick={() => displayMode = '3d'}
 					>
-						<i class="fa-solid fa-cube text-[8px]"></i>
 						3D
 					</button>
 					<button 
-						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode === '2d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
+						class="px-3 h-6 rounded-full text-xs font-bold transition-all flex items-center gap-1 {displayMode === '2d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
 						onclick={() => displayMode = '2d'}
 					>
-						<i class="fa-solid fa-image text-[8px]"></i>
 						2D
 					</button>
 				</div>

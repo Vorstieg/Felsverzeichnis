@@ -13,6 +13,19 @@
     "list": {
       "title": "Klettergebiete",
       "search_placeholder": "Suchen ..."
+    },
+    "about": {
+      "title": "Impressum & Info",
+      "intro": "Felsverzeichnis ist eine Open-Source-Plattform für Klettergebiete, die sich auf Nachhaltigkeit und öffentliche Erreichbarkeit konzentriert. Wir bieten detaillierte Informationen zu Anreise, Routen und Topos, inklusive interaktiver 3D-Ansichten.",
+      "github_text": "Du möchtest ein neues Klettergebiet hinzufügen oder am Code mitarbeiten? Schau auf GitHub vorbei!",
+      "mobility_text": "Sehr empfehlenswert: der Mobilitätsguide des Alpenvereins, der zeigt, wie du umweltfreundlich und ohne Auto zu den Kletterspots gelangst.",
+      "mobility_link_text": "Mobilitätsguide des Alpenvereins",
+      "imprint_title": "Impressum",
+      "publisher": "Herausgeber:",
+      "publisher_address": "Vorstieg Software FlexCo,<br>Hinterleiten 10<br>3263 Randegg",
+      "project_by": "Ein Projekt von",
+      "contact": "Kontakt",
+      "email": "Email:"
     }
   },
   "types": {
@@ -182,6 +195,10 @@
     "google_maps": "Google Maps",
     "scotty": "Scotty",
     "view_2d": "2D Ansicht",
-    "view_3d": "3D Ansicht"
+    "view_3d": "3D Ansicht",
+    "topo_3d": "3D Topo",
+    "topo_2d": "2D Topo",
+    "interactive_view": "Interaktive Ansicht",
+    "schematic_view": "Schematische Ansicht"
   }
 }

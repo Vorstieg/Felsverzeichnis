@@ -1,6 +1,9 @@
 import { cragsPerPage } from '$lib/config';
 
 const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}) => {
+	const topoFiles = import.meta.glob('/src/entries/**/*-topo.json', { query: '?url', import: 'default' });
+	const glbFiles = import.meta.glob('/src/entries/**/*.glb', { query: '?url', import: 'default' });
+
 	const crags = await Promise.all(
 		Object.entries(
 			import.meta.glob([
@@ -12,6 +15,12 @@ const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}
 		).map(async ([path, resolver]) => {
 			const data = (await resolver()).default;
 			data.properties.path = path.split('/').slice(3, -1).join('/');
+
+			const topoPath = path.replace('.json', '-topo.json');
+			data.properties.hasTopo = !!topoFiles[topoPath];
+
+			const glbPath = path.replace('.json', '.glb');
+			data.properties.has3DTopo = !!glbFiles[glbPath];
 			return data;
 		})
 	);

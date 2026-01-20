@@ -17,7 +17,7 @@
 <svelte:head>
 
 </svelte:head>
-<div class="bg-gray-100 border-1 border-gray-200 fixed h-40 left-0 right-0 top-0 shadow-md z-[500]"></div>
+<div class="bg-gray-100 border-1 border-gray-200 fixed h-50 left-0 right-0 top-0 shadow-md z-[500]"></div>
 <div class="fixed h-fit py-2 sm:w-auto left-0 sm:left-8 top-18 right-0 sm:top-21 z-[1000]">
 	<form action="/list/{searchTerm}">
 		<div class="flex mx-8 sm:max-w-120 shadow-md rounded-full">
@@ -37,3 +37,16 @@
 		</div>
 	</form>
 </div>
+<div
+	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-36 z-[1000] fade">
+	<span class="px-4"></span>
+</div>
+
+<style>
+    @media (width <= 40rem) {
+        .fade {
+            -webkit-mask: linear-gradient(to right, transparent 10%, #fff 15% 90%, transparent 95%),
+            linear-gradient(to left, transparent 10%, #fff 15% 90%, transparent 95%);
+        }
+    }
+</style>
