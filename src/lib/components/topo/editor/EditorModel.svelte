@@ -1,16 +1,15 @@
 <script>
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { interactivity, MeshLineGeometry, MeshLineMaterial } from '@threlte/extras';
-	import { ArrowHelper, Raycaster, Vector3, Plane, CatmullRomCurve3, TubeGeometry } from 'three'; 
+	import * as THREE from 'three';
+	import { CatmullRomCurve3, Vector3 } from 'three';
 	import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 	import { onMount } from 'svelte';
-	import * as THREE from 'three';
-	import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+	import { acceleratedRaycast, computeBoundsTree, disposeBoundsTree } from 'three-mesh-bvh';
 	import CssObject from '../CssObject.svelte';
-	import Cutter from './Cutter.svelte';
 	import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 	import { userState } from '$lib/state/editor.svelte.js';
-    import { Topo3DInteractionManager } from './3d/InteractionManager.svelte.js';
+	import { Topo3DInteractionManager } from './3d/InteractionManager.svelte.js';
 
 	// Apply BVH extension to THREE
 	if (!THREE.BufferGeometry.prototype.computeBoundsTree) {
@@ -26,7 +25,6 @@
 	let { 
 		gltfScene = null, 
 		element, 
-		isCutting = false, 
 		activeTool, 
 		drawingTarget = null,
 		...props 
@@ -36,78 +34,20 @@
     const interaction = new Topo3DInteractionManager();
 
 	// --- Export Functionality Binding ---
-	export const downloadClippedModel = (filename = 'clipped_model.glb') => {
+	export const downloadModel = (filename = 'model.glb') => {
 		if (!gltfScene) return;
-		
+
 		const exporter = new GLTFExporter();
 		const sceneClone = gltfScene.clone();
-		
+
 		const scale = userState.topo.scale || 1;
 		sceneClone.scale.set(scale, scale, scale);
-		
+
 		const offset = userState.topo.modelOffset || [0, 0, 0];
 		sceneClone.position.set(offset[0], offset[1], offset[2]);
 
 		sceneClone.updateMatrixWorld(true);
-		
-		if (isCutting && clippingPlanes.length > 0) {
-			sceneClone.traverse((child) => {
-				if (child.isMesh && child.geometry) {
-					const geo = child.geometry;
-					if (!geo.attributes.position) return;
-					
-					const posAttr = geo.attributes.position;
-					const indexAttr = geo.index;
-					const newIndices = [];
-					
-					const vA = new Vector3();
-					const vB = new Vector3();
-					const vC = new Vector3();
-					
-					child.updateMatrixWorld(true);
-					const worldMatrix = child.matrixWorld;
-					
-					const count = indexAttr ? indexAttr.count : posAttr.count;
-					
-					for (let i = 0; i < count; i += 3) {
-						let a, b, c;
-						if (indexAttr) {
-							a = indexAttr.getX(i);
-							b = indexAttr.getX(i+1);
-							c = indexAttr.getX(i+2);
-						} else {
-							a = i; b = i+1; c = i+2;
-						}
-						
-						vA.fromBufferAttribute(posAttr, a).applyMatrix4(worldMatrix);
-						vB.fromBufferAttribute(posAttr, b).applyMatrix4(worldMatrix);
-						vC.fromBufferAttribute(posAttr, c).applyMatrix4(worldMatrix);
-						
-						let keepFace = true;
-						for (const plane of clippingPlanes) {
-							const distA = vA.dot(plane.normal) + plane.constant;
-							const distB = vB.dot(plane.normal) + plane.constant;
-							const distC = vC.dot(plane.normal) + plane.constant;
-							if (distA < 0 && distB < 0 && distC < 0) {
-								keepFace = false;
-								break;
-							}
-						}
-						
-						if (keepFace) {
-							newIndices.push(a, b, c);
-						}
-					}
-					
-					if (indexAttr) {
-						geo.setIndex(newIndices);
-					} else {
-						console.warn("Non-indexed geometry pruning not fully optimized.");
-					}
-				}
-			});
-		}
-		
+
 		exporter.parse(
 			sceneClone,
 			(glb) => {
@@ -123,39 +63,9 @@
 			{ binary: true }
 		);
 	};
-	
-	export const addPlane = () => {
-		clippingPlanes = [...clippingPlanes, new Plane(new Vector3(0, 1, 0), 0)];
-		activePlaneIndex = clippingPlanes.length - 1;
-	};
-	
-	export const removeLastPlane = () => {
-		if (clippingPlanes.length > 0) {
-			clippingPlanes = clippingPlanes.slice(0, -1);
-			activePlaneIndex = clippingPlanes.length - 1;
-		}
-	};
-	
-	export const clearPlanes = () => {
-		clippingPlanes = [];
-		activePlaneIndex = -1;
-	};
 
 	const { renderer, autoRenderTask, camera, scene, size } = useThrelte();
 	
-	$effect(() => {
-		if (renderer) renderer.localClippingEnabled = true;
-	});
-
-	let clippingPlanes = $state([]);
-	let activePlaneIndex = $state(-1);
-
-	$effect(() => {
-		if (isCutting && clippingPlanes.length === 0) {
-			addPlane();
-		}
-	});
-
 	$effect(() => {
 		if (gltfScene) {
 			gltfScene.traverse((child) => {
@@ -176,13 +86,7 @@
 							}
 						});
 					}
-
-					if (isCutting) {
-						child.material.clippingPlanes = clippingPlanes;
-						child.material.clipShadows = true;
-					} else {
-						child.material.clippingPlanes = [];
-					}
+					child.material.clippingPlanes = [];
 					child.material.needsUpdate = true;
 				}
 			});
@@ -285,10 +189,6 @@
 	<T is={gltfScene} onclick={(e) => interaction.handleMeshClick(e)} ondblclick={(e) => interaction.handleMeshDblClick(e, activeTool)} onpointermove={(e) => interaction.handleMeshPointerMove(e, activeTool)} dispose={null} {...props} />
 {/if}
 
-{#each clippingPlanes as plane, i}
-	{#if i === activePlaneIndex} <Cutter {plane} active={isCutting} /> {/if}
-{/each}
-
 {#if interaction.previewLineSegment}
 	<T.Mesh>
 		<MeshLineGeometry points={interaction.previewLineSegment.points} />
@@ -309,7 +209,7 @@
 			class="flex items-center justify-center w-6 h-6 rounded-full transition-all cursor-pointer hover:scale-110 active:scale-95 bg-transparent {point.isAssigned ? 'border-2 !border-green-500' : ''}"
 			onclick={(e) => {
 				interaction.handleFixPointClick(e, point.id);
-				if (activeTool === 'symbol') {
+				if (activeTool === 'fixpoint') {
 					// Logic for selecting symbol in 3D if needed
 				}
 			}}

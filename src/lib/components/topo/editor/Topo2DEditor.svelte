@@ -9,6 +9,7 @@
 	import { OutlineTool } from './tools/OutlineTool.svelte.js';
 	import { SelectTool } from './tools/SelectTool.svelte.js';
 	import { initializeIdCounters } from '$lib/assets/js/id-utils.js';
+	import { topoSymbols } from '$lib/assets/js/topo-utils.js';
 	import {
 		isTouchDevice,
 		getTouchTargetSize,
@@ -34,12 +35,14 @@
 		route: new RouteTool(toolConfig),
 		multipitch: null,
 		symbol: new SymbolTool(toolConfig),
+		fixpoint: null,
 		eraser: new EraserTool(toolConfig),
 		outline: new OutlineTool(toolConfig),
 		select: new SelectTool(toolConfig)
 	};
-	// Share the same instance for route and multipitch as they share logic in RouteTool
+	// Share instances
 	tools.multipitch = tools.route;
+	tools.fixpoint = tools.symbol;
 
 	// Track previous tool for lifecycle
 	let previousTool = $state(null);
@@ -1629,8 +1632,8 @@
 				(exit) => exit.remove()
 			)
 			.attr('r', (d) => {
-				const isFixpoint = ['abseil', 'belay', 'bolt', 'piton'].includes(d.type);
-				const radius = (isFixpoint ? 6 : 40) / 2;
+				const meta = topoSymbols.find((s) => s.id === d.type);
+				const radius = (meta?.width || 24) / 2;
 				return getTouchTargetSize(radius);
 			})
 			.style('pointer-events', activeTool !== null && activeTool !== 'eraser' ? 'none' : 'all');
@@ -1644,10 +1647,22 @@
 				(update) => update,
 				(exit) => exit.remove()
 			)
-			.attr('width', (d) => (['abseil', 'belay', 'bolt', 'piton'].includes(d.type) ? 6 : 40))
-			.attr('height', (d) => (['abseil', 'belay', 'bolt', 'piton'].includes(d.type) ? 6 : 40))
-			.attr('x', (d) => -(['abseil', 'belay', 'bolt', 'piton'].includes(d.type) ? 6 : 40) / 2)
-			.attr('y', (d) => -(['abseil', 'belay', 'bolt', 'piton'].includes(d.type) ? 6 : 40) / 2)
+			.attr('width', (d) => {
+				const meta = topoSymbols.find((s) => s.id === d.type);
+				return meta?.width || 24;
+			})
+			.attr('height', (d) => {
+				const meta = topoSymbols.find((s) => s.id === d.type);
+				return meta?.height || 24;
+			})
+			.attr('x', (d) => {
+				const meta = topoSymbols.find((s) => s.id === d.type);
+				return -(meta?.width || 24) / 2;
+			})
+			.attr('y', (d) => {
+				const meta = topoSymbols.find((s) => s.id === d.type);
+				return -(meta?.height || 24) / 2;
+			})
 			.attr('href', (d) => `/icons/topo-symbols/${d.type}.svg`);
 
 		// Selection/Gizmo Overlay
@@ -1656,8 +1671,8 @@
 			const itemSelected =
 				selectedSymbolInstance?.id === symbol.id || isSelected('symbol', symbol.id);
 
-			const isFixpoint = ['abseil', 'belay', 'bolt', 'piton'].includes(symbol.type);
-			const baseSize = isFixpoint ? 6 : 40;
+			const meta = topoSymbols.find((s) => s.id === symbol.type);
+			const baseSize = meta?.width || 24;
 			const radius = baseSize / 2;
 
 			if (itemSelected && activeTool === null) {

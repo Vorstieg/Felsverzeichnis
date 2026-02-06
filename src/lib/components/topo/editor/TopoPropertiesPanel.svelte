@@ -8,7 +8,8 @@
 		availableRouteTags,
 		convertRouteType,
 		calculateRouteLength,
-		calculateBoltAmount
+		calculateBoltAmount,
+		topoSymbols
 	} from '$lib/assets/js/topo-utils.js';
 
 	import { uiaaMap, standardGrades, getGradeLabel } from '$lib/assets/js/grades.js';
@@ -99,29 +100,29 @@
 <div class="hidden md:flex fixed top-25 right-12 z-50 w-110 flex-col max-h-[85vh]">
 	<!-- Tab Bar (Fixed Header) -->
 	<div
-		class="bg-white rounded-t-[2.5rem] shadow-sm p-1.5 border-x border-t border-gray-200 flex gap-1.5 z-10"
+		class="bg-white rounded-2xl shadow-sm p-1 border border-gray-200 flex gap-1 z-10 mx-auto w-full mb-3"
 	>
 		<button
-			class="flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-full transition-all {activeTab ===
+			class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap {activeTab ===
 			'info'
-				? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-				: 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}"
+				? 'bg-blue-600 text-white shadow-sm'
+				: 'text-gray-600 hover:bg-gray-50'}"
 			onclick={() => switchTab('info')}
 		>
-			<i class="fa-solid fa-circle-info mr-1.5 text-xs"></i>
+			<i class="fa-solid fa-circle-info mr-1.5"></i>
 			{$_('menu.info')}
 		</button>
 		<button
-			class="flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-full transition-all {activeTab ===
+			class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap {activeTab ===
 			'routes'
-				? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-				: 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}"
+				? 'bg-blue-600 text-white shadow-sm'
+				: 'text-gray-600 hover:bg-gray-50'}"
 			onclick={() => switchTab('routes')}
 		>
-			<i class="fa-solid fa-route mr-1.5 text-xs"></i>
+			<i class="fa-solid fa-route mr-1.5"></i>
 			{$_('topo.routes')}
 			<span
-				class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] {activeTab === 'routes'
+				class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] {activeTab === 'routes'
 					? 'bg-blue-500 text-white'
 					: 'bg-gray-100 text-gray-500'}"
 			>
@@ -129,16 +130,16 @@
 			</span>
 		</button>
 		<button
-			class="flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-full transition-all {activeTab ===
+			class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap {activeTab ===
 			'fixpoints'
-				? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-				: 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}"
+				? 'bg-blue-600 text-white shadow-sm'
+				: 'text-gray-600 hover:bg-gray-50'}"
 			onclick={() => switchTab('fixpoints')}
 		>
-			<i class="fa-solid fa-location-dot mr-1.5 text-xs"></i>
+			<i class="fa-solid fa-location-dot mr-1.5"></i>
 			{$_('ui.fixpoints')}
 			<span
-				class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] {activeTab === 'fixpoints'
+				class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] {activeTab === 'fixpoints'
 					? 'bg-blue-500 text-white'
 					: 'bg-gray-100 text-gray-500'}"
 			>
@@ -149,12 +150,12 @@
 
 	<!-- Scrollable Content Area -->
 	<div
-		class="bg-gray-50/80 backdrop-blur-sm rounded-b-[2.5rem] shadow-xl border-x border-b border-gray-200 overflow-hidden flex flex-col flex-1"
+		class="bg-gray-50/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200 overflow-hidden flex flex-col flex-1"
 	>
 		<div class="overflow-y-auto flex-1 p-5 custom-scrollbar">
 			<div class="flex flex-col gap-5 pb-5">
 				{#if activeTab === 'info'}
-					<div class="bg-white rounded-[2rem] shadow-sm p-6 border border-gray-200">
+					<div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-200">
 						<h3 class="text-base font-bold text-gray-800 mb-6 flex items-center gap-2">
 							<div class="w-1.5 h-1.5 rounded-full bg-blue-500 text-blue-500"></div>
 							{$_('ui.topo_infos')}
@@ -172,8 +173,8 @@
 									type="text"
 									id="name"
 									bind:value={userState.topo.name}
-									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-50/50 focus:bg-white transition-all outline-none"
-									placeholder="e.g. Dream Wall"
+									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-100 focus:bg-white transition-all outline-none"
+									placeholder={$_('ui.name_placeholder')}
 								/>
 							</div>
 
@@ -188,8 +189,8 @@
 									type="text"
 									id="author"
 									bind:value={userState.topo.author}
-									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-50/50 focus:bg-white transition-all outline-none"
-									placeholder="Your Name"
+									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-100 focus:bg-white transition-all outline-none"
+									placeholder={$_('ui.author_placeholder')}
 								/>
 							</div>
 
@@ -203,19 +204,19 @@
 								<select
 									id="rock"
 									bind:value={userState.topo.rock}
-									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-50/50 focus:bg-white transition-all outline-none appearance-none"
+									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-100 focus:bg-white transition-all outline-none appearance-none"
 								>
-									<option value="granite">Granit</option>
-									<option value="gneiss">Gneis</option>
-									<option value="limestone">Kalkstein</option>
-									<option value="dolomite">Dolomit</option>
-									<option value="sandstone">Sandstein</option>
-									<option value="basalt">Basalt</option>
-									<option value="tuff">Tuff</option>
-									<option value="rhyolite">Rhyolith</option>
-									<option value="quartzite">Quarzit</option>
-									<option value="conglomerate">Konglomerat</option>
-									<option value="schist">Schiefer</option>
+									<option value="granite">{$_('rock_types.granite')}</option>
+									<option value="gneiss">{$_('rock_types.gneiss')}</option>
+									<option value="limestone">{$_('rock_types.limestone')}</option>
+									<option value="dolomite">{$_('rock_types.dolomite')}</option>
+									<option value="sandstone">{$_('rock_types.sandstone')}</option>
+									<option value="basalt">{$_('rock_types.basalt')}</option>
+									<option value="tuff">{$_('rock_types.tuff')}</option>
+									<option value="rhyolite">{$_('rock_types.rhyolite')}</option>
+									<option value="quartzite">{$_('rock_types.quartzite')}</option>
+									<option value="conglomerate">{$_('rock_types.conglomerate')}</option>
+									<option value="schist">{$_('rock_types.schist')}</option>
 								</select>
 							</div>
 
@@ -248,7 +249,7 @@
 													: 0}m
 											</div>
 										{:else}
-											<div class="text-[10px] text-gray-400 italic">Not set</div>
+											<div class="text-[10px] text-gray-400 italic">{$_('sun.no_geodata')}</div>
 										{/if}
 									</div>
 								</div>
@@ -265,8 +266,8 @@
 									id="description"
 									bind:value={userState.topo.description}
 									rows="3"
-									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-50/50 focus:bg-white transition-all outline-none resize-none"
-									placeholder="Tell us about this crag..."
+									class="w-full px-4 py-2.5 rounded-2xl text-sm border-2 border-gray-50 focus:border-blue-500 bg-gray-100 focus:bg-white transition-all outline-none resize-none"
+									placeholder={$_('ui.description_placeholder')}
 								></textarea>
 							</div>
 
@@ -284,7 +285,9 @@
 							</div>
 
 							<div class="pt-4 border-t border-gray-100">
-								<ImageUploader />
+								{#if userState.topo.editorMode === '2d'}
+									<ImageUploader />
+								{/if}
 							</div>
 						</div>
 					</div>
@@ -293,16 +296,16 @@
 				{#if activeTab === 'routes'}
 					{#if routes.length === 0}
 						<div
-							class="bg-white rounded-[2rem] p-10 text-center border-2 border-dashed border-gray-200"
+							class="bg-white rounded-3xl p-10 text-center border-2 border-dashed border-gray-200"
 						>
 							<div
 								class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3"
 							>
 								<i class="fa-solid fa-route text-gray-300"></i>
 							</div>
-							<p class="text-sm text-gray-400 font-medium">No routes created yet.</p>
+							<p class="text-sm text-gray-400 font-medium">{$_('ui.no_routes_yet')}</p>
 							<p class="text-[10px] text-gray-300 mt-1">
-								Double-click on the wall to start drawing.
+								{$_('ui.double_click_hint')}
 							</p>
 						</div>
 					{/if}
@@ -310,7 +313,7 @@
 					{#each routes as route, i (route.id)}
 						<div
 							id={'route-' + route.id}
-							class={'bg-white rounded-[2rem] shadow-sm p-6 border-2 transition-all relative overflow-hidden ' +
+							class={'bg-white rounded-3xl shadow-sm p-6 border-2 transition-all relative overflow-hidden ' +
 								(userState.ui.selectedRouteId === route.id
 									? 'border-blue-500 ring-4 ring-blue-50'
 									: 'border-gray-100 hover:border-gray-200')}
@@ -348,7 +351,7 @@
 												? 'text-blue-600'
 												: 'text-gray-700')}
 									>
-										{route.name || `Route ${i + 1}`}
+										{route.name || `${$_('ui.route')} ${i + 1}`}
 									</h3>
 								</div>
 
@@ -361,7 +364,7 @@
 										</div>
 									{/if}
 									<button
-										class="text-gray-300 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+										class="text-gray-400 hover:text-red-600 transition-colors w-8 h-8 flex items-center justify-center rounded-xl hover:bg-red-50 transition-all border border-transparent hover:border-red-100"
 										onclick={(e) => {
 											e.stopPropagation();
 											const index = userState.topo.routes.indexOf(route);
@@ -399,7 +402,7 @@
 										<input
 											type="text"
 											bind:value={route.name}
-											class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-50/30 transition-all outline-none"
+											class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-100 transition-all outline-none"
 										/>
 									</div>
 									<div class="w-1/3 space-y-1.5">
@@ -410,126 +413,162 @@
 										<select
 											value={route.type}
 											onchange={(e) => convertRouteType(route, e.currentTarget.value)}
-											class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-50/30 transition-all outline-none"
+											class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-100 transition-all outline-none"
 										>
-											<option value="sports-climbing">Sport</option>
-											<option value="bouldering">Bouldern</option>
-											<option value="trad">Trad</option>
-											<option value="multi-pitch">Multi</option>
+											<option value="sports-climbing">{$_('types.sports-climbing')}</option>
+											<option value="bouldering">{$_('types.bouldering')}</option>
+											<option value="trad">{$_('types.trad')}</option>
+											<option value="multi-pitch">{$_('types.multi-pitch')}</option>
 										</select>
 									</div>
 								</div>
 
 								{#if route.type !== 'multi-pitch'}
-									<div class="flex gap-4">
-										<div class="flex-1 space-y-1.5">
-											<label
-												class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1"
-												>{$_('topo.grade')}</label
+									<!-- Grade Row -->
+									<div class="space-y-1.5">
+										<label
+											class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1"
+											>{$_('topo.grade')}</label
+										>
+										<div class="flex gap-1">
+											<select
+												bind:value={route._gradeScale}
+												class="w-16 px-2 py-2 rounded-xl text-[10px] border-2 border-gray-50 focus:border-blue-500 bg-gray-100 transition-all outline-none font-bold"
 											>
-											<div class="flex gap-1">
-												<select
-													bind:value={route._gradeScale}
-													class="w-16 px-2 py-2 rounded-xl text-[10px] border-2 border-gray-50 focus:border-blue-500 bg-gray-50/30 transition-all outline-none font-bold"
-												>
-													<option value="french">FR</option>
-													<option value="uiaa">UIAA</option>
-												</select>
-												<select
-													bind:value={route.grade}
-													class="flex-1 px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-50/30 transition-all outline-none"
-												>
-													{#each standardGrades as g}
-														{#if route._gradeScale !== 'uiaa' || uiaaMap[g]}
-															<option value={g}>{getGradeLabel(g, route._gradeScale)}</option>
-														{/if}
-													{/each}
-												</select>
-											</div>
+												<option value="french">FR</option>
+												<option value="uiaa">UIAA</option>
+											</select>
+											<select
+												bind:value={route.grade}
+												class="flex-1 px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-100 transition-all outline-none"
+											>
+												{#each standardGrades as g}
+													{#if route._gradeScale !== 'uiaa' || uiaaMap[g]}
+														<option value={g}>{getGradeLabel(g, route._gradeScale)}</option>
+													{/if}
+												{/each}
+											</select>
 										</div>
-										<div class="w-1/4 space-y-1.5">
+									</div>
+
+									<!-- Length & Protection Row -->
+									<div class="grid grid-cols-2 gap-4">
+										<div class="space-y-1.5">
 											<label
 												class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1"
 												>{$_('ui.length')}</label
 											>
-											<div class="relative">
-												<input
-													type="number"
-													bind:value={route.length}
-													class="w-full pl-3 pr-6 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-50/30 outline-none"
-												/>
-												<span class="absolute right-2 top-2 text-[8px] text-gray-400">m</span>
+											<div class="flex items-center gap-1">
+												<div class="relative flex-1 min-w-0">
+													<input
+														type="number"
+														bind:value={route.length}
+														class="w-full pl-3 pr-6 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-100 outline-none"
+													/>
+													<span class="absolute right-2 top-2 text-[10px] text-gray-400 font-medium"
+														>m</span
+													>
+												</div>
+												<button
+													class="w-8 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-all border-2 border-transparent hover:border-blue-100"
+													title={$_('ui.auto_calculate')}
+													onclick={() => (route.length = calculateRouteLength(route))}
+												>
+													<i class="fa-solid fa-calculator text-[10px]"></i>
+												</button>
 											</div>
 										</div>
+
 										{#if route.type === 'sports-climbing'}
-											<div class="w-1/4 space-y-1.5">
+											<div class="space-y-1.5">
 												<label
 													class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1"
-													>Exen</label
+													>{$_('topo.protection')}</label
 												>
-												<input
-													type="number"
-													bind:value={route.boltAmount}
-													class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-50/30 outline-none"
-												/>
+												<div class="flex items-center gap-1">
+													<div class="flex-1 min-w-0">
+														<input
+															type="number"
+															bind:value={route.boltAmount}
+															class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-100 outline-none"
+														/>
+													</div>
+													<button
+														class="w-8 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-all border-2 border-transparent hover:border-blue-100"
+														title={$_('ui.auto_calculate')}
+														onclick={() => (route.boltAmount = calculateBoltAmount(route))}
+													>
+														<i class="fa-solid fa-calculator text-[10px]"></i>
+													</button>
+												</div>
 											</div>
 										{/if}
 									</div>
 								{:else}
 									<!-- Multi-Pitch Mini List -->
-									<div class="p-3 rounded-2xl bg-gray-50 space-y-2 border border-blue-50">
-										<div
-											class="flex justify-between items-center text-[10px] font-black uppercase text-blue-400 tracking-tighter px-1"
-										>
-											<span>Pitches</span>
-											<button
-												class="text-blue-600 hover:text-blue-800"
-												onclick={() => {
-													if (!route.pitches) route.pitches = [];
-													route.pitches.push({
-														id: generateId('pitch'),
-														pitchNumber: route.pitches.length + 1,
-														grade: '',
-														length: 0,
-														points: [],
-														type: 'pitch'
-													});
-												}}>+ Add</button
+									<div class="p-3 rounded-2xl bg-gray-50 space-y-2 border border-gray-100">
+										<div class="flex justify-between items-center mb-1">
+											<label
+												class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1"
+												>{$_('ui.pitches')}</label
 											>
+											<select
+												bind:value={route._gradeScale}
+												class="w-16 px-2 py-1 rounded-lg text-[9px] border-2 border-gray-100 bg-white focus:border-blue-500 outline-none font-bold transition-all"
+											>
+												<option value="french">FR</option>
+												<option value="uiaa">UIAA</option>
+											</select>
 										</div>
 										{#each route.pitches as pitch, idx}
 											<div
-												class="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-100 group/pitch"
+												class="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded-xl border border-gray-100 shadow-sm group/pitch"
 											>
-												<span class="text-[10px] text-gray-400 font-black px-1">{idx + 1}</span>
-												<select
-													bind:value={pitch.grade}
-													class="flex-1 bg-transparent text-xs outline-none"
-												>
-													<option value="">Grade...</option>
-													{#each standardGrades as g}<option value={g}>{g}</option>{/each}
-												</select>
-												<input
-													type="number"
-													bind:value={pitch.length}
-													class="w-10 text-[10px] text-right outline-none"
-													placeholder="m"
-												/>
-												<button
-													class="text-gray-300 hover:text-blue-600 transition-all {drawingTarget?.id ===
-													pitch.id
-														? 'text-blue-600'
-														: ''}"
-													onclick={() =>
-														(drawingTarget = {
-															type: 'pitch',
-															routeId: route.id,
-															pitchId: pitch.id,
-															id: pitch.id
-														})}
-												>
-													<i class="fa-solid fa-pen-nib text-[10px]"></i>
-												</button>
+												<div class="col-span-1 flex justify-center">
+													<span class="text-[10px] text-gray-400 font-black">{idx + 1}</span>
+												</div>
+												<div class="col-span-5 flex min-w-0">
+													<select
+														bind:value={pitch.grade}
+														class="w-full px-2 py-1.5 rounded-lg text-[10px] border-2 border-gray-50 bg-gray-100 focus:border-blue-500 outline-none transition-all"
+													>
+														<option value="">{$_('ui.grade_placeholder')}</option>
+														{#each standardGrades as g}
+															{#if route._gradeScale !== 'uiaa' || uiaaMap[g]}
+																<option value={g}>{getGradeLabel(g, route._gradeScale)}</option>
+															{/if}
+														{/each}
+													</select>
+												</div>
+												<div class="col-span-5 flex items-center gap-1 min-w-0">
+													<div class="relative flex-1 min-w-0">
+														<input
+															type="number"
+															bind:value={pitch.length}
+															class="w-full pl-2 pr-5 py-1.5 rounded-lg text-[10px] border-2 border-gray-50 bg-gray-100 focus:border-blue-500 outline-none transition-all"
+														/>
+														<span
+															class="absolute right-1.5 inset-y-0 flex items-center text-[9px] text-gray-400 font-medium pointer-events-none"
+															>m</span
+														>
+													</div>
+													<button
+														class="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-all border-2 border-transparent hover:border-blue-100"
+														title={$_('ui.auto_calculate')}
+														onclick={() => (pitch.length = calculateRouteLength(pitch))}
+													>
+														<i class="fa-solid fa-calculator text-[9px]"></i>
+													</button>
+												</div>
+												<div class="col-span-1 flex justify-center">
+													<button
+														class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-50 hover:text-red-500 text-gray-300 transition-all"
+														title={$_('ui.delete_pitch')}
+														onclick={() => route.pitches.splice(idx, 1)}
+													>
+														<i class="fa-solid fa-trash-can text-[10px]"></i>
+													</button>
+												</div>
 											</div>
 										{/each}
 									</div>
@@ -543,7 +582,7 @@
 									<textarea
 										bind:value={route.description}
 										rows="2"
-										class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-50/30 transition-all outline-none resize-none"
+										class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-100 transition-all outline-none resize-none"
 									></textarea>
 								</div>
 
@@ -567,7 +606,7 @@
 												class="absolute bottom-16 right-6 z-20 bg-white shadow-2xl rounded-2xl p-3 border border-gray-100 min-w-[200px]"
 											>
 												<p class="text-[9px] font-black uppercase text-gray-400 mb-2 border-b pb-1">
-													Assign Fixpoints
+													{$_('ui.assign_fixpoints')}
 												</p>
 												<div class="grid grid-cols-5 gap-1.5">
 													{#each userState.topo.fixPoints as fp, idx}
@@ -602,16 +641,16 @@
 				{#if activeTab === 'fixpoints'}
 					{#if userState.topo.fixPoints.length === 0}
 						<div
-							class="bg-white rounded-[2rem] p-10 text-center border-2 border-dashed border-gray-200"
+							class="bg-white rounded-3xl p-10 text-center border-2 border-dashed border-gray-200"
 						>
 							<div
 								class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3"
 							>
 								<i class="fa-solid fa-location-dot text-gray-300"></i>
 							</div>
-							<p class="text-sm text-gray-400 font-medium">No fixpoints set.</p>
+							<p class="text-sm text-gray-400 font-medium">{$_('ui.no_fixpoints_yet')}</p>
 							<p class="text-[10px] text-gray-300 mt-1">
-								Switch to Fixpoint tool on the left to add.
+								{$_('ui.switch_tool_hint')}
 							</p>
 						</div>
 					{:else}
@@ -619,7 +658,7 @@
 							{#each userState.topo.fixPoints as point, i (point.id)}
 								<div
 									id={'fixpoint-' + point.id}
-									class={'bg-white rounded-[2rem] shadow-sm p-5 border-2 transition-all flex items-center gap-4 ' +
+									class={'bg-white rounded-3xl shadow-sm p-5 border-2 transition-all flex items-center gap-4 ' +
 										(userState.ui.selectedFixpointId === point.id
 											? 'border-blue-500 ring-4 ring-blue-50'
 											: 'border-gray-100 hover:border-gray-200')}
@@ -633,16 +672,15 @@
 									<div class="flex-1 space-y-1">
 										<label
 											class="block text-[9px] font-black text-gray-400 uppercase tracking-widest ml-0.5"
-											>Type</label
+											>{$_('ui.fixpoint_type')}</label
 										>
 										<select
 											bind:value={point.type}
 											class="w-full bg-transparent text-sm font-bold text-gray-700 outline-none"
 										>
-											<option value="bolt">{$_('topo.fixpoints.bolt')}</option>
-											<option value="belay">{$_('topo.fixpoints.belay')}</option>
-											<option value="piton">{$_('topo.fixpoints.piton')}</option>
-											<option value="hourglass">{$_('topo.fixpoints.hourglass')}</option>
+											{#each topoSymbols as symbol}
+												<option value={symbol.id}>{$_(`topo.fixpoints.${symbol.id}`)}</option>
+											{/each}
 										</select>
 									</div>
 
@@ -719,7 +757,7 @@
 					{#if routes.length === 0}
 						<div class="text-center py-8 text-sm text-gray-400">
 							<i class="fa-solid fa-route text-2xl mb-2"></i>
-							<p>No routes yet</p>
+							<p>{$_('ui.no_routes_yet')}</p>
 						</div>
 					{:else}
 						{#each routes as route, i (route.id)}
@@ -761,20 +799,14 @@
 												? 'text-blue-600'
 												: 'text-gray-700'}"
 										>
-											{route.name || `Route ${i + 1}`}
+											{route.name || `${$_('ui.route')} ${i + 1}`}
 										</div>
 										<div class="text-xs text-gray-500 truncate">
 											{#if route.grade}{getGradeLabel(route.grade, route._gradeScale || 'french')} ·
 											{/if}
 											{#if route.length}{route.length}m ·
 											{/if}
-											{route.type === 'sports-climbing'
-												? 'Sport'
-												: route.type === 'bouldering'
-													? 'Boulder'
-													: route.type === 'multi-pitch'
-														? 'Multi'
-														: 'Trad'}
+											{$_(`types.${route.type}`)}
 										</div>
 									</div>
 									<button
@@ -803,7 +835,7 @@
 												type="text"
 												bind:value={route.name}
 												class="flex-1 px-3 py-2 rounded-xl text-xs border border-gray-200 focus:border-blue-500 outline-none"
-												placeholder="Route name"
+												placeholder={$_('ui.route_name_placeholder')}
 											/>
 										</div>
 										{#if route.type !== 'multi-pitch'}
@@ -822,7 +854,7 @@
 													type="number"
 													bind:value={route.length}
 													class="w-16 px-2 py-2 rounded-xl text-xs border border-gray-200 outline-none"
-													placeholder="m"
+													placeholder={$_('ui.meters_placeholder')}
 												/>
 											</div>
 										{/if}
@@ -835,7 +867,7 @@
 					{#if userState.topo.fixPoints.length === 0}
 						<div class="text-center py-8 text-sm text-gray-400">
 							<i class="fa-solid fa-location-dot text-2xl mb-2"></i>
-							<p>No fixpoints yet</p>
+							<p>{$_('ui.no_fixpoints_yet')}</p>
 						</div>
 					{:else}
 						{#each userState.topo.fixPoints as point, i (point.id)}
@@ -851,9 +883,9 @@
 									bind:value={point.type}
 									class="flex-1 bg-transparent text-sm font-bold text-gray-700 outline-none"
 								>
-									<option value="bolt">Bolt</option>
-									<option value="belay">Belay</option>
-									<option value="piton">Piton</option>
+									{#each topoSymbols as symbol}
+										<option value={symbol.id}>{$_(`topo.fixpoints.${symbol.id}`)}</option>
+									{/each}
 								</select>
 								<button
 									class="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50"
@@ -880,7 +912,7 @@
 								id="name-mobile"
 								bind:value={userState.topo.name}
 								class="w-full px-4 py-2.5 rounded-2xl text-sm border border-gray-200 focus:border-blue-500 bg-white outline-none"
-								placeholder="e.g. Dream Wall"
+								placeholder={$_('ui.name_placeholder')}
 							/>
 						</div>
 
@@ -896,17 +928,17 @@
 								bind:value={userState.topo.rock}
 								class="w-full px-4 py-2.5 rounded-2xl text-sm border border-gray-200 focus:border-blue-500 bg-white outline-none appearance-none"
 							>
-								<option value="granite">Granit</option>
-								<option value="gneiss">Gneis</option>
-								<option value="limestone">Kalkstein</option>
-								<option value="dolomite">Dolomit</option>
-								<option value="sandstone">Sandstein</option>
-								<option value="basalt">Basalt</option>
-								<option value="tuff">Tuff</option>
-								<option value="rhyolite">Rhyolith</option>
-								<option value="quartzite">Quarzit</option>
-								<option value="conglomerate">Konglomerat</option>
-								<option value="schist">Schiefer</option>
+								<option value="granite">{$_('rock_types.granite')}</option>
+								<option value="gneiss">{$_('rock_types.gneiss')}</option>
+								<option value="limestone">{$_('rock_types.limestone')}</option>
+								<option value="dolomite">{$_('rock_types.dolomite')}</option>
+								<option value="sandstone">{$_('rock_types.sandstone')}</option>
+								<option value="basalt">{$_('rock_types.basalt')}</option>
+								<option value="tuff">{$_('rock_types.tuff')}</option>
+								<option value="rhyolite">{$_('rock_types.rhyolite')}</option>
+								<option value="quartzite">{$_('rock_types.quartzite')}</option>
+								<option value="conglomerate">{$_('rock_types.conglomerate')}</option>
+								<option value="schist">{$_('rock_types.schist')}</option>
 							</select>
 						</div>
 
@@ -915,7 +947,7 @@
 						</div>
 
 						<div class="text-center pt-4 text-[10px] text-gray-400">
-							<p>Open desktop for full metadata editing</p>
+							<p>{$_('ui.open_desktop_hint')}</p>
 						</div>
 					</div>
 				{/if}

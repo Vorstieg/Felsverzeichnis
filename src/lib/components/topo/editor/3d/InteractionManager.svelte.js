@@ -97,7 +97,7 @@ export class Topo3DInteractionManager {
 
         if (!isMeshInLoadedScene || !event.point || !event.face?.normal) return;
 
-        if (activeTool === 'symbol') {
+        if (activeTool === 'fixpoint') {
             const modelOffset = new Vector3(...this.modelPosition);
             userState.topo.fixPoints.push({ id: generateSymbolId(), position: event.point.clone().sub(modelOffset).toArray(), type: 'bolt' });
             return;

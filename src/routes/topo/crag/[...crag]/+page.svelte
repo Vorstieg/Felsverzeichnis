@@ -13,6 +13,7 @@
 	import Topo2DViewer from '$lib/components/topo/Topo2DViewer.svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { _ } from 'svelte-i18n';
 	import { locale } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -72,12 +73,21 @@
 	
 	let lastPath = $state('');
 	$effect(() => {
-		if (data.path !== lastPath) {
+		const modeParam = $page.url.searchParams.get('mode');
+
+		if (data.path !== lastPath || modeParam) {
 			lastPath = data.path || '';
-			if (has3D) {
-				displayMode = '3d';
-			} else if (has2D) {
+			
+			if (modeParam === '2d' && has2D) {
 				displayMode = '2d';
+			} else if (modeParam === '3d' && has3D) {
+				displayMode = '3d';
+			} else {
+				if (has3D) {
+					displayMode = '3d';
+				} else if (has2D) {
+					displayMode = '2d';
+				}
 			}
 		}
 	});

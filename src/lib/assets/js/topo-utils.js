@@ -63,3 +63,21 @@ export function calculateBoltAmount(route) {
     });
     return count;
 }
+
+export const topoSymbols = [
+    // Fixpoints (Small)
+    { id: 'bolt', name: 'Bolt', icon: '/icons/topo-symbols/bolt.svg', type: 'fixpoint', width: 16, height: 16 },
+    { id: 'piton', name: 'Piton', icon: '/icons/topo-symbols/piton.svg', type: 'fixpoint', width: 16, height: 16 },
+    { id: 'hourglass', name: 'Hourglass', icon: '/icons/topo-symbols/hourglass.svg', type: 'fixpoint', width: 16, height: 16 },
+    { id: 'belay', name: 'Belay', icon: '/icons/topo-symbols/belay.svg', type: 'fixpoint', width: 16, height: 16 },
+    { id: 'abseil', name: 'Abseil', icon: '/icons/topo-symbols/abseil.svg', type: 'fixpoint', width: 16, height: 16 },
+
+    // Features (Large)
+    { id: 'crux', name: 'Crux', icon: '/icons/topo-symbols/crux.svg', type: 'feature', width: 32, height: 32 },
+    { id: 'crack', name: 'Crack', icon: '/icons/topo-symbols/crack.svg', type: 'feature', width: 32, height: 32 },
+    { id: 'chimney', name: 'Chimney', icon: '/icons/topo-symbols/chimney.svg', type: 'feature', width: 32, height: 32 },
+    { id: 'slab', name: 'Slab', icon: '/icons/topo-symbols/slab.svg', type: 'feature', width: 32, height: 32 },
+    { id: 'overhang', name: 'Overhang', icon: '/icons/topo-symbols/overhang.svg', type: 'feature', width: 32, height: 32 },
+    { id: 'rubble', name: 'Rubble', icon: '/icons/topo-symbols/rubble.svg', type: 'feature', width: 32, height: 32 },
+    { id: 'tree', name: 'Tree', icon: '/icons/topo-symbols/tree.svg', type: 'feature', width: 32, height: 32 }
+];

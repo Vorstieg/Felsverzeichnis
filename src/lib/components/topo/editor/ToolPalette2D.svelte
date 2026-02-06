@@ -11,6 +11,8 @@
 	} = $props();
 
 	import { vibrateOnAction } from '$lib/assets/js/mobile-utils.js';
+	import { topoSymbols } from '$lib/assets/js/topo-utils.js';
+	import { _ } from 'svelte-i18n';
 
 	let isMobile = $state(false);
 
@@ -41,30 +43,24 @@
 		}
 	}
 
-	const symbols = [
-		{ type: 'crack', label: 'Riss', icon: '/icons/topo-symbols/crack.svg' },
-		{ type: 'chimney', label: 'Kamin', icon: '/icons/topo-symbols/chimney.svg' },
-		{ type: 'slab', label: 'Platte', icon: '/icons/topo-symbols/slab.svg' },
-		{ type: 'bolt', label: 'Bohrhaken', icon: '/icons/topo-symbols/bolt.svg' },
-		{ type: 'overhang', label: 'Überhang', icon: '/icons/topo-symbols/overhang.svg' },
-		{ type: 'tree', label: 'Baum', icon: '/icons/topo-symbols/tree.svg' },
-		{ type: 'rubble', label: 'Geröll', icon: '/icons/topo-symbols/rubble.svg' },
-		{ type: 'crux', label: 'Crux', icon: '/icons/topo-symbols/crux.svg' },
-		{ type: 'piton', label: 'Haken', icon: '/icons/topo-symbols/piton.svg' },
-		{ type: 'belay', label: 'Stand', icon: '/icons/topo-symbols/belay.svg' },
-		{ type: 'abseil', label: 'Abseilstelle', icon: '/icons/topo-symbols/abseil.svg' }
-	];
-
 	let showSymbolPicker = $state(false);
+	const fixpoints = topoSymbols.filter((s) => s.type === 'fixpoint');
+	const features = topoSymbols.filter((s) => s.type === 'feature');
 
-	onMount(() => {
-		isMobile = isMobileViewport();
-		const handleResize = () => {
-			isMobile = isMobileViewport();
-		};
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
-	});
+	function toggleTool(tool, category) {
+		if (activeTool === tool) {
+			activeTool = null;
+			showSymbolPicker = false;
+		} else {
+			activeTool = tool;
+			// If switching to a symbol tool, ensure the selected symbol is from that category
+			const categorySymbols = category === 'fixpoint' ? fixpoints : features;
+			if (!categorySymbols.some((s) => s.id === selectedSymbol)) {
+				selectedSymbol = categorySymbols[0].id;
+			}
+			showSymbolPicker = true;
+		}
+	}
 </script>
 
 <!-- Mobile compact mode -->
@@ -79,7 +75,7 @@
 				? 'bg-blue-100 text-blue-700'
 				: 'bg-white text-slate-600 hover:bg-gray-50'}"
 			onclick={() => (activeTool = activeTool === 'route' ? null : 'route')}
-			title="Route"
+			title={$_('ui.route')}
 		>
 			<i class="fa-solid fa-route"></i>
 		</button>
@@ -90,9 +86,20 @@
 				? 'bg-amber-100 text-amber-700'
 				: 'bg-white text-slate-600 hover:bg-gray-50'}"
 			onclick={() => (activeTool = activeTool === 'outline' ? null : 'outline')}
-			title="Umriss"
+			title={$_('ui.outline')}
 		>
 			<i class="fa-solid fa-draw-polygon"></i>
+		</button>
+
+		<button
+			class="w-12 h-12 flex items-center justify-center rounded-full transition-colors {activeTool ===
+			'fixpoint'
+				? 'bg-blue-100 text-blue-700'
+				: 'bg-white text-slate-600 hover:bg-gray-50'}"
+			onclick={() => toggleTool('fixpoint', 'fixpoint')}
+			title={$_('ui.fixpoints')}
+		>
+			<i class="fa-solid fa-circle-dot"></i>
 		</button>
 
 		<button
@@ -100,16 +107,8 @@
 			'symbol'
 				? 'bg-blue-100 text-blue-700'
 				: 'bg-white text-slate-600 hover:bg-gray-50'}"
-			onclick={() => {
-				if (activeTool === 'symbol') {
-					activeTool = null;
-					showSymbolPicker = false;
-				} else {
-					activeTool = 'symbol';
-					showSymbolPicker = !showSymbolPicker;
-				}
-			}}
-			title="Symbol"
+			onclick={() => toggleTool('symbol', 'feature')}
+			title={$_('ui.symbol')}
 		>
 			<i class="fa-solid fa-icons"></i>
 		</button>
@@ -120,7 +119,7 @@
 				? 'bg-pink-100 text-pink-700'
 				: 'bg-white text-slate-600 hover:bg-gray-50'}"
 			onclick={() => (activeTool = activeTool === 'eraser' ? null : 'eraser')}
-			title="Löschen"
+			title={$_('ui.delete')}
 		>
 			<i class="fa-solid fa-eraser"></i>
 		</button>
@@ -134,7 +133,7 @@
 				class="w-12 h-12 flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 active:bg-green-200 transition-colors"
 				onclick={handleFinish}
 				ontouchend={handleFinish}
-				title="Beenden (N)"
+				title="{$_('ui.finish')} (N)"
 			>
 				<i class="fa-solid fa-check"></i>
 			</button>
@@ -143,7 +142,7 @@
 				class="w-12 h-12 flex items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200 transition-colors"
 				onclick={handleCancel}
 				ontouchend={handleCancel}
-				title="Abbrechen (Esc)"
+				title="{$_('ui.cancel')} (Esc)"
 			>
 				<i class="fa-solid fa-xmark"></i>
 			</button>
@@ -151,24 +150,24 @@
 	</div>
 
 	<!-- Symbol picker for mobile -->
-	{#if showSymbolPicker && activeTool === 'symbol'}
+	{#if showSymbolPicker && (activeTool === 'symbol' || activeTool === 'fixpoint')}
 		<div
 			class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl shadow-lg p-3 border border-gray-200 z-50"
 		>
 			<div class="grid grid-cols-4 gap-2">
-				{#each symbols as symbol}
+				{#each activeTool === 'fixpoint' ? fixpoints : features as symbol}
 					<button
 						class="flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors {selectedSymbol ===
-						symbol.type
+						symbol.id
 							? 'bg-blue-100 border-blue-300'
 							: 'bg-white border-gray-200 hover:bg-gray-50'}"
 						onclick={() => {
-							selectedSymbol = symbol.type;
+							selectedSymbol = symbol.id;
 							showSymbolPicker = false;
 						}}
-						title={symbol.label}
+						title={$_(`topo.fixpoints.${symbol.id}`)}
 					>
-						<img src={symbol.icon} alt={symbol.label} class="w-8 h-8" />
+						<img src={symbol.icon} alt={symbol.name} class="w-8 h-8" />
 					</button>
 				{/each}
 			</div>
@@ -178,7 +177,7 @@
 	<!-- Desktop mode -->
 {:else}
 	<div class="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
-		<h4 class="text-xs font-bold text-gray-500 uppercase mb-3">Werkzeuge</h4>
+		<h4 class="text-xs font-bold text-gray-500 uppercase mb-3">{$_('ui.tools')}</h4>
 
 		<div class="flex flex-col gap-2">
 			<button
@@ -189,7 +188,7 @@
 				onclick={() => (activeTool = activeTool === 'route' ? null : 'route')}
 			>
 				<i class="fa-solid fa-route"></i>
-				<span>Route</span>
+				<span>{$_('ui.route')}</span>
 			</button>
 
 			<button
@@ -200,41 +199,62 @@
 				onclick={() => (activeTool = activeTool === 'outline' ? null : 'outline')}
 			>
 				<i class="fa-solid fa-draw-polygon"></i>
-				<span>Umriss</span>
+				<span>{$_('ui.outline')}</span>
 			</button>
+
+			<button
+				class="flex items-center gap-2 font-semibold shadow-sm border cursor-pointer rounded-full py-2 px-4 text-sm transition-colors {activeTool ===
+				'fixpoint'
+					? 'bg-blue-100 border-blue-300 text-blue-700'
+					: 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}"
+				onclick={() => toggleTool('fixpoint', 'fixpoint')}
+			>
+				<i class="fa-solid fa-circle-dot"></i>
+				<span>{$_('ui.fixpoints')}</span>
+			</button>
+
+			{#if showSymbolPicker && activeTool === 'fixpoint'}
+				<div class="grid grid-cols-3 gap-2 p-2 bg-gray-50 rounded-lg">
+					{#each fixpoints as symbol}
+						<button
+							class="flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors {selectedSymbol ===
+							symbol.id
+								? 'bg-blue-100 border-blue-300'
+								: 'bg-white border-gray-200 hover:bg-gray-50'}"
+							onclick={() => (selectedSymbol = symbol.id)}
+							title={$_(`topo.fixpoints.${symbol.id}`)}
+						>
+							<img src={symbol.icon} alt={symbol.name} class="w-6 h-6" />
+							<span class="text-[10px] text-gray-600">{$_(`topo.fixpoints.${symbol.id}`)}</span>
+						</button>
+					{/each}
+				</div>
+			{/if}
 
 			<button
 				class="flex items-center gap-2 font-semibold shadow-sm border cursor-pointer rounded-full py-2 px-4 text-sm transition-colors {activeTool ===
 				'symbol'
 					? 'bg-blue-100 border-blue-300 text-blue-700'
 					: 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}"
-				onclick={() => {
-					if (activeTool === 'symbol') {
-						activeTool = null;
-						showSymbolPicker = false;
-					} else {
-						activeTool = 'symbol';
-						showSymbolPicker = !showSymbolPicker;
-					}
-				}}
+				onclick={() => toggleTool('symbol', 'feature')}
 			>
 				<i class="fa-solid fa-icons"></i>
-				<span>Symbol</span>
+				<span>{$_('ui.symbol')}</span>
 			</button>
 
 			{#if showSymbolPicker && activeTool === 'symbol'}
 				<div class="grid grid-cols-3 gap-2 p-2 bg-gray-50 rounded-lg">
-					{#each symbols as symbol}
+					{#each features as symbol}
 						<button
 							class="flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors {selectedSymbol ===
-							symbol.type
+							symbol.id
 								? 'bg-blue-100 border-blue-300'
 								: 'bg-white border-gray-200 hover:bg-gray-50'}"
-							onclick={() => (selectedSymbol = symbol.type)}
-							title={symbol.label}
+							onclick={() => (selectedSymbol = symbol.id)}
+							title={$_(`topo.fixpoints.${symbol.id}`)}
 						>
-							<img src={symbol.icon} alt={symbol.label} class="w-6 h-6" />
-							<span class="text-[10px] text-gray-600">{symbol.label}</span>
+							<img src={symbol.icon} alt={symbol.name} class="w-6 h-6" />
+							<span class="text-[10px] text-gray-600">{$_(`topo.fixpoints.${symbol.id}`)}</span>
 						</button>
 					{/each}
 				</div>
@@ -248,13 +268,13 @@
 				onclick={() => (activeTool = activeTool === 'eraser' ? null : 'eraser')}
 			>
 				<i class="fa-solid fa-eraser"></i>
-				<span>Löschen</span>
+				<span>{$_('ui.delete')}</span>
 			</button>
 		</div>
 
 		<div class="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
-			<p><kbd class="px-1 py-0.5 bg-gray-100 rounded">N</kbd> Route beenden</p>
-			<p><kbd class="px-1 py-0.5 bg-gray-100 rounded">Esc</kbd> Abbrechen</p>
+			<p><kbd class="px-1 py-0.5 bg-gray-100 rounded">N</kbd> {$_('ui.finish')}</p>
+			<p><kbd class="px-1 py-0.5 bg-gray-100 rounded">Esc</kbd> {$_('ui.cancel')}</p>
 		</div>
 	</div>
 {/if}

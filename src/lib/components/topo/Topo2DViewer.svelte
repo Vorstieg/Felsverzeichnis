@@ -3,6 +3,7 @@
 	import { zoom as d3Zoom } from 'd3-zoom';
 	import { select } from 'd3-selection';
 	import { getHitAreaSize } from '$lib/assets/js/mobile-utils.js';
+	import { topoSymbols } from '$lib/assets/js/topo-utils.js';
 
 	let {
 		topo,
@@ -232,8 +233,8 @@
 					}) rotate(${symbol.rotation2D || 0}) scale(${symbol.scale2D || 1})`
 			)
 			.each(function (symbol) {
-				const isFixpoint = ['abseil', 'belay', 'bolt', 'piton'].includes(symbol.type);
-				const baseSize = isFixpoint ? 6 : 40;
+				const meta = topoSymbols.find((s) => s.id === symbol.type);
+				const baseSize = meta?.width || 24;
 				const radius = baseSize / 2;
 
 				select(this)

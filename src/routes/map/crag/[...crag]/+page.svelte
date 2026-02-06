@@ -22,6 +22,13 @@
 			: sunInfo.hours
 	);
 
+	let has2D = $derived(
+		!!data.topoJson?.image2D || 
+		data.topoJson?.routes?.some(r => r.points2D?.length > 0) || 
+		data.topoJson?.outlines?.length > 0 ||
+		data.topoJson?.fixPoints?.some(fp => fp.position2D)
+	);
+
 	$effect(() => {
 		if (data.topoJson) {
 			sunInfo = calculateSunInfo(data.topoJson);
@@ -165,21 +172,46 @@
 				</div>
 			{/if}
 
-			<div class="flex items-center mt-10 mb-10">
+			<div class="flex items-center mt-6 mb-6">
 				<div class="prose text-slate-800 w-full">
-					<div class="mb-5 w-full">
-						{#if has3DTopo}
-							<a href="{base}/topo/crag/{path}"
-								 class="border-1 border-gray-200 h-10 mb-2 mr-2 text-slate-600 hover:text-white hover:bg-ink inline-flex items-center justify-center p-1 px-3 text-base font-medium rounded-full no-underline">
-								<i class="fa-solid fa-cubes mr-2"></i>
-								<span class="w-full">{$_('ui.3d_topo')}</span>
-							</a>
+					<div class="mb-3 w-full">
+						
+						{#if has3DTopo || has2D}
+							<div class="grid {has3DTopo && has2D ? 'grid-cols-2' : 'grid-cols-1'} gap-3 mb-4">
+								{#if has3DTopo}
+									<a href="{base}/topo/crag/{path}" class="relative group w-full h-24 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 no-underline bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-300 hover:-translate-y-1 hover:scale-[1.02] flex flex-col items-center justify-center overflow-hidden hover:ring-8 hover:ring-blue-500/5">
+										<div class="flex flex-row items-center gap-2 sm:gap-3 z-10 px-2">
+											<div class="w-10 h-10 shrink-0 rounded-full bg-slate-100 shadow-inner flex items-center justify-center group-hover:bg-blue-50 group-hover:scale-110 transition-all duration-300">
+												<i class="fa-solid fa-cube text-xl text-blue-600"></i>
+											</div>
+											<div class="flex flex-col">
+												<span class="font-bold text-base sm:text-lg text-slate-800 leading-tight group-hover:text-blue-700 transition-colors">{$_('ui.topo_3d')}</span>
+												<span class="text-xs sm:text-sm text-slate-500 font-medium">{$_('ui.interactive_view')}</span>
+											</div>
+										</div>
+									</a>
+								{/if}
+								{#if has2D}
+									<a href="{base}/topo/crag/{path}?mode=2d" class="relative group w-full h-24 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 no-underline bg-white hover:bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:-translate-y-1 hover:scale-[1.02] flex flex-col items-center justify-center overflow-hidden hover:ring-8 hover:ring-emerald-500/5">
+										<div class="flex flex-row items-center gap-2 sm:gap-3 z-10 px-2">
+											<div class="w-10 h-10 shrink-0 rounded-full bg-slate-100 shadow-inner flex items-center justify-center group-hover:bg-emerald-50 group-hover:scale-110 transition-all duration-300">
+												<i class="fa-solid fa-image text-xl text-emerald-600"></i>
+											</div>
+											<div class="flex flex-col">
+												<span class="font-bold text-base sm:text-lg text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors">{$_('ui.topo_2d')}</span>
+												<span class="text-xs sm:text-sm text-slate-500 font-medium">{$_('ui.schematic_view')}</span>
+											</div>
+										</div>
+									</a>
+								{/if}
+							</div>
 						{/if}
+
 						{#if topo}
 							<a href={topo.link} target="_blank"
 								 class="border-1 border-gray-200 h-10 mb-2 mr-2 text-slate-600 hover:text-white hover:bg-ink inline-flex items-center justify-center p-1 px-3 text-base font-medium rounded-full no-underline">
 								<i class="fa-solid fa-route mr-2"></i>
-								<span class="w-full">{$_('ui.topo')}</span>
+								<span class="w-full">{$_('ui.topo')} (Ext)</span>
 							</a>
 						{/if}
 						{#if transit}

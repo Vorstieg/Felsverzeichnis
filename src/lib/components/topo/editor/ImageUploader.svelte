@@ -1,6 +1,7 @@
 <script>
 	import { userState } from '$lib/state/editor.svelte.js';
 	import { isTouchDevice } from '$lib/assets/js/mobile-utils.js';
+	import { _ } from 'svelte-i18n';
 
 	let fileInput = $state(null);
 	let cameraInput = $state(null);
@@ -17,7 +18,7 @@
 
 	function loadImageFile(file) {
 		if (!file.type.startsWith('image/')) {
-			alert('Bitte wähle eine Bilddatei (JPG, PNG, etc.)');
+			alert($_('ui.select_image_file'));
 			return;
 		}
 
@@ -50,7 +51,7 @@
 			urlInput = '';
 		};
 		img.onerror = () => {
-			alert('Fehler beim Laden des Bildes. Überprüfe die URL.');
+			alert($_('ui.image_load_error'));
 		};
 		img.src = urlInput;
 	}
@@ -101,7 +102,7 @@
 			modal.appendChild(video);
 
 			const captureBtn = document.createElement('button');
-			captureBtn.textContent = 'Foto aufnehmen';
+			captureBtn.textContent = $_('ui.capture_photo');
 			captureBtn.style.cssText = 'margin-top:20px;padding:10px 20px;font-size:16px;';
 			captureBtn.onclick = () => {
 				const canvas = document.createElement('canvas');
@@ -116,7 +117,7 @@
 			modal.appendChild(captureBtn);
 
 			const cancelBtn = document.createElement('button');
-			cancelBtn.textContent = 'Abbrechen';
+			cancelBtn.textContent = $_('ui.cancel');
 			cancelBtn.style.cssText = 'margin-top:10px;padding:10px 20px;';
 			cancelBtn.onclick = () => {
 				stream.getTracks().forEach((track) => track.stop());
@@ -126,7 +127,7 @@
 
 			document.body.appendChild(modal);
 		} catch (err) {
-			alert('Kamera-Zugriff fehlgeschlagen: ' + err.message);
+			alert($_('ui.camera_access_failed') + ': ' + err.message);
 		}
 	}
 </script>
@@ -134,9 +135,9 @@
 {#if userState.topo.image2D}
 	<div class="bg-white rounded-2xl shadow-md p-4 mb-3 border border-gray-200">
 		<div class="flex items-center justify-between mb-2">
-			<h4 class="text-sm font-semibold text-gray-700">Hintergrundbild</h4>
+			<h4 class="text-sm font-semibold text-gray-700">{$_('ui.background_image')}</h4>
 			<button class="text-red-500 hover:text-red-700 text-sm" onclick={removeImage}>
-				<i class="fa-solid fa-trash-can"></i> Entfernen
+				<i class="fa-solid fa-trash-can"></i> {$_('ui.remove')}
 			</button>
 		</div>
 		<img
@@ -147,7 +148,7 @@
 	</div>
 {:else}
 	<div class="bg-white rounded-2xl shadow-md p-5 mb-3 border border-gray-200">
-		<h4 class="text-sm font-semibold text-gray-700 mb-3">Hintergrundbild laden</h4>
+		<h4 class="text-sm font-semibold text-gray-700 mb-3">{$_('ui.load_background')}</h4>
 
 		<div
 			class="border-2 border-dashed rounded-xl p-8 text-center transition-colors {isDragging
@@ -158,28 +159,28 @@
 			ondragleave={handleDragLeave}
 		>
 			<i class="fa-solid fa-image text-4xl text-gray-400 mb-3"></i>
-			<p class="text-sm text-gray-600 mb-4">Bild hierher ziehen oder</p>
+			<p class="text-sm text-gray-600 mb-4">{$_('ui.drag_drop_image')}</p>
 
 			<div class="flex flex-col gap-2">
 				<button
 					class="font-semibold shadow-md border border-gray-200 cursor-pointer rounded-full bg-white py-2 px-4 text-sm hover:bg-gray-50"
 					onclick={() => fileInput?.click()}
 				>
-					<i class="fa-solid fa-folder-open mr-2"></i>Datei auswählen
+					<i class="fa-solid fa-folder-open mr-2"></i>{$_('ui.select_file')}
 				</button>
 
 				<button
 					class="font-semibold shadow-md border border-gray-200 cursor-pointer rounded-full bg-white py-2 px-4 text-sm hover:bg-gray-50"
 					onclick={() => (showUrlInput = !showUrlInput)}
 				>
-					<i class="fa-solid fa-link mr-2"></i>URL laden
+					<i class="fa-solid fa-link mr-2"></i>{$_('ui.load_url')}
 				</button>
 
 				<button
 					class="font-semibold shadow-md border border-gray-200 cursor-pointer rounded-full bg-white py-2 px-4 text-sm hover:bg-gray-50"
 					onclick={handleCameraCapture}
 				>
-					<i class="fa-solid fa-camera mr-2"></i>Kamera
+					<i class="fa-solid fa-camera mr-2"></i>{$_('ui.camera')}
 				</button>
 			</div>
 
@@ -188,14 +189,14 @@
 					<input
 						type="text"
 						bind:value={urlInput}
-						placeholder="https://example.com/image.jpg"
+						placeholder={$_('ui.image_url_placeholder')}
 						class="flex-1 px-3 py-2 rounded-full text-sm border-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					/>
 					<button
 						class="px-4 py-2 bg-blue-500 text-white rounded-full text-sm hover:bg-blue-600"
 						onclick={handleUrlLoad}
 					>
-						Laden
+						{$_('ui.load')}
 					</button>
 				</div>
 			{/if}

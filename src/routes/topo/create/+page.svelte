@@ -72,7 +72,6 @@
 	let showExportModal = $state(false);
 	let showMapModal = $state(false);
 	let showDraftsModal = $state(false);
-	let isCutting = $state(false);
 
 	// --- Initialization ---
 	onMount(() => {
@@ -124,7 +123,7 @@
 	function handleNewTopo() {
 		if (
 			confirm(
-				'Bist du sicher? Alle ungespeicherten Änderungen am aktuellen Entwurf gehen verloren.'
+				$_('ui.new_topo_confirm')
 			)
 		) {
 			// Reset userState.topo to defaults
@@ -276,7 +275,7 @@
 				}
 			} catch (err) {
 				console.error('Failed to parse JSON', err);
-				alert('Fehler beim Laden der JSON Datei.');
+				alert($_('ui.json_load_error'));
 			}
 		};
 		reader.readAsText(file);
@@ -359,7 +358,7 @@
 		URL.revokeObjectURL(url);
 
 		if (userState.topo.editorMode === '3d') {
-			modelComponent?.downloadClippedModel(`${baseName}.glb`);
+			modelComponent?.downloadModel(`${baseName}.glb`);
 		}
 	}
 
@@ -411,36 +410,36 @@
 
 <!-- Sidebar - hidden on mobile for 2D mode -->
 <div
-	class="fixed top-25 left-15 z-50 flex flex-col max-h-[85vh] overflow-y-auto pr-2 {userState.topo
+	class="fixed top-25 left-15 z-50 flex flex-col w-80 max-h-[85vh] overflow-y-auto pr-4 {userState.topo
 		.editorMode === '2d'
 		? 'hidden md:flex'
 		: 'flex'}"
 >
 	<!-- Editor Mode Toggle -->
-	<div class="bg-white rounded-full shadow-md border border-gray-200 p-1 mb-3 flex">
+	<div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-1 mb-3 flex">
 		<button
-			class="flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors {userState.topo
+			class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition-colors {userState.topo
 				.editorMode === '2d'
-				? 'bg-blue-500 text-white'
+				? 'bg-blue-600 text-white shadow-sm'
 				: 'text-gray-600 hover:bg-gray-50'}"
 			onclick={() => (userState.topo.editorMode = '2d')}
 		>
-			📷 2D
+			2D
 		</button>
 		<button
-			class="flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors {userState.topo
+			class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition-colors {userState.topo
 				.editorMode === '3d'
-				? 'bg-blue-500 text-white'
+				? 'bg-blue-600 text-white shadow-sm'
 				: 'text-gray-600 hover:bg-gray-50'}"
 			onclick={() => (userState.topo.editorMode = '3d')}
 		>
-			🧊 3D
+			3D
 		</button>
 	</div>
 
 	{#if userState.topo.editorMode === '3d'}
 		<button
-			class="font-semibold grid shadow-md border-1 border-gray-200 sm:w-auto w-1/3 cursor-pointer rounded-full bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+			class="font-semibold shadow-sm border border-gray-200 w-full cursor-pointer rounded-2xl bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-md hover:bg-gray-50 text-slate-700 active:scale-95"
 			onclick={() => fileInput?.click()}
 			disabled={isLoadingGltf}
 		>
@@ -458,6 +457,72 @@
 		{#if gltfError && !isLoadingGltf}
 			<p class="mt-2 text-sm text-red-600 bg-white/80 px-2 py-1 rounded">Error: {gltfError}</p>
 		{/if}
+
+		<div class="mt-3 bg-white rounded-2xl shadow-md p-4 border border-gray-200">
+			<h4 class="text-xs font-bold text-gray-500 uppercase mb-3">{$_('ui.tools')}</h4>
+			<div class="flex flex-col gap-2">
+				<button
+					class={`flex items-center gap-2 font-semibold shadow-sm border-1 cursor-pointer rounded-full py-2 px-4 text-sm transition-colors ${activeTool === 'route' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}`}
+					onclick={() => {
+						activeTool = 'route';
+						drawingTarget = null;
+					}}
+				>
+					<i class="fa-solid fa-route"></i>
+					<span>{$_('ui.route')}</span>
+				</button>
+				<button
+					class={`flex items-center gap-2 font-semibold shadow-sm border-1 cursor-pointer rounded-full py-2 px-4 text-sm transition-colors ${activeTool === 'multipitch' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-100'}`}
+					onclick={() => {
+						activeTool = 'multipitch';
+						drawingTarget = null;
+					}}
+				>
+					<i class="fa-solid fa-timeline"></i>
+					<span>{$_('ui.multipitch')}</span>
+				</button>
+				<button
+					class={`flex items-center gap-2 font-semibold shadow-sm border-1 cursor-pointer rounded-full py-2 px-4 text-sm transition-colors ${activeTool === 'fixpoint' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}`}
+					onclick={() => {
+						activeTool = 'fixpoint';
+						drawingTarget = null;
+					}}
+				>
+					<i class="fa-solid fa-circle-dot"></i>
+					<span>{$_('ui.fixpoint')}</span>
+				</button>
+			</div>
+
+			<div class="mt-3 pt-3 border-t border-gray-200 text-[11px] text-gray-500 space-y-1.5">
+				{#if activeTool === 'route'}
+					<div class="flex justify-between items-center">
+						<p><kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">Double Click</kbd> {$_('ui.set_point')}</p>
+					</div>
+					<div class="flex justify-between items-center">
+						<p><kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">N</kbd> / <kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">Enter</kbd> {$_('ui.finish')}</p>
+					</div>
+					<div class="flex justify-between items-center">
+						<p><kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">Esc</kbd> {$_('ui.cancel')}</p>
+					</div>
+				{:else if activeTool === 'multipitch'}
+					<div class="flex justify-between items-center">
+						<p><kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">Double Click</kbd> {$_('ui.set_point')}</p>
+					</div>
+					<div class="flex justify-between items-center">
+						<p><kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">B</kbd> {$_('topo.fixpoints.belay')} ({$_('ui.add_pitch')})</p>
+					</div>
+					<div class="flex justify-between items-center">
+						<p><kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">Enter</kbd> {$_('ui.finish')}</p>
+					</div>
+				{:else if activeTool === 'fixpoint'}
+					<div class="flex justify-between items-center">
+						<p><kbd class="px-1 py-0.5 bg-gray-100 rounded text-gray-700">Double Click</kbd> {$_('ui.set_fixpoint')}</p>
+					</div>
+				{:else}
+					<p class="text-center italic text-gray-400">{$_('ui.select_tool_hint')}</p>
+				{/if}
+			</div>
+		</div>
 	{:else}
 		<!-- Desktop tool palette (hidden on mobile since sidebar is hidden) -->
 		<div class="hidden md:block">
@@ -472,7 +537,7 @@
 	{/if}
 
 	<button
-		class="mt-3 font-semibold grid shadow-md border-1 border-gray-200 sm:w-auto w-1/3 cursor-pointer rounded-full bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+		class="mt-3 font-semibold shadow-sm border border-gray-200 w-full cursor-pointer rounded-2xl bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-md hover:bg-gray-50 text-slate-700 active:scale-95"
 		onclick={() => jsonInput?.click()}
 	>
 		{$_('ui.load_json')}
@@ -486,155 +551,39 @@
 	/>
 
 	<button
-		class="mt-3 font-semibold grid shadow-md border-1 border-gray-200 sm:w-auto w-1/3 cursor-pointer rounded-full bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+		class="mt-3 font-semibold shadow-sm border border-gray-200 w-full cursor-pointer rounded-2xl bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-md hover:bg-gray-50 text-slate-700 active:scale-95"
 		onclick={() => (showDraftsModal = true)}
 	>
-		📂 Meine Entwürfe
+		{$_('ui.my_drafts')}
 	</button>
-
-	{#if userState.topo.editorMode === '3d'}
-		<div class="mt-5 border-t pt-5 border-gray-200">
-			<h4 class="text-xs font-bold text-gray-500 uppercase mb-3">{$_('ui.tools')}</h4>
-			<div class="flex gap-2">
-				<button
-					class={`flex-1 font-semibold shadow-md border-1 cursor-pointer rounded-full py-2 px-2 text-center text-xs transition-colors ${activeTool === 'route' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}`}
-					onclick={() => {
-						activeTool = 'route';
-						drawingTarget = null;
-					}}
-				>
-					{$_('ui.route')}
-				</button>
-				<button
-					class={`flex-1 font-semibold shadow-md border-1 cursor-pointer rounded-full py-2 px-2 text-center text-xs transition-colors ${activeTool === 'multipitch' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-100'}`}
-					onclick={() => {
-						activeTool = 'multipitch';
-						drawingTarget = null;
-					}}
-				>
-					Multi-Pitch
-				</button>
-				<button
-					class={`flex-1 font-semibold shadow-md border-1 cursor-pointer rounded-full py-2 px-2 text-center text-xs transition-colors ${activeTool === 'symbol' ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50'}`}
-					onclick={() => {
-						activeTool = 'symbol';
-						drawingTarget = null;
-					}}
-				>
-					{$_('ui.fixpoint')}
-				</button>
-			</div>
-
-			<div
-				class="mt-3 bg-blue-50/50 p-3 rounded-xl border border-blue-100 text-xs text-gray-600 space-y-1.5"
-			>
-				<h5 class="font-bold text-blue-800 mb-1">
-					{$_('ui.controls')}
-					: {activeTool === 'route'
-						? $_('ui.route')
-						: activeTool === 'multipitch'
-							? 'Multi-Pitch'
-							: $_('ui.fixpoint')}
-				</h5>
-				{#if activeTool === 'route'}
-					<div class="flex justify-between items-center">
-						<span class="font-medium text-gray-800">{$_('ui.double_click')}</span>
-						<span>{$_('ui.set_point')}</span>
-					</div>
-					<div class="flex justify-between items-center">
-						<span class="font-medium text-gray-800">{$_('ui.key_n')} / Enter</span>
-						<span>{$_('ui.finish')}</span>
-					</div>
-					<div class="flex justify-between items-center">
-						<span class="font-medium text-gray-800">{$_('ui.key_esc')}</span>
-						<span>{$_('ui.cancel')}</span>
-					</div>
-				{:else if activeTool === 'multipitch'}
-					<div class="flex justify-between items-center">
-						<span class="font-medium text-gray-800">Double Click</span> <span>Set Point</span>
-					</div>
-					<div class="flex justify-between items-center">
-						<span class="font-medium text-gray-800">Key 'B'</span>
-						<span>Belay (Next Pitch)</span>
-					</div>
-					<div class="flex justify-between items-center">
-						<span class="font-medium text-gray-800">Enter</span>
-						<span>Finish Route</span>
-					</div>
-				{:else if activeTool === 'symbol'}
-					<div class="flex justify-between items-center">
-						<span class="font-medium text-gray-800">{$_('ui.double_click')}</span>
-						<span>{$_('ui.set_fixpoint')}</span>
-					</div>
-				{/if}
-			</div>
-
-			<div class="mt-5 border-t pt-5 border-gray-200">
-				<button
-					class={'font-semibold grid shadow-md border-1 border-gray-200 sm:w-auto w-1/3 cursor-pointer rounded-full py-3 px-6 text-center text-sm transition-all hover:shadow-lg active focus:font-bold active:font-bold ' +
-						(isCutting
-							? 'bg-pink-50 text-pink-600 border-pink-200'
-							: 'bg-white text-slate-600 hover:text-white hover:bg-ink')}
-					onclick={() => (isCutting = !isCutting)}
-				>
-					{$_('ui.crop_beta')}
-				</button>
-
-				{#if isCutting}
-					<div class="flex flex-col gap-2 mt-3">
-						<div class="flex gap-2">
-							<button
-								class="flex-1 font-semibold shadow-md border-1 border-gray-200 cursor-pointer rounded-full bg-white py-2 px-4 text-center text-xs hover:bg-gray-50"
-								onclick={() => modelComponent?.addPlane()}
-							>
-								{$_('ui.apply_cut')}
-							</button>
-							<button
-								class="flex-1 font-semibold shadow-md border-1 border-gray-200 cursor-pointer rounded-full bg-white py-2 px-4 text-center text-xs hover:bg-gray-50"
-								onclick={() => modelComponent?.removeLastPlane()}
-							>
-								{$_('ui.undo')}
-							</button>
-						</div>
-						<button
-							class="font-semibold shadow-md border-1 border-gray-200 cursor-pointer rounded-full bg-white py-2 px-4 text-center text-xs hover:bg-red-50 text-red-600"
-							onclick={() => modelComponent?.clearPlanes()}
-						>
-							{$_('ui.reset')}
-						</button>
-					</div>
-				{/if}
-			</div>
-		</div>
-	{/if}
 
 	<div class="mt-auto pt-5 space-y-3">
 		{#if userState.topo.editorMode === '3d' && userState.topo.routes.length > 0}
 			<button
-				class="w-full font-semibold shadow-md bg-purple-50 text-purple-700 border border-purple-200 px-6 py-3 rounded-full text-sm transition-all hover:bg-purple-100 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+				class="w-full font-semibold shadow-sm bg-purple-50 text-purple-700 border border-purple-200 px-6 py-3 rounded-2xl text-sm transition-all hover:bg-purple-100 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
 				onclick={handleGenerate2DTopo}
 				disabled={isGenerating2D}
 			>
 				{#if isGenerating2D}
-					⏳ Generating...
+					{$_('ui.generating')}
 				{:else}
-					⬇️ Generate 2D Topo
+					{$_('ui.generate_2d')}
 				{/if}
 			</button>
 			{#if generate2DResult}
 				<p class="text-xs text-center text-gray-500">
-					✓ {generate2DResult.updatedRoutes} routes, {generate2DResult.updatedFixPoints} fix points{#if generate2DResult.generatedOutline},
-						outline generated{/if}
+					{generate2DResult.updatedRoutes} {$_('topo.routes')}, {generate2DResult.updatedFixPoints} {$_('ui.fixpoints')}{#if generate2DResult.generatedOutline},
+						{$_('ui.outline_generated')}{/if}
 				</p>
 			{/if}
 		{/if}
 		<button
-			class="w-full font-bold shadow-lg bg-blue-600 text-white px-8 py-4 rounded-full text-base transition-all hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+			class="w-full font-bold shadow-sm bg-blue-600 text-white px-8 py-3 rounded-2xl text-base transition-all hover:bg-blue-700 hover:shadow-md active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-300"
 			onclick={combinedExport}>{$_('ui.save_topo')}</button
 		>
 		{#if userState.ui.lastSaved}
 			<p class="text-[10px] text-center text-gray-400">
-				Auto-Save: {new Date(userState.ui.lastSaved).toLocaleTimeString()}
+				{$_('ui.auto_save')}: {new Date(userState.ui.lastSaved).toLocaleTimeString()}
 			</p>
 		{/if}
 	</div>
@@ -687,7 +636,6 @@
 					{activeTool}
 					{drawingTarget}
 					{element}
-					{isCutting}
 				/>
 			{/if}
 		</Canvas>
@@ -717,7 +665,7 @@
 			class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]"
 		>
 			<div class="p-6 border-b border-gray-100 flex justify-between items-center">
-				<h2 class="text-xl font-bold text-gray-800">Gespeicherte Entwürfe</h2>
+				<h2 class="text-xl font-bold text-gray-800">{$_('ui.saved_drafts')}</h2>
 				<button
 					onclick={() => (showDraftsModal = false)}
 					class="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -731,13 +679,12 @@
 					onclick={handleNewTopo}
 					class="w-full mb-6 py-4 px-6 border-2 border-dashed border-blue-200 rounded-2xl text-blue-600 font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
 				>
-					＋ Neuer Entwurf
+					{$_('ui.new_draft')}
 				</button>
 
 				{#if draftsState.drafts.length === 0}
 					<div class="text-center py-12 text-gray-400">
-						<span class="text-4xl block mb-2">📄</span>
-						Noch keine Entwürfe vorhanden.
+						{$_('ui.no_drafts')}
 					</div>
 				{:else}
 					<div class="space-y-3">
@@ -756,24 +703,24 @@
 							>
 								<div class="flex justify-between items-start">
 									<div>
-										<h3 class="font-bold text-gray-800">{draft.name || 'Unbenanntes Topo'}</h3>
+										<h3 class="font-bold text-gray-800">{draft.name || $_('ui.unnamed_topo')}</h3>
 										<p class="text-xs text-gray-500 mt-1">
-											Geändert: {new Date(draft.updated).toLocaleString()}
+											{$_('ui.modified')}: {new Date(draft.updated).toLocaleString()}
 										</p>
 									</div>
 									<button
 										onclick={(e) => {
 											e.stopPropagation();
-											if (confirm('Entwurf wirklich löschen?')) draftsState.delete(draft.id);
+											if (confirm($_('ui.delete_draft_confirm'))) draftsState.delete(draft.id);
 										}}
 										class="opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-600 hover:bg-white rounded-xl transition-all"
 									>
-										🗑️
+										{$_('ui.delete')}
 									</button>
 								</div>
 								{#if userState.ui.activeDraftId === draft.id}
 									<div class="mt-2 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
-										Aktuell geladen
+										{$_('ui.currently_loaded')}
 									</div>
 								{/if}
 							</div>
@@ -784,7 +731,7 @@
 
 			<div class="p-4 bg-gray-50 text-center">
 				<p class="text-[10px] text-gray-400 italic">
-					Entwürfe werden nur lokal in deinem Browser gespeichert.
+					{$_('ui.drafts_local_warning')}
 				</p>
 			</div>
 		</div>
