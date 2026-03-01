@@ -1,20 +1,1734 @@
 {
-  "name": "Felsverzeichnis",
-  "short_name": "Felsverzeichnis",
-  "start_url": "/",
-  "display": "fullscreen",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
-  "icons": [
+  "version": "1.0.0",
+  "generatedAt": "2026-02-16T14:58:34.665Z",
+  "crags": [
     {
-      "src": "favicon.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "id": "sarmingstein",
+      "name": "Sarmingstein",
+      "type": "sports-climbing",
+      "path": "amstetten/sarmingstein",
+      "coordinates": [
+        14.9466775,
+        48.232166
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Sarmingstein ist ein lohnendes Ziel für Kletterer, die von Wien aus anreisen. Die Felsen liegen inmitten einer malerischen Naturlandschaft und bieten sowohl Sportkletterrouten als auch Boulderprobleme für alle Könnensstufen.\n\nDie Anreise erfolgt ähnlich wie nach Tiefenbach: Zunächst mit dem Zug nach Amstetten, dann mit dem Bus weiter bis Sarmingstein. Die Fahrt dauert insgesamt rund zwei Stunden. Auch hier steht in Amstetten eine Rail & Drive-Option zur Verfügung, falls man die letzte Strecke lieber mit dem Auto zurücklegen möchte.",
+      "description_en": "Sarmingstein is a rewarding destination for climbers traveling from Vienna. The rocks are situated in a picturesque natural landscape and offer both sport climbing routes and boulder problems for all skill levels.\n\nTravel is similar to Tiefenbach: first by train to Amstetten, then by bus to Sarmingstein. The total journey takes around two hours. A Rail & Drive option is also available in Amstetten if you prefer to cover the last leg by car.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://woidkraxler.at/wp-content/uploads/2022/07/Gloxwald-Sarmingstein-2022.pdf",
+      "images": [
+        "src/entries/europe/austria/lower-austria/amstetten/sarmingstein/efeugrat.jpg"
+      ],
+      "transit": [
+        14.9426978,
+        48.2305654
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "efeugrat.jpg",
+          "path": "src/entries/europe/austria/lower-austria/amstetten/sarmingstein/efeugrat.jpg",
+          "hash": "3a9840e49d6e840f282516a9a9f15402e0d638950ba6dbe050aeb515c2f54b44",
+          "size": 4094868
+        },
+        {
+          "name": "sarmingstein-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/amstetten/sarmingstein/sarmingstein-transit.json",
+          "hash": "887a09310d3a1f1b815ca4279f838b3ef6070bf3aab71ca2f644d12e1a3587d5",
+          "size": 232
+        },
+        {
+          "name": "sarmingstein.json",
+          "path": "src/entries/europe/austria/lower-austria/amstetten/sarmingstein/sarmingstein.json",
+          "hash": "6396d0d28133238755f2c42548d846886b06f120429cbab6dbe9853306bf92bb",
+          "size": 1545
+        }
+      ]
     },
     {
-      "src": "favicon.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "id": "tiefenbach",
+      "name": "Tiefenbach",
+      "type": "sports-climbing",
+      "path": "amstetten/tiefenbach",
+      "coordinates": [
+        14.859579,
+        48.216099
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Tiefenbach ist ein idyllisch gelegenes Klettergebiet unweit von Amstetten und bietet eine Vielzahl an Routen in verschiedenen Schwierigkeitsgraden. Die beeindruckenden Granitwände sind ideal für Sportkletterer, die eine Mischung aus technischen Herausforderungen und ausdauernden Zügen suchen.\n\nDie Anreise ist unkompliziert: Von Wien erreicht man Amstetten bequem mit dem Zug, und von dort aus geht es mit dem Bus weiter nach Tiefenbach. Die gesamte Fahrtzeit beträgt etwa 1,5 Stunden. Wer flexibler unterwegs sein möchte, kann sich in Amstetten ein Rail & Drive-Auto mieten, um direkt zum Kletterspot zu gelangen.\n\nNeben den abwechslungsreichen Kletterrouten punktet Tiefenbach mit seiner ruhigen Lage und einer angenehmen Atmosphäre. Nach einem erfolgreichen Klettertag laden die nahegelegenen Donauufer zu einer entspannten Pause ein, bevor es zurück nach Wien geht.",
+      "description_en": "Tiefenbach is an idyllically located climbing area near Amstetten and offers a variety of routes in various degrees of difficulty. The impressive granite walls are ideal for sport climbers looking for a mix of technical challenges and endurance moves.\n\nGetting there is straightforward: from Vienna you can easily reach Amstetten by train, and from there you continue by bus to Tiefenbach. The total travel time is about 1.5 hours. If you want to be more flexible, you can rent a Rail & Drive car in Amstetten to get directly to the climbing spot.\n\nIn addition to the varied climbing routes, Tiefenbach scores with its quiet location and pleasant atmosphere. After a successful day of climbing, the nearby banks of the Danube invite you to take a relaxing break before heading back to Vienna.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/de/klettern/austria/wien-vienna-area/area/346959531",
+      "images": [
+        "src/entries/europe/austria/lower-austria/amstetten/tiefenbach/amstetten.jpg"
+      ],
+      "transit": [
+        14.85792,
+        48.210354
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "amstetten.jpg",
+          "path": "src/entries/europe/austria/lower-austria/amstetten/tiefenbach/amstetten.jpg",
+          "hash": "11e182f8ebf987b652a02feb588d02e7cb1930fcd40a868768bb73ac1164fe1b",
+          "size": 3697883
+        },
+        {
+          "name": "tiefenbach-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/amstetten/tiefenbach/tiefenbach-transit.json",
+          "hash": "d910d01a8466f96c9210bb59bec055f01d81af6da69c75395eb6106237847f04",
+          "size": 237
+        },
+        {
+          "name": "tiefenbach.json",
+          "path": "src/entries/europe/austria/lower-austria/amstetten/tiefenbach/tiefenbach.json",
+          "hash": "c4793e4e9555d56845f9a232e2df8adea8757549ea3132bfaf61dfd8fcf5afe5",
+          "size": 2213
+        }
+      ]
+    },
+    {
+      "id": "kleines-verdon",
+      "name": "Kleines Verdon",
+      "type": "bouldering",
+      "path": "baden/kleines-verdon",
+      "coordinates": [
+        16.1959914,
+        48.0182711
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Von Wien fährt man mit einem beliebigen Zug nach Baden und dann mit dem Bus zur Haltestelle Helenental Abzweigung Siegenfeld.\n",
+      "description_en": "From Vienna, take any train to Baden and then the bus to the stop Helenental Abzweigung Siegenfeld.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/climbing/austria/wien-vienna-area/wien-vienna-and-surrounds/vorderes-helental/area/761450622/routes",
+      "images": [
+        "src/entries/europe/austria/lower-austria/baden/kleines-verdon/baden-bouldern.jpg"
+      ],
+      "transit": [
+        16.19025325567717,
+        48.018118316836784
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "baden-bouldern.jpg",
+          "path": "src/entries/europe/austria/lower-austria/baden/kleines-verdon/baden-bouldern.jpg",
+          "hash": "e24daf510ebace1593375f7b4e93880a2c90826e6ce0ddde39de8d87210839a3",
+          "size": 785768
+        },
+        {
+          "name": "kleines-verdon-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/baden/kleines-verdon/kleines-verdon-transit.json",
+          "hash": "6f7f7fe44dd5d0501fc6123c06f8c3d2d01462515759570525e27c6711594349",
+          "size": 248
+        },
+        {
+          "name": "kleines-verdon.json",
+          "path": "src/entries/europe/austria/lower-austria/baden/kleines-verdon/kleines-verdon.json",
+          "hash": "3da9ecebc8e03751267fc38145ecba242cb1721bc0cfd5c75f6c5b6020269b7b",
+          "size": 818
+        }
+      ]
+    },
+    {
+      "id": "beserlpark",
+      "name": "Beserlpark",
+      "type": "multi-pitch",
+      "path": "hohe-wand/beserlpark",
+      "coordinates": [
+        16.01725481844416,
+        47.809377586409795
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Von Wien fährt man mit einem beliebigen Zug nach Wr.Neustadt und dann mit dem Regional-Zug R98 weiter nach Grünbach am Schneeberg (fährt stündlich in beide Richtungen bis Mitternacht). Die gesamte Fahrt dauert knapp über 2 Stunden. Dannach gibt es noch einen etwa 15 minütigen Zustieg.\n",
+      "description_en": "From Vienna, take any train to Wiener Neustadt and then continue with the regional train R98 to Grünbach am Schneeberg (runs hourly in both directions until midnight). The entire journey takes just over 2 hours. Afterwards, there is an approach of about 15 minutes.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/beserlpark-hohe-wand/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/hohe-wand/beserlpark/hohe-wand-multi-pitch.jpg"
+      ],
+      "transit": [
+        15.997949418142149,
+        47.79767563193555
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "beserlpark-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/hohe-wand/beserlpark/beserlpark-transit.json",
+          "hash": "24f14ca880003aba67bed11d5b56c69ba5490a8086bc21ad3fd8256ecd9ad230",
+          "size": 247
+        },
+        {
+          "name": "beserlpark.json",
+          "path": "src/entries/europe/austria/lower-austria/hohe-wand/beserlpark/beserlpark.json",
+          "hash": "c97131761652b7369f17c2f843fcb67748245335f71b155bf0bb5512c3a047bf",
+          "size": 1104
+        },
+        {
+          "name": "hohe-wand-multi-pitch.jpg",
+          "path": "src/entries/europe/austria/lower-austria/hohe-wand/beserlpark/hohe-wand-multi-pitch.jpg",
+          "hash": "312765cc00bf34b81005250ac7565ccf18cbfaa65d68f3a59ed727a02732820e",
+          "size": 572491
+        }
+      ]
+    },
+    {
+      "id": "hochempor-verschneidung",
+      "name": "Hochempor verschneidung",
+      "type": "multi-pitch",
+      "path": "hohe-wand/hochempor-verschneidung",
+      "coordinates": [
+        16.05398068106439,
+        47.83266954305114
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Um zu dieser ultra-klassischen Route zu kommen muss man von Wien eine Anfahrt von etwa 1,5 Stunden in Kauf nehmen. Dazu kommt ein Zustieg von etwa einer halben Stunde. Dafür wird man mit einer der schönsten Verschneidungen auf der Hohen Wand belohnt.\n",
+      "description_en": "To get to this ultra-classic route, you have to accept a journey of about 1.5 hours from Vienna. In addition, there is an approach of about half an hour. But you will be rewarded with one of the most beautiful corners (Verschneidung) on the Hohe Wand.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/hochempor-verschneidung-hohe-wand/",
+      "images": [],
+      "transit": [
+        16.06698654877418,
+        47.829815149069375
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "hochempor-verschneidung-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/hohe-wand/hochempor-verschneidung/hochempor-verschneidung-transit.json",
+          "hash": "4b600ba5e012dcc4dd625bf3383d5383c9d46edd68d3188dd27a1d58de5db64f",
+          "size": 234
+        },
+        {
+          "name": "hochempor-verschneidung.json",
+          "path": "src/entries/europe/austria/lower-austria/hohe-wand/hochempor-verschneidung/hochempor-verschneidung.json",
+          "hash": "263f17019b0291ed561883d2edbc334f24c87a67e1d899f6a76e90ac0f06a4f9",
+          "size": 1109
+        }
+      ]
+    },
+    {
+      "id": "efeugrat",
+      "name": "Efeugrat",
+      "type": "sports-climbing",
+      "path": "mödling/efeugrat",
+      "coordinates": [
+        16.2703,
+        48.08088
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Der Efeugrat ist zu Fuß vom Bahnhof Mödling erreichbar. Dabei dauert die Anreise von Wien ca. eine Stunde. Alternativ kann man sich am Bahnhof Mödling ein Nextbike ausborgen, um die Anreise um 15 Minuten zu verkürzen.",
+      "description_en": "The Efeugrat can be reached on foot from Mödling train station. The journey from Vienna takes about an hour. Alternatively, you can rent a Nextbike at Mödling station to shorten the journey by 15 minutes.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/efeugrat-moedling",
+      "images": [
+        "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat.jpg"
+      ],
+      "transit": [
+        16.29574165342936,
+        48.08579238497782
+      ],
+      "parking": [
+        16.268743394954733,
+        48.081104670882404
+      ],
+      "tracks": [
+        "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat-transit-track.json"
+      ],
+      "files": [
+        {
+          "name": "efeugrat-parking.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat-parking.json",
+          "hash": "4165e7a60068323e89de4aacfcc805410e0739d9f0ccc4e9a15641c376c16e39",
+          "size": 210
+        },
+        {
+          "name": "efeugrat-topo.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat-topo.json",
+          "hash": "4caace0e69f71e3601a59821b5ebe22708bfe778d933efca4f1f7778b9986d2c",
+          "size": 600104
+        },
+        {
+          "name": "efeugrat-transit-track.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat-transit-track.json",
+          "hash": "815384238b3c5f8049c9c2a0cc9c01a951509dc7ffaf9fac20fcb5f58c9d569e",
+          "size": 5197
+        },
+        {
+          "name": "efeugrat-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat-transit.json",
+          "hash": "60f469a885392b2e34aef8d38e1031e2e0298ab5c60fa2f20bc05301ca133425",
+          "size": 237
+        },
+        {
+          "name": "efeugrat.glb",
+          "path": "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat.glb",
+          "hash": "e88d27629a4fef9ca15bf4ae5a1ede11a7520b0633d68a8e71c9e1a657456502",
+          "size": 137790748
+        },
+        {
+          "name": "efeugrat.jpg",
+          "path": "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat.jpg",
+          "hash": "3a9840e49d6e840f282516a9a9f15402e0d638950ba6dbe050aeb515c2f54b44",
+          "size": 4094868
+        },
+        {
+          "name": "efeugrat.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/efeugrat/efeugrat.json",
+          "hash": "918521fb3b2f3da3e8cdb5556492661f25fa45c4cb772beb1097937fa462b7f1",
+          "size": 949
+        }
+      ]
+    },
+    {
+      "id": "glocknergrat",
+      "name": "Glocknergrat",
+      "type": "sports-climbing",
+      "path": "mödling/glocknergrat",
+      "coordinates": [
+        16.27625,
+        48.08245
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Der Glocknergrat ist zu Fuß von Mödling erreichbar.",
+      "description_en": "The Glocknergrat is accessible on foot from Mödling.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/glocknergrat-moedling/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat.jpg"
+      ],
+      "transit": [
+        16.29574165342936,
+        48.08579238497782
+      ],
+      "parking": [
+        16.27935649204859,
+        48.08360852018737
+      ],
+      "tracks": [
+        "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat-transit-track.json"
+      ],
+      "files": [
+        {
+          "name": "glocknergrat-parking.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat-parking.json",
+          "hash": "b8ce35929c298758e2dc722b0d3b0ced172afe48ccb2250c7b150b4d16d3c9d5",
+          "size": 208
+        },
+        {
+          "name": "glocknergrat-topo.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat-topo.json",
+          "hash": "0638b6bae68918947557cdde7619f47f3685787fc9521a2a33a9b210148a86b9",
+          "size": 57780
+        },
+        {
+          "name": "glocknergrat-transit-track.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat-transit-track.json",
+          "hash": "2fb659df731572cc9c898a36788c4a09b123f8d3dd2ce3c5e89ce90846208c5d",
+          "size": 5290
+        },
+        {
+          "name": "glocknergrat-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat-transit.json",
+          "hash": "60f469a885392b2e34aef8d38e1031e2e0298ab5c60fa2f20bc05301ca133425",
+          "size": 237
+        },
+        {
+          "name": "glocknergrat.glb",
+          "path": "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat.glb",
+          "hash": "956ccd46e2d58750bd07d35d5429588790d12266b9dde0720d7244e6c9f6a6fc",
+          "size": 141567184
+        },
+        {
+          "name": "glocknergrat.jpg",
+          "path": "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat.jpg",
+          "hash": "5267ef4ed3daf3fd3c2c8a7f40712c51de94d3182c32f25309d7ad2dc7ee4c19",
+          "size": 3616508
+        },
+        {
+          "name": "glocknergrat.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/glocknergrat/glocknergrat.json",
+          "hash": "75fe1cc7e915c9e72a726a3f1537cd2eb129851bffceb886aa915b44be5dbe68",
+          "size": 645
+        }
+      ]
+    },
+    {
+      "id": "roter-ofen",
+      "name": "Roter Ofen",
+      "type": "sports-climbing",
+      "path": "mödling/roter-ofen",
+      "coordinates": [
+        16.239197788586296,
+        48.0898335567538
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Mit dem Zug nach Mödling und dann mit dem Bus nach Hinterbrühl dauert die Anreise von Wien ca. eine Stunde.",
+      "description_en": "Taking the train to Mödling and then the bus to Hinterbrühl, the journey from Vienna takes about an hour.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/roter-ofen-moedling-hinterbruehl/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/mödling/roter-ofen/roter-ofen.jpg"
+      ],
+      "transit": [
+        16.242523158843653,
+        48.08574415078681
+      ],
+      "parking": [
+        16.23935874780655,
+        48.087555926961315
+      ],
+      "tracks": [
+        "src/entries/europe/austria/lower-austria/mödling/roter-ofen/roter-ofen-transit-track.json"
+      ],
+      "files": [
+        {
+          "name": "roter-ofen-parking.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/roter-ofen/roter-ofen-parking.json",
+          "hash": "321b4f3a86ae34dd9db8e031ea2d0553b3738a9602346d1c0d8c69e7d9b45064",
+          "size": 209
+        },
+        {
+          "name": "roter-ofen-transit-track.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/roter-ofen/roter-ofen-transit-track.json",
+          "hash": "f827c94b12b729b55fdcfa8c1c24de15917265dbf5015ed7e26ff942ce1d3720",
+          "size": 2514
+        },
+        {
+          "name": "roter-ofen-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/roter-ofen/roter-ofen-transit.json",
+          "hash": "d2924ddff3cfea5f1f30490523249093d15655cb8fa58ff5b887f0e5a30c633c",
+          "size": 238
+        },
+        {
+          "name": "roter-ofen.jpg",
+          "path": "src/entries/europe/austria/lower-austria/mödling/roter-ofen/roter-ofen.jpg",
+          "hash": "1d27bf9f080da506bae480ab240eceb61cfb0f0da3107a620fb08c2c8143a8a1",
+          "size": 3861424
+        },
+        {
+          "name": "roter-ofen.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/roter-ofen/roter-ofen.json",
+          "hash": "23dbd1ab0a9c9aa1c1056dd970756dcfd9139de900a86df2bb6b3ce157b48cd2",
+          "size": 778
+        }
+      ]
+    },
+    {
+      "id": "untere-lausbubenwand",
+      "name": "Untere Lausbubenwand",
+      "type": "sports-climbing",
+      "path": "mödling/untere-lausbubenwand",
+      "coordinates": [
+        16.27297,
+        48.08049
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Die untere Lausbubenwand ist nur 5 Minuten vom Efeugrat entfernt. Jedoch ist der Fels wesentlich weniger abgegriffen.",
+      "description_en": "The untere Lausbubenwand is only 5 minutes away from the Efeugrat. However, the rock is much less polished.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/lausbubenwand-moedling/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/lausbubenwand.jpg"
+      ],
+      "transit": [
+        16.29574165342936,
+        48.08579238497782
+      ],
+      "parking": [
+        16.268743394954733,
+        48.081104670882404
+      ],
+      "tracks": [
+        "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/untere-lausbubenwand-transit-track.json"
+      ],
+      "files": [
+        {
+          "name": "lausbubenwand.jpg",
+          "path": "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/lausbubenwand.jpg",
+          "hash": "e639124118625970d91f9f5d753261edd9738c8406b487e157ee1c4bfeebf5f7",
+          "size": 2919970
+        },
+        {
+          "name": "untere-lausbubenwand-parking.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/untere-lausbubenwand-parking.json",
+          "hash": "4165e7a60068323e89de4aacfcc805410e0739d9f0ccc4e9a15641c376c16e39",
+          "size": 210
+        },
+        {
+          "name": "untere-lausbubenwand-topo.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/untere-lausbubenwand-topo.json",
+          "hash": "644a565ec9c86361f24585c9162132dfc92b1568b502fcfd4afc642976b1c27f",
+          "size": 294427
+        },
+        {
+          "name": "untere-lausbubenwand-transit-track.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/untere-lausbubenwand-transit-track.json",
+          "hash": "4a4a9406f84c3650363a41a160ef8a865cfc41c486334cf8c8a83676972b89cd",
+          "size": 5736
+        },
+        {
+          "name": "untere-lausbubenwand-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/untere-lausbubenwand-transit.json",
+          "hash": "60f469a885392b2e34aef8d38e1031e2e0298ab5c60fa2f20bc05301ca133425",
+          "size": 237
+        },
+        {
+          "name": "untere-lausbubenwand.glb",
+          "path": "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/untere-lausbubenwand.glb",
+          "hash": "fc1b640bd56c44dfab11d9706540ee741a4a874b3cb048d9b97b4dd028feb722",
+          "size": 149581924
+        },
+        {
+          "name": "untere-lausbubenwand.json",
+          "path": "src/entries/europe/austria/lower-austria/mödling/untere-lausbubenwand/untere-lausbubenwand.json",
+          "hash": "6c08d51d94387686bc47abc15f164091405b5fba2cc13fc5d2ce0cbc580c4f6b",
+          "size": 734
+        }
+      ]
+    },
+    {
+      "id": "direkte-preinerwandplatte",
+      "name": "Direkte Preinerwandplatte",
+      "type": "multi-pitch",
+      "path": "rax-schneeberg/direkte-preinerwandplatte",
+      "coordinates": [
+        15.7333238,
+        47.7012064
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Mit dem Zug nach Puchberg am Schneeberg und dann mit dem Bus weiter, ist man in 2 Stunden in Prein. Dannach gibt es noch einen 1,5 Stunden Zustieg.\n",
+      "description_en": "By train to Puchberg am Schneeberg and then by bus, you can be in Prein in 2 hours. After that, there is a 1.5-hour approach.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/direkte-preinerwandplatte/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/rax-schneeberg/direkte-preinerwandplatte/img.png"
+      ],
+      "transit": [
+        15.749070398342548,
+        47.675119899399654
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "direkte-preinerwandplatte-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/rax-schneeberg/direkte-preinerwandplatte/direkte-preinerwandplatte-transit.json",
+          "hash": "ba0c949bb638354d93f01b7a9209f9adfcc2318e6492544c025c8c6b694525aa",
+          "size": 245
+        },
+        {
+          "name": "direkte-preinerwandplatte.json",
+          "path": "src/entries/europe/austria/lower-austria/rax-schneeberg/direkte-preinerwandplatte/direkte-preinerwandplatte.json",
+          "hash": "5bd9a6e1922de586a424165c52ad60b67cb9dcc764a355afeffeebbd6baa8211",
+          "size": 859
+        },
+        {
+          "name": "img.png",
+          "path": "src/entries/europe/austria/lower-austria/rax-schneeberg/direkte-preinerwandplatte/img.png",
+          "hash": "48159dd29092872a89014c8345006d39ff9d92089f2494dba20c0b8ca27286d7",
+          "size": 3121686
+        }
+      ]
+    },
+    {
+      "id": "wasserfall-klettergarten-losenheim",
+      "name": "Wasserfall Klettergarten Losenheim",
+      "type": "sports-climbing",
+      "path": "rax-schneeberg/wasserfall-klettergarten-losenheim",
+      "coordinates": [
+        15.8565029,
+        47.795198
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Mit dem Zug nach Puchberg am Schneeberg und dann mit dem Bus weiter, ist dieses Klettergebiet von Wien aus in 2 Stunden erreichbar. Durch den Wasserfall und die einfachen Routen ist dieses Gebiet besonders für Familien geeignet.\n",
+      "description_en": "By train to Puchberg am Schneeberg and then by bus, this climbing area can be reached from Vienna in 2 hours. Due to the waterfall and the simple routes, this area is particularly suitable for families.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/wasserfall-klettergarten-losenheim/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/rax-schneeberg/wasserfall-klettergarten-losenheim/losenheim.jpg"
+      ],
+      "transit": [
+        15.863153,
+        47.790828
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "losenheim.jpg",
+          "path": "src/entries/europe/austria/lower-austria/rax-schneeberg/wasserfall-klettergarten-losenheim/losenheim.jpg",
+          "hash": "c33cbefbb0d313cb71c4ff10456145f63e6a67c896b23d4c91b09b3c5d62581b",
+          "size": 1160710
+        },
+        {
+          "name": "wasserfall-klettergarten-losenheim-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/rax-schneeberg/wasserfall-klettergarten-losenheim/wasserfall-klettergarten-losenheim-transit.json",
+          "hash": "35572a75bcd5a5bac0af4eea9807a1761646023780f5db46f2294cd700d01cb6",
+          "size": 232
+        },
+        {
+          "name": "wasserfall-klettergarten-losenheim.json",
+          "path": "src/entries/europe/austria/lower-austria/rax-schneeberg/wasserfall-klettergarten-losenheim/wasserfall-klettergarten-losenheim.json",
+          "hash": "6fe665c96245228699cf73e7ee8cce52ed32531542e953b248327836ef1e77ef",
+          "size": 1063
+        }
+      ]
+    },
+    {
+      "id": "traumland-rosenburg-kamptal",
+      "name": "Traumland Rosenburg Kamptal",
+      "type": "sports-climbing",
+      "path": "rosenburg/traumland-rosenburg-kamptal",
+      "coordinates": [
+        15.60953615193662,
+        48.62740886682984
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Mit einer Dauer von 2,5 Stunden ist die Anreise von Wien etwas länger. Wer die lange Reise antritt wird mit gutem Gneis und einem Klettergarten am Kamp belohnt. Mit dem Zug nach Rosenburg Bahnhof und dann ca. 40 Minuten zu Fuß zum Klettergarten.\n",
+      "description_en": "With a duration of 2.5 hours, the journey from Vienna is a bit longer. Those who undertake the long journey will be rewarded with good gneiss and a climbing garden on the Kamp. By train to Rosenburg station and then about 40 minutes on foot to the climbing garden.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/traumland-rosenburg-kamptal/",
+      "images": [],
+      "transit": [
+        15.643512927469002,
+        48.62848705517076
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "traumland-rosenburg-kamptal-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/rosenburg/traumland-rosenburg-kamptal/traumland-rosenburg-kamptal-transit.json",
+          "hash": "ef221ed0057ab3b5b054b9c8546137d1f2d9221a05da279a60fb553013584b9a",
+          "size": 240
+        },
+        {
+          "name": "traumland-rosenburg-kamptal.json",
+          "path": "src/entries/europe/austria/lower-austria/rosenburg/traumland-rosenburg-kamptal/traumland-rosenburg-kamptal.json",
+          "hash": "66afd355083ff085d4694884154d7242fb91e4891e7feef0d1c502aa9ad3d4b7",
+          "size": 1124
+        }
+      ]
+    },
+    {
+      "id": "blassenstein",
+      "name": "Blassenstein",
+      "type": "sports-climbing",
+      "path": "scheibbs/blassenstein",
+      "coordinates": [
+        15.1998192,
+        48.0088208
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Öffentlich ist der Blassenstein etwas schwierig erreichbar, dafür lockt er mit einer Wunderschönen Aussicht über das Mostviertel. Online ist leider kein Topo verfügbar. Um beim Blassenstein zu klettern ist es notwendig, sich ein stück abzuseilen.\n",
+      "description_en": "Public transport to Blassenstein is somewhat difficult, but it entices with a beautiful view over the Mostviertel. Unfortunately, no topo is available online. To climb at Blassenstein, it is necessary to rappel down a bit.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/de/klettern/austria/wien-vienna-area/area/4287648768",
+      "images": [],
+      "transit": [
+        15.16464122792469,
+        48.005033476848304
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "blassenstein-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/scheibbs/blassenstein/blassenstein-transit.json",
+          "hash": "5ff63313c112e87ed68592fe38c661317202189c1bce33e3d62d8b3a9f20b95b",
+          "size": 233
+        },
+        {
+          "name": "blassenstein.json",
+          "path": "src/entries/europe/austria/lower-austria/scheibbs/blassenstein/blassenstein.json",
+          "hash": "55bd0095b1e19dc2f4a8bdbf95ded51b6ffe1f6fae1fce2c33ca8dba349c2091",
+          "size": 1022
+        }
+      ]
+    },
+    {
+      "id": "lueggraben",
+      "name": "Lueggraben",
+      "type": "sports-climbing",
+      "path": "scheibbs/lueggraben",
+      "coordinates": [
+        15.13871,
+        47.98624
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Mit dem Zug zum Banhof in Scheibbs und dann mit dem Bus nach Neustift, ist dieses Klettergebiet u in ca. 2,5 Stunden von Wien erreichbar. Von Neustift gibt es noch einen ca. 20 min Zustieg. Durch die position im Wald und der Ausrichtung ist diese Klettergebiet ideal für den Sommer.\n",
+      "description_en": "With the train to Scheibbs station and then by bus to Neustift, this climbing area can be reached from Vienna in approx. 2.5 hours. From Neustift there is still an approx. 20 min approach. Due to its position in the forest and orientation, this climbing area is ideal for summer.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.oetk-scheibbs.at/klettern/klettergarten-lueggraben/topo/",
+      "images": [],
+      "transit": [
+        15.16354771933244,
+        47.994195027679126
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "lueggraben-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/scheibbs/lueggraben/lueggraben-transit.json",
+          "hash": "32a8fd63fc1df2d471ffee1a615aae541571cdc779ff5e94781fda8b9880f9e6",
+          "size": 250
+        },
+        {
+          "name": "lueggraben.json",
+          "path": "src/entries/europe/austria/lower-austria/scheibbs/lueggraben/lueggraben.json",
+          "hash": "94b1ded9a3cb1f689f510f8623cd8cfa9abc3845a9f4ae0da750b6eacc2a4eaf",
+          "size": 1097
+        }
+      ]
+    },
+    {
+      "id": "bergrettungssteig",
+      "name": "Bergrettungssteig",
+      "type": "multi-pitch",
+      "path": "wachau/bergrettungssteig",
+      "coordinates": [
+        15.5181851,
+        48.4023248
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "",
+      "description_en": "",
+      "tags": [],
+      "security": "Sehr Gut",
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/bergrettungsweg-duernstein-wachau/",
+      "images": [],
+      "transit": [
+        15.51817,
+        48.39935
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "bergrettungssteig-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/bergrettungssteig/bergrettungssteig-transit.json",
+          "hash": "51147845b07ab963ff76cb130308a297ff703911d1738490fa171352ca90ec17",
+          "size": 221
+        },
+        {
+          "name": "bergrettungssteig.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/bergrettungssteig/bergrettungssteig.json",
+          "hash": "7be7d92aae488271a2860474871f653d18bc1cdcd6d61ec7cb6a3d8ca0e3a8a2",
+          "size": 588
+        }
+      ]
+    },
+    {
+      "id": "civetta",
+      "name": "Civetta",
+      "type": "sports-climbing",
+      "path": "wachau/civetta",
+      "coordinates": [
+        15.5220663,
+        48.4025936
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "",
+      "description_en": "",
+      "tags": [],
+      "security": "Sehr Gut",
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/civetta-duernstein-wachau/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/wachau/civetta/img.png",
+        "src/entries/europe/austria/lower-austria/wachau/civetta/img_1.png",
+        "src/entries/europe/austria/lower-austria/wachau/civetta/img_2.png",
+        "src/entries/europe/austria/lower-austria/wachau/civetta/img_3.png"
+      ],
+      "transit": [
+        15.51817,
+        48.39935
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "civetta-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/civetta/civetta-transit.json",
+          "hash": "51147845b07ab963ff76cb130308a297ff703911d1738490fa171352ca90ec17",
+          "size": 221
+        },
+        {
+          "name": "civetta.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/civetta/civetta.json",
+          "hash": "b8896abbc861af4d9ef93ba329a54a874675db8ddddea0e0e390db39fb87f557",
+          "size": 559
+        },
+        {
+          "name": "img.png",
+          "path": "src/entries/europe/austria/lower-austria/wachau/civetta/img.png",
+          "hash": "9074b8a50c0f26f2ce72dc2e2a0a10205564b48ac7807316348a53319d81db0f",
+          "size": 3569386
+        },
+        {
+          "name": "img_1.png",
+          "path": "src/entries/europe/austria/lower-austria/wachau/civetta/img_1.png",
+          "hash": "af654605fca58d6a5d980bc313d829ddc424b350decfca31641ee734082285c9",
+          "size": 3495338
+        },
+        {
+          "name": "img_2.png",
+          "path": "src/entries/europe/austria/lower-austria/wachau/civetta/img_2.png",
+          "hash": "0a7a6656b47d1c9272ae1b2fbfee81b5ceacc4f394aa90a2d370e9bbc1202d46",
+          "size": 3521441
+        },
+        {
+          "name": "img_3.png",
+          "path": "src/entries/europe/austria/lower-austria/wachau/civetta/img_3.png",
+          "hash": "cb5cc9019d802b52919a16b95ad0bb937cdf5d602c5c9db54d89fd5630ff4bcb",
+          "size": 2747519
+        }
+      ]
+    },
+    {
+      "id": "don-bosco-grat",
+      "name": "Don Bosco Grat",
+      "type": "multi-pitch",
+      "path": "wachau/don-bosco-grat",
+      "coordinates": [
+        15.5205428,
+        48.4053065
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "",
+      "description_en": "",
+      "tags": [],
+      "security": "Sehr Gut",
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/don-bosco-grat-wachau/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/wachau/don-bosco-grat/wachau-mulit-pitch.jpg"
+      ],
+      "transit": [
+        15.51817,
+        48.39935
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "don-bosco-grat-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/don-bosco-grat/don-bosco-grat-transit.json",
+          "hash": "51147845b07ab963ff76cb130308a297ff703911d1738490fa171352ca90ec17",
+          "size": 221
+        },
+        {
+          "name": "don-bosco-grat.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/don-bosco-grat/don-bosco-grat.json",
+          "hash": "ac010e90665cd1685e415afab98c60a7e28e8416bf4ea45d99093bf0ead2ff27",
+          "size": 789
+        },
+        {
+          "name": "wachau-mulit-pitch.jpg",
+          "path": "src/entries/europe/austria/lower-austria/wachau/don-bosco-grat/wachau-mulit-pitch.jpg",
+          "hash": "142e55cb314b12a73fcc5f6eb0ad1c3d7e4ca1a42e34248845dbc542cbfdc989",
+          "size": 1854679
+        }
+      ]
+    },
+    {
+      "id": "däumling",
+      "name": "Däumling",
+      "type": "sports-climbing",
+      "path": "wachau/däumling",
+      "coordinates": [
+        15.5238204,
+        48.3981524
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Rund um die Burgruine Dürnstein sind mehrere Türme mit Kletterrouten.\n Der Däumling dominiert als höchster Turm den Burggraben und bietet eine der lohnendsten Klettereien des Gebiets.",
+      "description_en": "Around the Dürnstein castle ruins, there are several towers with climbing routes.\n The Däumling dominates the Burggraben as the highest tower and offers one of the most rewarding climbs in the area.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/climbing/wachau/durnstein/routes",
+      "images": [
+        "src/entries/europe/austria/lower-austria/wachau/däumling/ruine.png"
+      ],
+      "transit": [
+        15.523831633693868,
+        48.39302614587967
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "däumling-topo.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/däumling/däumling-topo.json",
+          "hash": "40adbe71ddc8c4b8095b2f9de13d4a68d71af857b6e1981d1dab881c7f66cc6b",
+          "size": 453127
+        },
+        {
+          "name": "däumling-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/däumling/däumling-transit.json",
+          "hash": "4a4c33a730c0b995f97e0cd6ad21607a6a883d81a28df5850f3c42200e839676",
+          "size": 246
+        },
+        {
+          "name": "däumling.glb",
+          "path": "src/entries/europe/austria/lower-austria/wachau/däumling/däumling.glb",
+          "hash": "2f5009aad084facdb48ccc7432c3ca7d7b5165f023de9530a6429def809da8f8",
+          "size": 28521204
+        },
+        {
+          "name": "däumling.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/däumling/däumling.json",
+          "hash": "9f288320c0050809e175d88b9be607ef263243f49980d531fa3df277b6dc7f23",
+          "size": 902
+        },
+        {
+          "name": "ruine.png",
+          "path": "src/entries/europe/austria/lower-austria/wachau/däumling/ruine.png",
+          "hash": "260909183e370ac4c4faa46e96a94a55d78f62241f16d7173e26cf565e8d0df0",
+          "size": 4465539
+        }
+      ]
+    },
+    {
+      "id": "kummerstal",
+      "name": "Kummerstal",
+      "type": "sports-climbing",
+      "path": "wachau/kummerstal",
+      "coordinates": [
+        15.520205728716265,
+        48.4058230555076
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Das Kummerstal hat etwas mehr Zustieg und ist etwas schwerer zu finden. Jedoch sehr lohnenswert.",
+      "description_en": "The Kummerstal requires a slightly longer approach and is a bit harder to find. However, it is very worthwhile.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/de/klettern/wachau/area/345363291",
+      "images": [
+        "src/entries/europe/austria/lower-austria/wachau/kummerstal/img.png"
+      ],
+      "transit": [
+        15.51817,
+        48.39935
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "img.png",
+          "path": "src/entries/europe/austria/lower-austria/wachau/kummerstal/img.png",
+          "hash": "aec5de168ff964b13aeb55ce135927999ddf90d62287e0b773ad0026c3c3f2fd",
+          "size": 3441345
+        },
+        {
+          "name": "kummerstal-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/kummerstal/kummerstal-transit.json",
+          "hash": "51147845b07ab963ff76cb130308a297ff703911d1738490fa171352ca90ec17",
+          "size": 221
+        },
+        {
+          "name": "kummerstal.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/kummerstal/kummerstal.json",
+          "hash": "94c392d7ebd681b7b57c04ddb0811cdeff6b33e947c06e0d97468c3d1d69e666",
+          "size": 738
+        }
+      ]
+    },
+    {
+      "id": "nasenwand",
+      "name": "Nasenwand",
+      "type": "sports-climbing",
+      "path": "wachau/nasenwand",
+      "coordinates": [
+        15.51789,
+        48.40237
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "",
+      "description_en": "",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/nasenwand-duernstein-wachau/",
+      "images": [
+        "src/entries/europe/austria/lower-austria/wachau/nasenwand/img.png"
+      ],
+      "transit": [
+        15.51817,
+        48.39935
+      ],
+      "parking": null,
+      "tracks": [
+        "src/entries/europe/austria/lower-austria/wachau/nasenwand/nasenwand-transit-track.json"
+      ],
+      "files": [
+        {
+          "name": "img.png",
+          "path": "src/entries/europe/austria/lower-austria/wachau/nasenwand/img.png",
+          "hash": "424a42505b415633fb1e33eaa858aa56e996759b9d8da13b7bd56a928d0d3353",
+          "size": 2989559
+        },
+        {
+          "name": "nasenwand-transit-track.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/nasenwand/nasenwand-transit-track.json",
+          "hash": "31666be6c3e80bfb28ae3e4e8bc3828d49ce02521e679bf7cccd607672eeec17",
+          "size": 4288
+        },
+        {
+          "name": "nasenwand-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/nasenwand/nasenwand-transit.json",
+          "hash": "51147845b07ab963ff76cb130308a297ff703911d1738490fa171352ca90ec17",
+          "size": 221
+        },
+        {
+          "name": "nasenwand.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/nasenwand/nasenwand.json",
+          "hash": "ffde1e32c839f05517aae7cc96b4247e678a0e20ad7d63bd5b18533b7e7914c7",
+          "size": 527
+        }
+      ]
+    },
+    {
+      "id": "smaragdlerweg",
+      "name": "Smaragdlerweg",
+      "type": "multi-pitch",
+      "path": "wachau/smaragdlerweg",
+      "coordinates": [
+        15.523507164453482,
+        48.39747507190018
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "",
+      "description_en": "",
+      "tags": [],
+      "security": "Sehr Gut",
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/smaragdlerweg/",
+      "images": [],
+      "transit": [
+        15.523831633693868,
+        48.39302614587967
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "smaragdlerweg-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/smaragdlerweg/smaragdlerweg-transit.json",
+          "hash": "4a4c33a730c0b995f97e0cd6ad21607a6a883d81a28df5850f3c42200e839676",
+          "size": 246
+        },
+        {
+          "name": "smaragdlerweg.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/smaragdlerweg/smaragdlerweg.json",
+          "hash": "38bc2480722695bfcec44dae29a5f993633e140d205a495af7b6e08c1eec634b",
+          "size": 571
+        }
+      ]
+    },
+    {
+      "id": "st-lorenz",
+      "name": "St. Lorenz",
+      "type": "sports-climbing",
+      "path": "wachau/st-lorenz",
+      "coordinates": [
+        15.4683108,
+        48.3838225
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "",
+      "description_en": "",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/de/klettern/wachau/area/345374742",
+      "images": [],
+      "transit": [
+        15.475550008331474,
+        48.39249240797019
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "st-lorenz-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/st-lorenz/st-lorenz-transit.json",
+          "hash": "41c3852a2ed6d29599c8fbe9665704f20b1996bb37e7e7cffb355c9458eaee08",
+          "size": 246
+        },
+        {
+          "name": "st-lorenz.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/st-lorenz/st-lorenz.json",
+          "hash": "11c083308c96fb586533b5b8cb83593c1b6950eb4aa0eba44b3f2ade43f69c46",
+          "size": 515
+        }
+      ]
+    },
+    {
+      "id": "wachauer-grat",
+      "name": "Wachauer Grat",
+      "type": "multi-pitch",
+      "path": "wachau/wachauer-grat",
+      "coordinates": [
+        15.519515679993651,
+        48.405450617564235
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "",
+      "description_en": "",
+      "tags": [],
+      "security": "Sehr Gut",
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/wachauergrat-wachauer-grat/",
+      "images": [],
+      "transit": [
+        15.51817,
+        48.39935
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "wachauer-grat-transit.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/wachauer-grat/wachauer-grat-transit.json",
+          "hash": "51147845b07ab963ff76cb130308a297ff703911d1738490fa171352ca90ec17",
+          "size": 221
+        },
+        {
+          "name": "wachauer-grat.json",
+          "path": "src/entries/europe/austria/lower-austria/wachau/wachauer-grat/wachauer-grat.json",
+          "hash": "64eda68232caac5441917bfbddcc9129ba6ead98ac5238aba6667a5dd504b3a2",
+          "size": 585
+        }
+      ]
+    },
+    {
+      "id": "roter-kamin",
+      "name": "Roter Kamin",
+      "type": "multi-pitch",
+      "path": "mixnitz/roter-kamin",
+      "coordinates": [
+        15.389441386534566,
+        47.33561636563111
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Von Wien fährt man mit einem beliebigen Zug nach Bruck/Mur und dann mit der S1 weiter nach Mixnitz. Die gesamte Fahrt dauert knapp über 2 Stunden. Dannach gibt es noch einen etwa 30 minütigen Zustieg durch die schöne Bärenschützklamm.\n",
+      "description_en": "From Vienna, take any train to Bruck/Mur and then the S1 to Mixnitz. The entire journey takes just over 2 hours. This is followed by a 30-minute approach through the beautiful Bärenschützklamm gorge.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/roter-kamin-rampenwulst/",
+      "images": [
+        "src/entries/europe/austria/styria/mixnitz/roter-kamin/mixnitz-multi-pitch.jpg"
+      ],
+      "transit": [
+        15.360276320342253,
+        47.331713971977095
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "mixnitz-multi-pitch.jpg",
+          "path": "src/entries/europe/austria/styria/mixnitz/roter-kamin/mixnitz-multi-pitch.jpg",
+          "hash": "b441ed1a89f396dd9e0fb7d8716048d83d60eeb9d5967b99a0354cbbf3b80459",
+          "size": 4050211
+        },
+        {
+          "name": "roter-kamin-transit.json",
+          "path": "src/entries/europe/austria/styria/mixnitz/roter-kamin/roter-kamin-transit.json",
+          "hash": "d4285cfd3b184ead8804ceee1214f637f63ec295c43de8fe91854ab8ae663ed7",
+          "size": 248
+        },
+        {
+          "name": "roter-kamin.json",
+          "path": "src/entries/europe/austria/styria/mixnitz/roter-kamin/roter-kamin.json",
+          "hash": "e2c44bdadfecd30dd0dcfa56933478086cae898ed2462f7cfaebd908a9f6efb9",
+          "size": 992
+        }
+      ]
+    },
+    {
+      "id": "rettenbachtal",
+      "name": "Rettenbachtal",
+      "type": "sports-climbing",
+      "path": "bad-ischl/rettenbachtal",
+      "coordinates": [
+        13.65588,
+        47.702854
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Das Rettenbachtal bei Bad Ischl ist ein landschaftlich beeindruckendes Klettergebiet mit zahlreichen Routen für alle Könnensstufen. Die imposanten Felswände aus Kalkstein bieten sowohl lange, ausdauernde Touren als auch knackige, technisch anspruchsvolle Routen. Besonders beeindruckend sind die Routen in den hohen Schwierigkeitsgraden bis 8c+.\n\nDer einfachste Weg zum Klettergebiet führt mit dem Zug nach Bad Ischl, von wo aus man bequem mit dem Fahrrad weiterfahren kann. Alternativ steht der Bus 553 zur Verfügung, der eine direkte Anbindung bietet. Die letzten Meter zum Kletterfelsen führen durch ein malerisches Tal, das allein schon die Anreise wert ist.\n Neben den Kletterrouten bietet das Rettenbachtal eine atemberaubende Naturkulisse, die sich perfekt für einen erholsamen Tag in den Bergen eignet. Nach dem Klettern lohnt sich ein Abstecher in die nahegelegenen Euro Therme in Bad Ischl.\n",
+      "description_en": "Rettenbachtal near Bad Ischl is a scenically impressive climbing area with numerous routes for all skill levels. The imposing limestone walls offer both long, endurance tours and short, technically demanding routes. The routes in the higher difficulty levels up to 8c+ are particularly impressive.\n\nThe easiest way to reach the climbing area is by train to Bad Ischl, from where you can easily continue by bicycle. Alternatively, bus 553 is available, providing a direct connection. The last meters to the climbing rock lead through a picturesque valley that is worth the journey alone.\n In addition to the climbing routes, Rettenbachtal offers a breathtaking natural backdrop, perfect for a relaxing day in the mountains. After climbing, a detour to the nearby Euro Therme in Bad Ischl is well worth it.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/de/klettern/austria/rettenbachtal",
+      "images": [
+        "src/entries/europe/austria/upper-austria/bad-ischl/rettenbachtal/bad-ischl.jpg"
+      ],
+      "transit": [
+        13.636656,
+        47.706878
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "bad-ischl.jpg",
+          "path": "src/entries/europe/austria/upper-austria/bad-ischl/rettenbachtal/bad-ischl.jpg",
+          "hash": "50e8069dc98270765524b306f03807fb403e7118f66f9712cc0ccfef3d38720f",
+          "size": 931265
+        },
+        {
+          "name": "rettenbachtal-transit.json",
+          "path": "src/entries/europe/austria/upper-austria/bad-ischl/rettenbachtal/rettenbachtal-transit.json",
+          "hash": "9afa35ba920555d2306cb02d4a3d2498b87b75e8bb9b76342debd2faabe83d32",
+          "size": 239
+        },
+        {
+          "name": "rettenbachtal.json",
+          "path": "src/entries/europe/austria/upper-austria/bad-ischl/rettenbachtal/rettenbachtal.json",
+          "hash": "552d8b453c773e3a7869187994192deb58860e40e7bdb686bb8693350dd347c4",
+          "size": 2248
+        }
+      ]
+    },
+    {
+      "id": "adlerhorst",
+      "name": "Adlerhorst",
+      "type": "sports-climbing",
+      "path": "traunstein/adlerhorst",
+      "coordinates": [
+        13.819849,
+        47.880658
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Um zum Traunstein zu gelangen ist das Traunstein Shuttle (https://traunsee-almtal.salzkammergut.at/anreise-nahverkehr/regionale-mobilitaet/gmunden-mobilitaet.html) zu empfehlen.",
+      "description_en": "To get to the Traunstein, we recommend using the Traunstein Shuttle (https://traunsee-almtal.salzkammergut.at/anreise-nahverkehr/regionale-mobilitaet/gmunden-mobilitaet.html).",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.bergsteigen.com/touren/klettergarten/adlerhorst/",
+      "images": [],
+      "transit": null,
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "adlerhorst.json",
+          "path": "src/entries/europe/austria/upper-austria/traunstein/adlerhorst/adlerhorst.json",
+          "hash": "af933770004c62eb1818e2885a88630f5928ad1dbf9c280802f77cc66aeadb53",
+          "size": 878
+        }
+      ]
+    },
+    {
+      "id": "luftikus",
+      "name": "Luftikus",
+      "type": "multi-pitch",
+      "path": "traunstein/luftikus",
+      "coordinates": [
+        13.818782,
+        47.861695
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Um zum Traunstein zu gelangen ist das Traunstein Shuttle (https://traunsee-almtal.salzkammergut.at/anreise-nahverkehr/regionale-mobilitaet/gmunden-mobilitaet.html) zu empfehlen.",
+      "description_en": "To get to the Traunstein, we recommend using the Traunstein Shuttle (https://traunsee-almtal.salzkammergut.at/anreise-nahverkehr/regionale-mobilitaet/gmunden-mobilitaet.html).",
+      "tags": [],
+      "security": "Sehr Gut",
+      "topoLink": "https://www.bergsteigen.com/touren/klettern/luftikus/",
+      "images": [],
+      "transit": null,
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "luftikus.json",
+          "path": "src/entries/europe/austria/upper-austria/traunstein/luftikus/luftikus.json",
+          "hash": "bec8b9df79726c62faa6a8726f09335662102273f7310cb1b16154dc68cf8476",
+          "size": 890
+        }
+      ]
+    },
+    {
+      "id": "han-derventa",
+      "name": "Han derventa",
+      "type": "sports-climbing",
+      "path": "europe/bosnia-and-herzegovina/sarajevo/han-derventa",
+      "coordinates": [
+        18.5440083,
+        43.8643265
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Das Klettergebiet besteht aus mehreren Sektoren, welche alle auf Privatgrund sind. Der linke Sektor ist in einem Ziegenauslauf.",
+      "description_en": "The climbing area consists of several sectors, all of which are on private property. The left sector is in a goat run.",
+      "tags": [],
+      "security": null,
+      "topoLink": null,
+      "images": [
+        "src/entries/europe/bosnia-and-herzegovina/sarajevo/han-derventa/sarajevo.jpg"
+      ],
+      "transit": null,
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "han-derventa.json",
+          "path": "src/entries/europe/bosnia-and-herzegovina/sarajevo/han-derventa/han-derventa.json",
+          "hash": "055e96d73ef9278316955fa537521e9816c434d71fb403c1db8dbe82c2a9bfa7",
+          "size": 604
+        },
+        {
+          "name": "sarajevo.jpg",
+          "path": "src/entries/europe/bosnia-and-herzegovina/sarajevo/han-derventa/sarajevo.jpg",
+          "hash": "e0895b6dc5d649d2e42c48183bca8fc89d224245ba4e6fbec3fbc2a0ef630b11",
+          "size": 1366767
+        }
+      ]
+    },
+    {
+      "id": "orlovača",
+      "name": "Orlovača",
+      "type": "sports-climbing",
+      "path": "europe/bosnia-and-herzegovina/sarajevo/orlovača",
+      "coordinates": [
+        18.546583,
+        43.864327
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Klettern neben der Orlovača Höhle! Durch die touristische Nutzung der Höhle gibt es gute Parkplätze und Toiletten. Teile der Kletterrouten sind hinter einem Stromkabel und dadurch nicht ideal zu beklettern.",
+      "description_en": "Climbing next to the Orlovača cave! Due to the cave's tourist use, there are good parking spaces and toilets. Parts of the climbing routes are behind a power cable and therefore not ideal for climbing.",
+      "tags": [],
+      "security": null,
+      "topoLink": null,
+      "images": [],
+      "transit": null,
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "orlovača.json",
+          "path": "src/entries/europe/bosnia-and-herzegovina/sarajevo/orlovača/orlovača.json",
+          "hash": "38c751af90506cfb3066dd915f5a8a1ce01d84c95a70d80fe50502b670d2226e",
+          "size": 763
+        }
+      ]
+    },
+    {
+      "id": "steinberg",
+      "name": "Steinberg",
+      "type": "sports-climbing",
+      "path": "königsstein/steinberg",
+      "coordinates": [
+        11.6538595,
+        49.6047817
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Steinberg ist zu Fuß von Königsstein erreichbar.",
+      "description_en": "Steinberg is accessible on foot from Königsstein.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/de/klettern/germany/frankenjura/steinberg",
+      "images": [
+        "src/entries/europe/germany/bavaria/königsstein/steinberg/königsstein.png"
+      ],
+      "transit": [
+        11.644209170023137,
+        49.598529558239754
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "königsstein.png",
+          "path": "src/entries/europe/germany/bavaria/königsstein/steinberg/königsstein.png",
+          "hash": "bb02962414eb7b70a77ac70623b001679e2166e73e8272c528caee912e5c367a",
+          "size": 2362038
+        },
+        {
+          "name": "steinberg-transit.json",
+          "path": "src/entries/europe/germany/bavaria/königsstein/steinberg/steinberg-transit.json",
+          "hash": "f900b60612492013241e851d2c22efe0cb3df5a23ddef4d468645c78cf84671a",
+          "size": 235
+        },
+        {
+          "name": "steinberg.json",
+          "path": "src/entries/europe/germany/bavaria/königsstein/steinberg/steinberg.json",
+          "hash": "26aa5507536510cd66c6736dfdd596e61531cc451695497351ba828ea1327663",
+          "size": 628
+        }
+      ]
+    },
+    {
+      "id": "steinerne-stadt",
+      "name": "Steinerne Stadt",
+      "type": "sports-climbing",
+      "path": "königsstein/steinerne-stadt",
+      "coordinates": [
+        11.602130821951587,
+        49.63497391954552
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Die Steinerne Stadt ist zu Fuß oder mit dem Fahrrad von Königsstein erreichbar.",
+      "description_en": "The Steinerne Stadt is accessible on foot or by bicycle from Königsstein.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/de/klettern/germany/frankenjura/steinberg",
+      "images": [
+        "src/entries/europe/germany/bavaria/königsstein/steinerne-stadt/img.png"
+      ],
+      "transit": [
+        11.63340446227266,
+        49.60716261839839
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "img.png",
+          "path": "src/entries/europe/germany/bavaria/königsstein/steinerne-stadt/img.png",
+          "hash": "c0845c7b0e12a5b54cbea0d30eea5b22802f294d2412cef6f274458bd9f1510f",
+          "size": 3447968
+        },
+        {
+          "name": "steinerne-stadt-transit.json",
+          "path": "src/entries/europe/germany/bavaria/königsstein/steinerne-stadt/steinerne-stadt-transit.json",
+          "hash": "9fbe95b24188bf25561a94693d32e920ef0c35ddd2a15d14ccadb090ae2b3317",
+          "size": 239
+        },
+        {
+          "name": "steinerne-stadt.json",
+          "path": "src/entries/europe/germany/bavaria/königsstein/steinerne-stadt/steinerne-stadt.json",
+          "hash": "a5856430a4808a3ab30355d32001c1ac0b38316fab571b564aa8a050a00802ef",
+          "size": 716
+        }
+      ]
+    },
+    {
+      "id": "villa-santa-caterina-aufhofen",
+      "name": "Villa Santa Caterina - Aufhofen",
+      "type": "sports-climbing",
+      "path": "bruneck/villa-santa-caterina-aufhofen",
+      "coordinates": [
+        11.9483151,
+        46.8182957
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Die Villa Santa Caterina in Aufhofen ist ein wunderschön gelegenes Klettergebiet in der Nähe von Bruneck, das sich durch seine Vielfalt an Routen und die idyllische Umgebung auszeichnet. Die Felsen bieten sowohl für Anfänger als auch für erfahrene Kletterer spannende Herausforderungen. Besonders an heißen Sommertagen ist das Gebiet aufgrund seiner schattigen Lagen eine gute Wahl.\nVon Bruneck aus ist der Klettergarten mit dem Bus 420.2 bequem erreichbar. Noch einfacher ist die Anreise mit dem Fahrrad, da sich das Gebiet nur wenige Kilometer außerhalb der Stadt befindet.\nDas Klettergebiet bietet abwechslungsreiche Routen in unterschiedlichen Schwierigkeitsgraden. Von überhängen bis Rissen ist alles dabei. Leider sind einige Routen sehr stark gechiped.\nNeben dem Klettern lädt die Umgebung zu weiteren Outdoor-Aktivitäten ein. Die nahegelegenen Wanderwege bieten wunderschöne Ausblicke auf das Pustertal, und Bruneck ist mit seinen Cafés und Restaurants ein perfekter Ort, um den Tag entspannt ausklingen zu lassen.\n",
+      "description_en": "Villa Santa Caterina in Aufhofen is a beautifully located climbing area near Bruneck, characterized by its variety of routes and idyllic surroundings. The rocks offer exciting challenges for both beginners and experienced climbers. Especially on hot summer days, the area is a good choice due to its shady locations.\nFrom Bruneck, the climbing garden is easily accessible by bus 420.2. Even easier is the arrival by bicycle, as the area is located only a few kilometers outside the city.\nThe climbing area offers diverse routes in different degrees of difficulty. Everything from overhangs to cracks is included. Unfortunately, some routes are very heavily chipped.\nIn addition to climbing, the surroundings invite other outdoor activities. The nearby hiking trails offer beautiful views of the Pustertal, and Bruneck with its cafes and restaurants is a perfect place to end the day in a relaxed way.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.thecrag.com/climbing/italy/alto-adige/val-pusteria-pustertal/area/14124601",
+      "images": [
+        "src/entries/europe/italy/south-tyrol/bruneck/villa-santa-caterina-aufhofen/bruneck.jpg"
+      ],
+      "transit": [
+        11.945496602166399,
+        46.81437112458529
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "bruneck.jpg",
+          "path": "src/entries/europe/italy/south-tyrol/bruneck/villa-santa-caterina-aufhofen/bruneck.jpg",
+          "hash": "dacb8893b37312dbb88ee456c325aa124f521588e96102cc7e88d285741f6da8",
+          "size": 437089
+        },
+        {
+          "name": "villa-santa-caterina-aufhofen-transit.json",
+          "path": "src/entries/europe/italy/south-tyrol/bruneck/villa-santa-caterina-aufhofen/villa-santa-caterina-aufhofen-transit.json",
+          "hash": "462d6dd28d3f06403e33b07bd5f5ad167655286a404682573ed5ebff3bab7c09",
+          "size": 224
+        },
+        {
+          "name": "villa-santa-caterina-aufhofen.json",
+          "path": "src/entries/europe/italy/south-tyrol/bruneck/villa-santa-caterina-aufhofen/villa-santa-caterina-aufhofen.json",
+          "hash": "6c1ff127d47167e113bfd04e9084ebf4461bdde34e14af517b22dbede7bfe512",
+          "size": 2551
+        }
+      ]
+    },
+    {
+      "id": "landro",
+      "name": "Landro",
+      "type": "sports-climbing",
+      "path": "hochpustertal/landro",
+      "coordinates": [
+        12.2250614,
+        46.6254198
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Das Klettergebiet Landro liegt in einer atemberaubenden alpinen Umgebung und bietet eine Vielzahl von Routen für alle Schwierigkeitsstufen. Besonders beliebt ist es aufgrund seiner beeindruckenden Felsformationen und der Möglichkeit, auch an heißen Sommertagen im Schatten zu klettern.\nVon Toblach aus ist der Klettergarten mit dem Bus 445 bequem erreichbar. Die Fahrt führt entlang malerischer Landschaften und macht bereits die Anreise zu einem Erlebnis.",
+      "description_en": "The Landro climbing area is located in a breathtaking alpine environment and offers a variety of routes for all skill levels. It is particularly popular due to its impressive rock formations and the possibility of climbing in the shade even on hot summer days.\nFrom Toblach, the climbing garden is easily accessible by bus 445. The journey leads along picturesque landscapes and makes the arrival itself an experience.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.drei-zinnen.info/media/a5ca3153-0af6-4c70-a1cd-49e6d9c2c1c1/broschure-klettergaerten-definitiv.pdf",
+      "images": [],
+      "transit": [
+        12.229892881696216,
+        46.63266055141102
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "landro-transit.json",
+          "path": "src/entries/europe/italy/south-tyrol/hochpustertal/landro/landro-transit.json",
+          "hash": "3aa907f5b13b404e9a94441004ca50bbb189901748aa808d5974e361e3412fc7",
+          "size": 226
+        },
+        {
+          "name": "landro.json",
+          "path": "src/entries/europe/italy/south-tyrol/hochpustertal/landro/landro.json",
+          "hash": "03ee67928ef88fa531fd72342d680372c15f588f246e42ef2de75753603377af",
+          "size": 1450
+        }
+      ]
+    },
+    {
+      "id": "landro-höhle",
+      "name": "Landro Höhle",
+      "type": "sports-climbing",
+      "path": "hochpustertal/landro-höhle",
+      "coordinates": [
+        12.231074,
+        46.62144
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Die Landro Höhle ist ein herausforderndes Klettergebiet, das sich besonders für erfahrene Kletterer eignet. Die beeindruckenden Überhänge und steilen Wandstrukturen bieten spannende Herausforderungen und unvergessliche Klettererlebnisse.\n Dieses Gebiet ist von Toblach aus mit dem Bus 445 gut erreichbar. Die kurze Wanderung von der Haltestelle zum Kletterspot führt durch eine beeindruckende Naturkulisse.",
+      "description_en": "The Landro Cave is a challenging climbing area that is particularly suitable for experienced climbers. The impressive overhangs and steep wall structures offer exciting challenges and unforgettable climbing experiences.\n This area is well accessible from Toblach by bus 445. The short hike from the bus stop to the climbing spot leads through an impressive natural backdrop.",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.drei-zinnen.info/media/a5ca3153-0af6-4c70-a1cd-49e6d9c2c1c1/broschure-klettergaerten-definitiv.pdf",
+      "images": [],
+      "transit": [
+        12.229892881696216,
+        46.63266055141102
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "landro-höhle-transit.json",
+          "path": "src/entries/europe/italy/south-tyrol/hochpustertal/landro-höhle/landro-höhle-transit.json",
+          "hash": "3aa907f5b13b404e9a94441004ca50bbb189901748aa808d5974e361e3412fc7",
+          "size": 226
+        },
+        {
+          "name": "landro-höhle.json",
+          "path": "src/entries/europe/italy/south-tyrol/hochpustertal/landro-höhle/landro-höhle.json",
+          "hash": "75e0693c8f2249199dfd74bcfa87357e7b88b83547c659e10c8e942077868e5e",
+          "size": 1376
+        }
+      ]
+    },
+    {
+      "id": "militärklettergarten",
+      "name": "Militärklettergarten",
+      "type": "sports-climbing",
+      "path": "hochpustertal/militärklettergarten",
+      "coordinates": [
+        12.22918,
+        46.643851
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Der Militärklettergarten wurde vom Militär eingerichtet und ist hervorragend abgesichert. Seine Platten sind ideal für Anfänger geeignet.\n\n Die Anfahrt erfolgt mit dem Bus 445 von Toblach. Eine kurze Wanderung von der Haltestelle Drei-Zinnen-Blick führt direkt zum Klettergebiet.\n",
+      "description_en": "The Military Climbing Garden was set up by the military and is excellently protected. Its slabs are ideal for beginners.\n\n Access is by bus 445 from Toblach. A short hike from the Drei-Zinnen-Blick stop leads directly to the climbing area.\n",
+      "tags": [],
+      "security": null,
+      "topoLink": "https://www.drei-zinnen.info/media/a5ca3153-0af6-4c70-a1cd-49e6d9c2c1c1/broschure-klettergaerten-definitiv.pdf",
+      "images": [],
+      "transit": [
+        12.23199757232042,
+        46.64090848091821
+      ],
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "militärklettergarten-transit.json",
+          "path": "src/entries/europe/italy/south-tyrol/hochpustertal/militärklettergarten/militärklettergarten-transit.json",
+          "hash": "214f29533eaad73d98f0f86eb5b52f25847558e6ae06c5e676bcc6739149c18f",
+          "size": 232
+        },
+        {
+          "name": "militärklettergarten.json",
+          "path": "src/entries/europe/italy/south-tyrol/hochpustertal/militärklettergarten/militärklettergarten.json",
+          "hash": "b91aa37bfaa03f92896f15be45dccfb09c18948d0ccf002d9b7a2939d4c25b53",
+          "size": 1146
+        }
+      ]
+    },
+    {
+      "id": "kebnekaise-fjällstation",
+      "name": "Kebnekaise Fjällstation",
+      "type": "bouldering",
+      "path": "europe/sweden/lapland/kebnekaise-fjällstation",
+      "coordinates": [
+        18.609046,
+        67.859926
+      ],
+      "lastUpdated": "2024-04-09",
+      "description_de": "Im Tal neben der Basisstation des Kebnekaise gibt es eine große Anzahl an Granit blöcken, viele davon wharscheinlich noch nie bebouldert. Im Bergführerbüro können Matten und schuhe ausgeborgt werden.",
+      "description_en": "In the valley next to the Kebnekaise base station, there are a large number of granite boulders, many of them probably never climbed before. Pads and shoes can be borrowed from the mountain guide office.",
+      "tags": [],
+      "security": null,
+      "topoLink": null,
+      "images": [
+        "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/1.png",
+        "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/2.jpeg",
+        "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/3.png",
+        "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/5B0E0B6B-FE97-4F1F-9F4F-9E564DEFC9D6.jpeg",
+        "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/97E9475D-B09C-4F38-AF59-EB73481BE106.png"
+      ],
+      "transit": null,
+      "parking": null,
+      "tracks": [],
+      "files": [
+        {
+          "name": "1.png",
+          "path": "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/1.png",
+          "hash": "f5072415edfdc00ba31a04ccd9dc2e6290d1d3beed87b54974c2fa6ce66db781",
+          "size": 9136223
+        },
+        {
+          "name": "2.jpeg",
+          "path": "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/2.jpeg",
+          "hash": "ed522fab95f6390c4b9af15029288deab90c0f377db8b63a254ee7d734731b4b",
+          "size": 3962259
+        },
+        {
+          "name": "3.png",
+          "path": "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/3.png",
+          "hash": "1c717f3a21d3895f7a826dd1e2ce165a27248ce3250ce9361ab81e973bc08f98",
+          "size": 22571158
+        },
+        {
+          "name": "5B0E0B6B-FE97-4F1F-9F4F-9E564DEFC9D6.jpeg",
+          "path": "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/5B0E0B6B-FE97-4F1F-9F4F-9E564DEFC9D6.jpeg",
+          "hash": "706329c8bf0baf9b10acd0f3ca93fb80fa6aa11b7306f1042d622cb5f0e357c9",
+          "size": 4311859
+        },
+        {
+          "name": "97E9475D-B09C-4F38-AF59-EB73481BE106.png",
+          "path": "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/97E9475D-B09C-4F38-AF59-EB73481BE106.png",
+          "hash": "638b6806b11a6bf29993110078acda67a3140d453dc7a70188f07e23f6f20965",
+          "size": 18987639
+        },
+        {
+          "name": "kebnekaise-fjällstation.json",
+          "path": "src/entries/europe/sweden/lapland/kebnekaise-fjällstation/kebnekaise-fjällstation.json",
+          "hash": "b1f1d217aef1f34190055ec6895f347b4bd041f763173c0f5879401da3c6b5ab",
+          "size": 783
+        }
+      ]
+    }
+  ],
+  "sharedIcons": [
+    {
+      "name": "bouldering.png",
+      "path": "icons/bouldering.png",
+      "hash": "3f74fcf451bf5349152f97e36101f8803f12a92f7eca0caef47ef6c95589e15c",
+      "size": 16439
+    },
+    {
+      "name": "bus.png",
+      "path": "icons/bus.png",
+      "hash": "946f08b4a8f9ad420ce02c372eb4a5da5c771f96291d69e1ddd3bd48008036b9",
+      "size": 16258
+    },
+    {
+      "name": "climber.svg",
+      "path": "icons/climber.svg",
+      "hash": "7c057c2c3ed56bb22443c4c0cd19206ab1b781dace1e87aebab7098dc488e3f8",
+      "size": 3436
+    },
+    {
+      "name": "cluster.png",
+      "path": "icons/cluster.png",
+      "hash": "8b9b45b10a0b3b13b32c4ef89318dd714f55f4e1b37395f3aa13f3dd046ca57d",
+      "size": 5300
+    },
+    {
+      "name": "friend.png",
+      "path": "icons/friend.png",
+      "hash": "ae1f9a8c0ccf905b60143abf5deedebff369bed6c62ee9cc55a30e3646c9521b",
+      "size": 283599
+    },
+    {
+      "name": "ice-axe.png",
+      "path": "icons/ice-axe.png",
+      "hash": "85813f769742f12dbbb0b6a6690216376ec4dc3d478a3333210f21136864b2a4",
+      "size": 116553
+    },
+    {
+      "name": "ice-screw.png",
+      "path": "icons/ice-screw.png",
+      "hash": "c6ef80a5803f94959c5acf4ccccbb1bce8612aefa86cf878121c784b6395f845",
+      "size": 213340
+    },
+    {
+      "name": "multi-pitch.png",
+      "path": "icons/multi-pitch.png",
+      "hash": "d44c6ecdb7a65b72c915188ea94c68c682cb0405330d2c4a68f807d4e235070e",
+      "size": 16896
+    },
+    {
+      "name": "nut.png",
+      "path": "icons/nut.png",
+      "hash": "aa1818e483a774bcb110aec30604edfc28d1ce3212dd13641a6526332339502e",
+      "size": 116367
+    },
+    {
+      "name": "parking.png",
+      "path": "icons/parking.png",
+      "hash": "6c0883fb535781ea4dc8d22c9e02dfe39414b95f796c9b30a1615c6e9a5b2863",
+      "size": 16045
+    },
+    {
+      "name": "quickdraw.png",
+      "path": "icons/quickdraw.png",
+      "hash": "d1284aa81645fc24dc47c5bcb4313b77cfe7d747fd58c697defa07e9598364b8",
+      "size": 141512
+    },
+    {
+      "name": "sports-climbing.png",
+      "path": "icons/sports-climbing.png",
+      "hash": "99c11019bf0b0e66cf56d953f95ed563d4a0568bfd2c0b51fd36d4e74523e885",
+      "size": 2510
+    },
+    {
+      "name": "stop.svg",
+      "path": "icons/stop.svg",
+      "hash": "4adf92550bbfbe6861f911f8317eb53d52eae883745fd582e09edae144f9ed82",
+      "size": 21755
+    },
+    {
+      "name": "stopi.svg",
+      "path": "icons/stopi.svg",
+      "hash": "c08745df6d006086e5c124de6dca7323f6403bbb4fc633969a1d696104d87901",
+      "size": 23378
+    },
+    {
+      "name": "train.png",
+      "path": "icons/train.png",
+      "hash": "0205246e42545e71dc2032a9db90181b8956c927cae9020791ee47c3728893c8",
+      "size": 16252
     }
   ]
 }

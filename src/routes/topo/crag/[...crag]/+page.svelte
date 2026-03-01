@@ -54,7 +54,7 @@
 	let isDaylightSimulation = $state(false);
 	let simulationTime = $state(12); // Hours (0-24)
 	let simulationDate = $state(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
-	const shadowMapSize: [number, number] = [4096, 4096];
+	const shadowMapSize = $derived(browser && window.innerWidth < 768 ? [1024, 1024] : [4096, 4096]);
 
 	const { progress: progressStore } = useProgress();
 	let progress = $state(0);
@@ -306,6 +306,25 @@
 		routeMetrics = event.detail;
 	}
 
+	const createRenderer = (canvas) => {
+		const context = canvas.getContext('webgl2', {
+			alpha: true,
+			depth: true,
+			stencil: false,
+			antialias: true,
+			powerPreference: 'high-performance'
+		});
+
+		return new WebGLRenderer({
+			canvas,
+			context,
+			powerPreference: 'high-performance',
+			antialias: true,
+			precision: 'highp',
+			alpha: true
+		});
+	};
+
 	function SceneSetup() {
 		const { scene, size, autoRenderTask, camera, renderer } = useThrelte();
 
@@ -372,7 +391,7 @@
 		<div id="css-renderer-target"
 				 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"></div>
 
-		<Canvas>
+		<Canvas {createRenderer} dpr={browser ? window.devicePixelRatio : 1}>
 			<T.PerspectiveCamera makeDefault position={[0, 1, 25]} fov={75} near={0.1} far={1000} bind:ref={camera}>
 				<OrbitControls
 					enableZoom={true}

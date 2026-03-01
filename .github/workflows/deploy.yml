@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate Data Manifest
+        run: node scripts/generate-manifest.js
+
       - name: build
         env:
           BASE_PATH: ''

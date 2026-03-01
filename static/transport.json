@@ -26,7 +26,7 @@
       "id":"Background",
       "type":"background",
       "paint":{
-        "background-color":"hsl(30,36%,96%)"
+        "background-color":"hsl(140, 40%, 90%)"
       }
     },
     {
@@ -57,8 +57,8 @@
         "visibility":"visible"
       },
       "paint":{
-        "fill-color":"hsl(100,43%,47%)",
-        "fill-opacity":0.1
+        "fill-color":"hsl(140, 60%, 75%)",
+        "fill-opacity":0.7
       },
       "filter":[
         "in",
@@ -78,7 +78,7 @@
       },
       "paint":{
         "fill-antialias":true,
-        "fill-color":"hsl(89, 40%, 85%)",
+        "fill-color":"hsl(140, 60%, 75%)",
         "fill-opacity":{
           "stops":[
             [
@@ -109,7 +109,7 @@
       },
       "paint":{
         "fill-antialias":true,
-        "fill-color":"hsla(100,43%,47%,0.15)",
+        "fill-color":"hsl(135, 70%, 85%)",
         "fill-opacity":{
           "stops":[
             [
@@ -140,7 +140,7 @@
       },
       "paint":{
         "fill-antialias":true,
-        "fill-color":"hsl(53, 74%, 85%)",
+        "fill-color":"hsl(45, 20%, 90%)",
         "fill-opacity":{
           "stops":[
             [
@@ -174,15 +174,15 @@
           "stops":[
             [
               4,
-              "hsla(0,0%,74%, 0.3)"
+              "hsl(0, 0%, 97%)"
             ],
             [
               12,
-              "hsla(30, 19%, 90%, 0.2)"
+              "hsl(0, 0%, 97%)"
             ],
             [
               16,
-              "hsla(30, 19%, 90%, 0)"
+              "hsla(0, 0%, 97%, 0)"
             ]
           ]
         }
@@ -205,7 +205,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsla(34, 33%, 96%, 0.2)"
+        "fill-color":"hsl(100, 20%, 94%)"
       },
       "filter":[
         "!in",
@@ -239,7 +239,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsl(35, 46%, 92%)"
+        "fill-color":"hsl(100, 20%, 88%)"
       },
       "filter":[
         "==",
@@ -257,7 +257,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsla(0, 50%, 92%, 0.35)"
+        "fill-color":"hsl(100, 20%, 92%)"
       },
       "filter":[
         "==",
@@ -275,7 +275,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsla(49, 100%, 88%, 0.35)"
+        "fill-color":"hsl(100, 20%, 90%)"
       },
       "filter":[
         "in",
@@ -294,7 +294,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsl(94, 11%, 88%)"
+        "fill-color":"hsl(120, 45%, 88%)"
       },
       "filter":[
         "==",
@@ -312,7 +312,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsla(115, 54%, 88%, 0.35)"
+        "fill-color":"hsl(120, 45%, 86%)"
       },
       "filter":[
         "in",
@@ -332,7 +332,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsl(330, 60%, 93%)"
+        "fill-color":"hsl(0, 50%, 96%)"
       },
       "filter":[
         "==",
@@ -350,7 +350,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsl(270, 53%, 94%)"
+        "fill-color":"hsl(100, 25%, 90%)"
       },
       "filter":[
         "in",
@@ -371,7 +371,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsla(33, 18%, 90%, 0.5)"
+        "fill-color":"hsl(0, 0%, 90%)"
       },
       "filter":[
         "==",
@@ -390,7 +390,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(210,73%,78%)",
+        "line-color":"hsl(190, 70%, 65%)",
         "line-dasharray":[
           2,
           4
@@ -425,7 +425,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(210,73%,78%)",
+        "line-color":"hsl(190, 70%, 65%)",
         "line-width":{
           "base":1.2,
           "stops":[
@@ -460,7 +460,7 @@
       },
       "paint":{
         "fill-antialias":true,
-        "fill-color":"hsl(216,66%,70%)",
+        "fill-color":"hsl(190, 70%, 60%)",
         "fill-opacity":1,
         "fill-translate":{
           "base":1,
@@ -498,7 +498,7 @@
       },
       "paint":{
         "fill-antialias":true,
-        "fill-color":"hsl(210, 67%, 85%)",
+        "fill-color":"hsl(190, 70%, 65%)",
         "fill-opacity":0.7
       },
       "metadata":{
@@ -520,7 +520,7 @@
       },
       "paint":{
         "fill-antialias":true,
-        "fill-color":"hsl(209, 66%, 85%)",
+        "fill-color":"hsl(190, 70%, 65%)",
         "fill-opacity":1
       },
       "metadata":{
@@ -592,11 +592,11 @@
           "stops":[
             [
               15.5,
-              "hsl(30,38%,92%)"
+              "hsl(0, 0%, 94%)"
             ],
             [
               16,
-              "hsl(30,11%,86%)"
+              "hsl(0, 0%, 90%)"
             ]
           ]
         }
@@ -611,7 +611,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "fill-color":"hsl(30,38%,92%)",
+        "fill-color":"hsl(0, 0%, 96%)",
         "fill-opacity":{
           "base":1,
           "stops":[
@@ -625,7 +625,7 @@
             ]
           ]
         },
-        "fill-outline-color":"hsl(30,11%,86%)",
+        "fill-outline-color":"hsl(0, 0%, 88%)",
         "fill-translate":{
           "base":1,
           "stops":[
@@ -670,8 +670,8 @@
             "trunk",
             "primary"
           ],
-          "hsl(28,47%,59%)",
-          "hsl(36,5%,80%)"
+          "hsl(210, 20%, 60%)",
+          "hsl(210, 10%, 80%)"
         ],
         "line-dasharray":[
           0.5,
@@ -899,7 +899,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(0,0%,73%)",
+        "line-color":"hsl(210, 10%, 80%)",
         "line-dasharray":[
           2,
           1
@@ -955,13 +955,13 @@
             "class"
           ],
           "motorway",
-          "hsl(35,100%,83%)",
+          "hsl(210, 30%, 85%)",
           [
             "trunk",
             "primary"
           ],
-          "hsl(48,100%,89%)",
-          "hsl(0,0%,96%)"
+          "hsl(210, 20%, 90%)",
+          "hsl(0, 0%, 100%)"
         ],
         "line-opacity":1,
         "line-width":[
@@ -1216,7 +1216,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(247, 22%, 92%)",
+        "line-color":"hsl(210, 10%, 95%)",
         "line-dasharray":{
           "stops":[
             [
@@ -1275,7 +1275,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "fill-color":"hsl(0,0%,60%)",
+        "fill-color":"hsl(210, 10%, 85%)",
         "fill-opacity":1
       },
       "filter":[
@@ -1296,7 +1296,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(0, 0%, 60%)",
+        "line-color":"hsl(210, 10%, 85%)",
         "line-width":[
           "interpolate",
           [
@@ -1353,7 +1353,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "fill-color":"hsl(0,0%,60%)",
+        "fill-color":"hsl(210, 10%, 85%)",
         "fill-opacity":1
       },
       "metadata":{
@@ -1375,7 +1375,7 @@
       },
       "paint":{
         "fill-antialias":true,
-        "fill-color":"hsl(30,36%,96%)"
+        "fill-color":"hsl(210, 10%, 95%)"
       },
       "metadata":{
 
@@ -1405,7 +1405,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(30,36%,96%)",
+        "line-color":"hsl(210, 10%, 95%)",
         "line-width":{
           "base":1.2,
           "stops":[
@@ -1447,7 +1447,7 @@
       },
       "paint":{
         "fill-antialias":false,
-        "fill-color":"hsl(30,36%,96%)",
+        "fill-color":"hsl(210, 10%, 95%)",
         "fill-opacity":0.5
       },
       "filter":[
@@ -1483,14 +1483,14 @@
             "class"
           ],
           "motorway_construction",
-          "hsl(34, 100%, 77%)",
+          "hsl(210, 30%, 85%)",
           [
             "trunk_construction",
             "primary_construction",
             "secondary_construction",
             "tertiary_construction"
           ],
-          "hsl(48,100%,83%)",
+          "hsl(210, 20%, 90%)",
           "hsl(0,0%,100%)"
         ],
         "line-dasharray":[
@@ -1749,7 +1749,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(40, 6%, 80%)",
+        "line-color":"hsl(210, 15%, 75%)",
         "line-gap-width":0,
         "line-opacity":1,
         "line-width":[
@@ -1764,17 +1764,17 @@
           6,
           0,
           7,
-          0.5,
+          0.3,
           10,
-          1,
+          0.7,
           12,
-          2,
+          1.4,
           14,
-          4,
+          2.8,
           16,
-          5,
+          3.5,
           20,
-          18
+          12
         ]
       },
       "metadata":{
@@ -1813,7 +1813,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(28, 72%, 69%)",
+        "line-color":"hsl(210, 30%, 55%)",
         "line-opacity":1,
         "line-width":[
           "interpolate",
@@ -1827,17 +1827,17 @@
           6,
           0,
           7,
-          0.5,
+          0.3,
           10,
-          2.5,
+          1.7,
           12,
-          3,
+          2.1,
           14,
-          5,
+          3.5,
           16,
-          9,
+          6.3,
           20,
-          26
+          18
         ]
       },
       "metadata":{
@@ -1872,7 +1872,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(28, 72%, 69%)",
+        "line-color":"hsl(210, 40%, 45%)",
         "line-opacity":1,
         "line-width":[
           "interpolate",
@@ -1886,7 +1886,7 @@
           6,
           0,
           7,
-          0.5,
+          0.3,
           10,
           [
             "match",
@@ -1905,9 +1905,9 @@
               ],
               1,
               0,
-              2.5
+              1.7
             ],
-            1
+            0.7
           ],
           12,
           [
@@ -1926,10 +1926,10 @@
                 "ramp"
               ],
               1,
-              2,
-              6
+              1.4,
+              4.2
             ],
-            1
+            0.7
           ],
           14,
           [
@@ -1948,10 +1948,10 @@
                 "ramp"
               ],
               1,
-              5,
-              8
+              3.5,
+              5.6
             ],
-            2
+            1.4
           ],
           16,
           [
@@ -1963,8 +1963,8 @@
             [
               "motorway"
             ],
-            10,
-            4
+            7,
+            2.8
           ],
           20,
           [
@@ -1976,8 +1976,8 @@
             [
               "motorway"
             ],
-            26,
-            16
+            18,
+            11
           ]
         ]
       },
@@ -2021,8 +2021,8 @@
             "brunnel"
           ],
           "tunnel",
-          "hsla(0, 60%, 87%, 0.15)",
-          "hsl(30,36%,96%)"
+          "hsla(0, 0%, 100%, 0.15)",
+          "hsl(0, 0%, 100%)"
         ],
         "line-width":[
           "interpolate",
@@ -2034,15 +2034,15 @@
             "zoom"
           ],
           10,
-          1,
+          0.7,
           12,
-          1.5,
+          1,
           14,
-          2,
+          1.4,
           16,
-          4,
+          2.8,
           20,
-          16
+          11
         ]
       },
       "metadata":{
@@ -2081,7 +2081,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(48, 100%, 83%)",
+        "line-color":"hsl(210, 25%, 80%)",
         "line-width":[
           "interpolate",
           [
@@ -2092,19 +2092,19 @@
             "zoom"
           ],
           5,
-          0.5,
+          0.35,
           6,
-          0.75,
+          0.5,
           10,
-          1.5,
+          1,
           12,
-          2.5,
+          1.7,
           14,
-          4,
+          2.8,
           16,
-          8,
+          5.6,
           20,
-          24
+          16
         ]
       },
       "metadata":{
@@ -2139,7 +2139,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(34, 100%, 77%)",
+        "line-color":"hsl(210, 35%, 70%)",
         "line-opacity":1,
         "line-width":[
           "interpolate",
@@ -2151,9 +2151,9 @@
             "zoom"
           ],
           5,
-          0.5,
+          0.35,
           6,
-          1,
+          0.7,
           10,
           [
             "match",
@@ -2172,9 +2172,9 @@
               ],
               1,
               0,
-              2.5
+              1.7
             ],
-            1
+            0.7
           ],
           12,
           [
@@ -2193,10 +2193,10 @@
                 "ramp"
               ],
               1,
-              1,
-              4
+              0.7,
+              2.8
             ],
-            1
+            0.7
           ],
           14,
           [
@@ -2215,10 +2215,10 @@
                 "ramp"
               ],
               1,
-              5,
-              6
+              3.5,
+              4.2
             ],
-            2
+            1.4
           ],
           16,
           [
@@ -2230,8 +2230,8 @@
             [
               "motorway"
             ],
-            8,
-            4
+            5.6,
+            2.8
           ],
           20,
           [
@@ -2243,8 +2243,8 @@
             [
               "motorway"
             ],
-            24,
-            16
+            16,
+            11
           ]
         ]
       },
@@ -2274,7 +2274,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(30,36%,96%)",
+        "line-color":"hsl(0, 0%, 100%)",
         "line-width":{
           "base":1.2,
           "stops":[
@@ -2312,7 +2312,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(42,24%,81%)",
+        "line-color":"hsl(0, 0%, 88%)",
         "line-dasharray":{
           "stops":[
             [
@@ -2370,7 +2370,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(42,24%,81%)",
+        "line-color":"hsl(0, 0%, 88%)",
         "line-dasharray":{
           "stops":[
             [
@@ -2428,7 +2428,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsla(0, 0%, 73%, 0.7)",
+        "line-color":"hsl(0, 0%, 80%)",
         "line-width":{
           "base":1.4,
           "stops":[
@@ -2471,7 +2471,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsla(0, 0%, 73%, 0.7)",
+        "line-color":"hsl(0, 0%, 80%)",
         "line-dasharray":[
           0.2,
           8
@@ -2522,7 +2522,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(0,0%,73%)",
+        "line-color":"hsl(0, 0%, 80%)",
         "line-opacity":[
           "match",
           [
@@ -2574,7 +2574,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "line-color":"hsl(0,0%,73%)",
+        "line-color":"hsl(0, 0%, 80%)",
         "line-dasharray":[
           0.2,
           8
@@ -2903,9 +2903,9 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(209,41%,46%)",
+        "text-color":"hsl(190, 70%, 30%)",
         "text-halo-blur":1,
-        "text-halo-color":"hsla(194,100%,97%, 0.7)",
+        "text-halo-color":"hsla(190, 100%, 97%, 0.7)",
         "text-halo-width":1.5
       },
       "filter":[
@@ -2950,7 +2950,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(210,73%,68%)",
+        "text-color":"hsl(190, 70%, 30%)",
         "text-halo-color":"hsla(0,0%,100%,0.7)",
         "text-halo-width":1.5
       },
@@ -2994,7 +2994,7 @@
       },
       "paint":{
         "icon-opacity":1,
-        "text-color":"hsl(206,61%,34%)",
+        "text-color":"hsl(190, 70%, 30%)",
         "text-halo-blur":1,
         "text-halo-color":"hsla(0, 0%, 100%, 0.8)",
         "text-halo-width":1.2,
@@ -3060,7 +3060,7 @@
       },
       "paint":{
         "icon-opacity":1,
-        "text-color":"hsl(206,61%,34%)",
+        "text-color":"hsl(190, 70%, 30%)",
         "text-halo-blur":1,
         "text-halo-color":"hsla(0, 0%, 100%, 0.8)",
         "text-halo-width":1.2,
@@ -3123,7 +3123,7 @@
       },
       "paint":{
         "icon-opacity":1,
-        "text-color":"hsl(206,61%,34%)",
+        "text-color":"hsl(190, 70%, 30%)",
         "text-halo-blur":1,
         "text-halo-color":"hsla(0, 0%, 100%, 0.8)",
         "text-halo-width":1.2,
@@ -3192,7 +3192,7 @@
         ]
       },
       "filter":[
-        "==",
+        "in",
         "class",
         "ferry"
       ]
@@ -3302,10 +3302,10 @@
         "visibility":"visible"
       },
       "paint":{
-        "icon-color":"hsl(30, 17%, 28%)",
+        "icon-color":"hsl(0, 0%, 30%)",
         "icon-halo-color":"hsl(0, 0%, 100%)",
         "icon-halo-width":1,
-        "text-color":"hsl(30, 17%, 28%)",
+        "text-color":"hsl(0, 0%, 30%)",
         "text-halo-blur":1,
         "text-halo-color":"hsl(0, 0%, 100%)",
         "text-halo-width":0.5
@@ -6116,7 +6116,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(0, 0%, 0%)",
+        "text-color":"hsl(0, 0%, 25%)",
         "text-halo-color":"hsl(0,0%,100%)",
         "text-halo-width":1.2,
         "text-opacity":1
@@ -6182,7 +6182,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(0,0%,20%)",
+        "text-color":"hsl(0,0%,25%)",
         "text-halo-color":"hsl(0,0%,100%)",
         "text-halo-width":1.2,
         "text-opacity":1
@@ -6243,7 +6243,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(0,0%,20%)",
+        "text-color":"hsl(0,0%,25%)",
         "text-halo-color":"hsla(0,0%,100%,0.8)",
         "text-halo-width":1.2
       },
@@ -6310,7 +6310,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(0,0%,20%)",
+        "text-color":"hsl(0,0%,25%)",
         "text-halo-color":"hsl(0,0%,100%)",
         "text-halo-width":1.2,
         "text-opacity":1
@@ -6379,7 +6379,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "icon-color":"hsl(0, 0%, 0%)",
+        "icon-color":"hsl(0, 0%, 25%)",
         "icon-halo-blur":0,
         "icon-halo-color":"hsl(0, 0%, 100%)",
         "icon-halo-width":1,
@@ -6395,7 +6395,7 @@
             ]
           ]
         },
-        "text-color":"hsl(0, 0%, 0%)",
+        "text-color":"hsl(0, 0%, 25%)",
         "text-halo-blur":0,
         "text-halo-color":"hsl(0, 0%, 100%)",
         "text-halo-width":1
@@ -6463,8 +6463,8 @@
         "visibility":"visible"
       },
       "paint":{
-        "icon-color":"hsl(0, 0%, 0%)",
-        "text-color":"hsl(0, 0%, 0%)",
+        "icon-color":"hsl(0, 0%, 25%)",
+        "text-color":"hsl(0, 0%, 25%)",
         "text-halo-color":"hsla(0,0%,100%,0.8)",
         "text-halo-width":1.2,
         "text-opacity":[
@@ -6562,11 +6562,11 @@
         "visibility":"visible"
       },
       "paint":{
-        "icon-color":"hsl(0, 0%, 0%)",
+        "icon-color":"hsl(0, 0%, 25%)",
         "icon-halo-blur":0,
         "icon-halo-color":"hsl(0, 0%, 100%)",
         "icon-halo-width":1,
-        "text-color":"hsl(0, 0%, 0%)",
+        "text-color":"hsl(0, 0%, 25%)",
         "text-halo-blur":0,
         "text-halo-color":"hsl(0, 0%, 100%)",
         "text-halo-width":1
@@ -6666,7 +6666,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(240,14%,23%)",
+        "text-color":"hsl(0, 0%, 25%)",
         "text-halo-blur":0.8,
         "text-halo-color":"hsla(0,0%,100%,0.8)",
         "text-halo-width":1,
@@ -6773,7 +6773,7 @@
         "visibility":"visible"
       },
       "paint":{
-        "text-color":"hsl(240,14%,23%)",
+        "text-color":"hsl(0, 0%, 25%)",
         "text-halo-blur":1,
         "text-halo-color":"hsl(0,0%,100%)",
         "text-halo-width":2
@@ -6784,6 +6784,7 @@
         "continent"
       ]
     },
+
     {
       "id": "routes-outline",
       "type": "line",
