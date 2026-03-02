@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "löwenzähne",
+    "date": "2025-06-09",
+    "updated": "2025-06-09",
+    "path": "hohenems/löwenzähne",
+    "name": "Löwenzähne Überschreitung",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "Die Löwenzähne Überschreitung bei Hohenems ist ein absoluter Klassiker in Vorarlberg. Die Tour bietet spektakuläre Tiefblicke und berühmte Stellen wie den 'Spreizschritt' und die 'Nähmaschine'.",
+    "description_en": "The Löwenzähne traversal near Hohenems is an absolute classic in Vorarlberg. The tour offers spectacular views and famous sections like the 'Spreizschritt' and the 'Nähmaschine'.",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/loewenzaehne-ueberschreitung/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.732,
+      47.333
+    ]
+  }
+}

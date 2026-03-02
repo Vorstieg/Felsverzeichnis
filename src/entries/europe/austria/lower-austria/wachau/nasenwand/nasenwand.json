@@ -3,10 +3,12 @@
   "properties": {
     "id": "nasenwand",
     "date": "2024-04-09",
-    "updated": "2024-04-09",
+    "updated": "2025-03-08",
     "path": "wachau/nasenwand",
     "name": "Nasenwand",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "",
     "description_en": "",
     "topo": {
@@ -17,7 +19,8 @@
   "geometry": {
     "type": "Point",
     "coordinates": [
-      15.51789, 48.40237
+      15.51789,
+      48.40237
     ]
   }
 }

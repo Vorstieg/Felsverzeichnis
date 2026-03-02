@@ -36,6 +36,7 @@ jobs:
           BASE_PATH: ''
         run: |
           npm run build
+          cp -r src/entries build/entries
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3

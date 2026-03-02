@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "mixnitz/roter-kamin",
     "name": "Roter Kamin",
-    "type": "multi-pitch",
+    "type": [
+      "multi-pitch"
+    ],
     "description_de": "Von Wien fährt man mit einem beliebigen Zug nach Bruck/Mur und dann mit der S1 weiter nach Mixnitz. Die gesamte Fahrt dauert knapp über 2 Stunden. Dannach gibt es noch einen etwa 30 minütigen Zustieg durch die schöne Bärenschützklamm.\n",
     "description_en": "From Vienna, take any train to Bruck/Mur and then the S1 to Mixnitz. The entire journey takes just over 2 hours. This is followed by a 30-minute approach through the beautiful Bärenschützklamm gorge.\n",
     "topo": {

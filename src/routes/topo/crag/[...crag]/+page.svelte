@@ -104,7 +104,7 @@
 
 		// 1. Collect points
 		let points: number[][] = [];
-		if (route.type === 'multi-pitch' && route.pitches) {
+		if (route.type?.includes('multi-pitch') && route.pitches) {
 			route.pitches.forEach((p: any) => {
 				if (p.points) points.push(...p.points);
 			});
@@ -230,7 +230,7 @@
 		if (!data || !data.topo || !data.topo.routes) return [];
 
 		return data.topo.routes.flatMap(route => {
-			if (route.type === 'multi-pitch' && route.pitches) {
+			if (route.type?.includes('multi-pitch') && route.pitches) {
 				return route.pitches.map((pitch, idx) => ({
 					...pitch,
 					id: pitch.id,
@@ -598,8 +598,13 @@
 						</div>
 					{/if}
 					{#if data.route.type}
-						<div class="border-b border-gray-200 p-3">{$_('topo.climbing_type')}
-							: {$_('types.' + data.route.type) || data.route.type}</div>
+						<div class="border-b border-gray-200 p-3">{$_('topo.climbing_type')}: 
+							{#if Array.isArray(data.route.type)}
+								{data.route.type.map(t => $_('types.' + t) || t).join(', ')}
+							{:else}
+								{$_('types.' + data.route.type) || data.route.type}
+							{/if}
+						</div>
 					{/if}
 					{#if data.route.grade}
 						<div class="border-b border-gray-200 p-3">{$_('topo.grade')}: {data.route.grade}</div>

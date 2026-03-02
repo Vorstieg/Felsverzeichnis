@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "königsstein/steinberg",
     "name": "Steinberg",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Steinberg ist zu Fuß von Königsstein erreichbar.",
     "description_en": "Steinberg is accessible on foot from Königsstein.",
     "topo": {

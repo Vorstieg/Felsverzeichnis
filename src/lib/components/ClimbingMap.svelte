@@ -124,7 +124,11 @@
 			routes.features.push(track);
 		});
 		locations.forEach((location) => {
-			places.features.push(location);
+			const processedLocation = JSON.parse(JSON.stringify(location));
+			if (Array.isArray(processedLocation.properties.type)) {
+				processedLocation.properties.type = processedLocation.properties.type[0];
+			}
+			places.features.push(processedLocation);
 		});
 		if (map?.loaded) drawLayers();
 	}

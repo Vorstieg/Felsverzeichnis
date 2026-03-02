@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "mödling/roter-ofen",
     "name": "Roter Ofen",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Mit dem Zug nach Mödling und dann mit dem Bus nach Hinterbrühl dauert die Anreise von Wien ca. eine Stunde.",
     "description_en": "Taking the train to Mödling and then the bus to Hinterbrühl, the journey from Vienna takes about an hour.",
     "topo": {

@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "amstetten/tiefenbach",
     "name": "Tiefenbach",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Tiefenbach ist ein idyllisch gelegenes Klettergebiet unweit von Amstetten und bietet eine Vielzahl an Routen in verschiedenen Schwierigkeitsgraden. Die beeindruckenden Granitwände sind ideal für Sportkletterer, die eine Mischung aus technischen Herausforderungen und ausdauernden Zügen suchen.\n\nDie Anreise ist unkompliziert: Von Wien erreicht man Amstetten bequem mit dem Zug, und von dort aus geht es mit dem Bus weiter nach Tiefenbach. Die gesamte Fahrtzeit beträgt etwa 1,5 Stunden. Wer flexibler unterwegs sein möchte, kann sich in Amstetten ein Rail & Drive-Auto mieten, um direkt zum Kletterspot zu gelangen.\n\nNeben den abwechslungsreichen Kletterrouten punktet Tiefenbach mit seiner ruhigen Lage und einer angenehmen Atmosphäre. Nach einem erfolgreichen Klettertag laden die nahegelegenen Donauufer zu einer entspannten Pause ein, bevor es zurück nach Wien geht.",
     "description_en": "Tiefenbach is an idyllically located climbing area near Amstetten and offers a variety of routes in various degrees of difficulty. The impressive granite walls are ideal for sport climbers looking for a mix of technical challenges and endurance moves.\n\nGetting there is straightforward: from Vienna you can easily reach Amstetten by train, and from there you continue by bus to Tiefenbach. The total travel time is about 1.5 hours. If you want to be more flexible, you can rent a Rail & Drive car in Amstetten to get directly to the climbing spot.\n\nIn addition to the varied climbing routes, Tiefenbach scores with its quiet location and pleasant atmosphere. After a successful day of climbing, the nearby banks of the Danube invite you to take a relaxing break before heading back to Vienna.",
     "topo": {

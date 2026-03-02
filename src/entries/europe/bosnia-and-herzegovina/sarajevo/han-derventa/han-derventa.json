@@ -5,7 +5,9 @@
     "date": "2024-04-09",
     "updated": "2024-04-09",
     "name": "Han derventa",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Das Klettergebiet besteht aus mehreren Sektoren, welche alle auf Privatgrund sind. Der linke Sektor ist in einem Ziegenauslauf.",
     "description_en": "The climbing area consists of several sectors, all of which are on private property. The left sector is in a goat run."
   },

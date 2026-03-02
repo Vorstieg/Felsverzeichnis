@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "hochpustertal/landro",
     "name": "Landro",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Das Klettergebiet Landro liegt in einer atemberaubenden alpinen Umgebung und bietet eine Vielzahl von Routen für alle Schwierigkeitsstufen. Besonders beliebt ist es aufgrund seiner beeindruckenden Felsformationen und der Möglichkeit, auch an heißen Sommertagen im Schatten zu klettern.\nVon Toblach aus ist der Klettergarten mit dem Bus 445 bequem erreichbar. Die Fahrt führt entlang malerischer Landschaften und macht bereits die Anreise zu einem Erlebnis.",
     "description_en": "The Landro climbing area is located in a breathtaking alpine environment and offers a variety of routes for all skill levels. It is particularly popular due to its impressive rock formations and the possibility of climbing in the shade even on hot summer days.\nFrom Toblach, the climbing garden is easily accessible by bus 445. The journey leads along picturesque landscapes and makes the arrival itself an experience.",
     "topo": {

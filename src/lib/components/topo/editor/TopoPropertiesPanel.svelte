@@ -411,7 +411,7 @@
 											>{$_('ui.type')}</label
 										>
 										<select
-											value={route.type}
+											value={Array.isArray(route.type) ? route.type[0] : route.type}
 											onchange={(e) => convertRouteType(route, e.currentTarget.value)}
 											class="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-50 focus:border-blue-500 bg-gray-100 transition-all outline-none"
 										>

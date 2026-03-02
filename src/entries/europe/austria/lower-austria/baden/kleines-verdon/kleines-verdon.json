@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "baden/kleines-verdon",
     "name": "Kleines Verdon",
-    "type": "bouldering",
+    "type": [
+      "bouldering"
+    ],
     "description_de": "Von Wien fährt man mit einem beliebigen Zug nach Baden und dann mit dem Bus zur Haltestelle Helenental Abzweigung Siegenfeld.\n",
     "description_en": "From Vienna, take any train to Baden and then the bus to the stop Helenental Abzweigung Siegenfeld.\n",
     "topo": {

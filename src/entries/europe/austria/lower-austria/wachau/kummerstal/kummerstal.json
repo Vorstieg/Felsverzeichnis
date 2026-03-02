@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "wachau/kummerstal",
     "name": "Kummerstal",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Das Kummerstal hat etwas mehr Zustieg und ist etwas schwerer zu finden. Jedoch sehr lohnenswert.",
     "description_en": "The Kummerstal requires a slightly longer approach and is a bit harder to find. However, it is very worthwhile.",
     "topo": {

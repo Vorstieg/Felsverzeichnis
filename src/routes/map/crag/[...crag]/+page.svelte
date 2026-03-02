@@ -115,10 +115,19 @@
 				</div>
 			{/if}
 			<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mt-5 mb-6">
-				<a href="{base}/map/{type}/"
-					 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
-					{$_('types.' + type)}
-				</a>
+				{#if Array.isArray(type)}
+					{#each type as t}
+						<a href="{base}/map/{t}/"
+							 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
+							{$_('types.' + t)}
+						</a>
+					{/each}
+				{:else}
+					<a href="{base}/map/{type}/"
+						 class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors">
+						{$_('types.' + type)}
+					</a>
+				{/if}
 				{#if tags && tags.length > 0}
 					{#each tags as tag}
 						<span class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100">

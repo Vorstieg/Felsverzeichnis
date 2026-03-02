@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "königsstein/steinerne-stadt",
     "name": "Steinerne Stadt",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Die Steinerne Stadt ist zu Fuß oder mit dem Fahrrad von Königsstein erreichbar.",
     "description_en": "The Steinerne Stadt is accessible on foot or by bicycle from Königsstein.",
     "topo": {

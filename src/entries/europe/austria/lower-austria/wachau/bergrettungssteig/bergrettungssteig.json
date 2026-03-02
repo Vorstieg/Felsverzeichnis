@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "wachau/bergrettungssteig",
     "name": "Bergrettungssteig",
-    "type": "multi-pitch",
+    "type": [
+      "multi-pitch"
+    ],
     "description_de": "",
     "description_en": "",
     "security": "Sehr Gut",

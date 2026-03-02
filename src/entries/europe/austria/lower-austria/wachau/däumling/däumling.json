@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "wachau/däumling",
     "name": "Däumling",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Rund um die Burgruine Dürnstein sind mehrere Türme mit Kletterrouten.\n Der Däumling dominiert als höchster Turm den Burggraben und bietet eine der lohnendsten Klettereien des Gebiets.",
     "description_en": "Around the Dürnstein castle ruins, there are several towers with climbing routes.\n The Däumling dominates the Burggraben as the highest tower and offers one of the most rewarding climbs in the area.",
     "topo": {

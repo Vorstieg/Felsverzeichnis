@@ -13,7 +13,11 @@ export const availableRouteTags = [
 ];
 
 export function convertRouteType(route, newType) {
-    if (newType === 'multi-pitch' && route.type !== 'multi-pitch') {
+    const isMultiPitch = (type) => Array.isArray(type) ? type.includes('multi-pitch') : type === 'multi-pitch';
+    const wasMultiPitch = isMultiPitch(route.type);
+    const willBeMultiPitch = newType === 'multi-pitch';
+
+    if (willBeMultiPitch && !wasMultiPitch) {
         // Convert to multi-pitch: Move current properties to first pitch
         route.pitches = [{
             id: generateId('pitch'),
@@ -28,7 +32,7 @@ export function convertRouteType(route, newType) {
         // Clear root properties that are moved
         route.length = 0;
         route.points = [];
-    } else if (newType !== 'multi-pitch' && route.type === 'multi-pitch') {
+    } else if (!willBeMultiPitch && wasMultiPitch) {
         // Convert from multi-pitch: Take first pitch properties back to root
         if (route.pitches && route.pitches.length > 0) {
             const first = route.pitches[0];
@@ -40,7 +44,22 @@ export function convertRouteType(route, newType) {
         }
         delete route.pitches;
     }
-    route.type = newType;
+    
+    // For now, if called from a simple select, we set it as a single-element array or update if it was an array
+    if (Array.isArray(route.type)) {
+        if (willBeMultiPitch && !route.type.includes('multi-pitch')) {
+            route.type.push('multi-pitch');
+        } else if (!willBeMultiPitch && route.type.includes('multi-pitch')) {
+            route.type = route.type.filter(t => t !== 'multi-pitch');
+            if (route.type.length === 0) route.type = [newType];
+        } else {
+            // Just replacing the first one or similar? 
+            // Better to keep it simple for now if it's a simple type change
+            route.type = [newType];
+        }
+    } else {
+        route.type = [newType];
+    }
 }
 
 export function calculateRouteLength(route) {

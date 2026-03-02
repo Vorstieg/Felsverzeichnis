@@ -6,7 +6,10 @@
     "updated": "2024-04-09",
     "path": "mödling/glocknergrat",
     "name": "Glocknergrat",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing",
+      "multi-pitch"
+    ],
     "description_de": "Der Glocknergrat ist zu Fuß von Mödling erreichbar.",
     "description_en": "The Glocknergrat is accessible on foot from Mödling.",
     "topo": {

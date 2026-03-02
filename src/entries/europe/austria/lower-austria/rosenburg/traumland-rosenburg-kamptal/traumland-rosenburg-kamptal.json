@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "rosenburg/traumland-rosenburg-kamptal",
     "name": "Traumland Rosenburg Kamptal",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Mit einer Dauer von 2,5 Stunden ist die Anreise von Wien etwas länger. Wer die lange Reise antritt wird mit gutem Gneis und einem Klettergarten am Kamp belohnt. Mit dem Zug nach Rosenburg Bahnhof und dann ca. 40 Minuten zu Fuß zum Klettergarten.\n",
     "description_en": "With a duration of 2.5 hours, the journey from Vienna is a bit longer. Those who undertake the long journey will be rewarded with good gneiss and a climbing garden on the Kamp. By train to Rosenburg station and then about 40 minutes on foot to the climbing garden.\n",
     "topo": {

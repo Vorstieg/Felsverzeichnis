@@ -7,7 +7,9 @@
     "path": "wachau/wachauer-grat",
     "name": "Wachauer Grat",
     "security": "Sehr Gut",
-    "type": "multi-pitch",
+    "type": [
+      "multi-pitch"
+    ],
     "description_de": "",
     "description_en": "",
     "topo": {

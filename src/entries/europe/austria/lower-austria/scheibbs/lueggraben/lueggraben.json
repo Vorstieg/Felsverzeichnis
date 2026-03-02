@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "scheibbs/lueggraben",
     "name": "Lueggraben",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Mit dem Zug zum Banhof in Scheibbs und dann mit dem Bus nach Neustift, ist dieses Klettergebiet u in ca. 2,5 Stunden von Wien erreichbar. Von Neustift gibt es noch einen ca. 20 min Zustieg. Durch die position im Wald und der Ausrichtung ist diese Klettergebiet ideal für den Sommer.\n",
     "description_en": "With the train to Scheibbs station and then by bus to Neustift, this climbing area can be reached from Vienna in approx. 2.5 hours. From Neustift there is still an approx. 20 min approach. Due to its position in the forest and orientation, this climbing area is ideal for summer.\n",
     "topo": {

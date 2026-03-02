@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "hohe-wand/beserlpark",
     "name": "Beserlpark",
-    "type": "multi-pitch",
+    "type": [
+      "multi-pitch"
+    ],
     "description_de": "Von Wien fährt man mit einem beliebigen Zug nach Wr.Neustadt und dann mit dem Regional-Zug R98 weiter nach Grünbach am Schneeberg (fährt stündlich in beide Richtungen bis Mitternacht). Die gesamte Fahrt dauert knapp über 2 Stunden. Dannach gibt es noch einen etwa 15 minütigen Zustieg.\n",
     "description_en": "From Vienna, take any train to Wiener Neustadt and then continue with the regional train R98 to Grünbach am Schneeberg (runs hourly in both directions until midnight). The entire journey takes just over 2 hours. Afterwards, there is an approach of about 15 minutes.\n",
     "topo": {

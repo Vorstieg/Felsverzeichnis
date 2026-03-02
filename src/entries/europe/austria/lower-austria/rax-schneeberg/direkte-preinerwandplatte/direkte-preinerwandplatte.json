@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "rax-schneeberg/direkte-preinerwandplatte",
     "name": "Direkte Preinerwandplatte",
-    "type": "multi-pitch",
+    "type": [
+      "multi-pitch"
+    ],
     "description_de": "Mit dem Zug nach Puchberg am Schneeberg und dann mit dem Bus weiter, ist man in 2 Stunden in Prein. Dannach gibt es noch einen 1,5 Stunden Zustieg.\n",
     "description_en": "By train to Puchberg am Schneeberg and then by bus, you can be in Prein in 2 hours. After that, there is a 1.5-hour approach.\n",
     "topo": {

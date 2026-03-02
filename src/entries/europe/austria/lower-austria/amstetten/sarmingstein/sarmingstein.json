@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "amstetten/sarmingstein",
     "name": "Sarmingstein",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Sarmingstein ist ein lohnendes Ziel für Kletterer, die von Wien aus anreisen. Die Felsen liegen inmitten einer malerischen Naturlandschaft und bieten sowohl Sportkletterrouten als auch Boulderprobleme für alle Könnensstufen.\n\nDie Anreise erfolgt ähnlich wie nach Tiefenbach: Zunächst mit dem Zug nach Amstetten, dann mit dem Bus weiter bis Sarmingstein. Die Fahrt dauert insgesamt rund zwei Stunden. Auch hier steht in Amstetten eine Rail & Drive-Option zur Verfügung, falls man die letzte Strecke lieber mit dem Auto zurücklegen möchte.",
     "description_en": "Sarmingstein is a rewarding destination for climbers traveling from Vienna. The rocks are situated in a picturesque natural landscape and offer both sport climbing routes and boulder problems for all skill levels.\n\nTravel is similar to Tiefenbach: first by train to Amstetten, then by bus to Sarmingstein. The total journey takes around two hours. A Rail & Drive option is also available in Amstetten if you prefer to cover the last leg by car.",
     "topo": {
@@ -18,7 +20,7 @@
     "type": "Point",
     "coordinates": [
       14.9466775,
-      48.2321660
+      48.232166
     ]
   }
 }

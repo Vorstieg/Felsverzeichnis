@@ -69,7 +69,7 @@ function crawlEntries(dir, baseDir = ENTRIES_DIR) {
                     for (const asset of assets) {
                         const assetPath = path.join(cragDir, asset);
                         if (fs.statSync(assetPath).isFile()) {
-                            const relativeAssetPath = `${relativeDir}/${asset}`;
+                            const relativeAssetPath = `${relativeDir}/${asset}`.replace('src/', '');
                             
                             // Track all files for syncing
                             cragEntry.files.push({

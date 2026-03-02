@@ -6,7 +6,9 @@
     "updated": "2024-04-09",
     "path": "rax-schneeberg/wasserfall-klettergarten-losenheim",
     "name": "Wasserfall Klettergarten Losenheim",
-    "type": "sports-climbing",
+    "type": [
+      "sports-climbing"
+    ],
     "description_de": "Mit dem Zug nach Puchberg am Schneeberg und dann mit dem Bus weiter, ist dieses Klettergebiet von Wien aus in 2 Stunden erreichbar. Durch den Wasserfall und die einfachen Routen ist dieses Gebiet besonders für Familien geeignet.\n",
     "description_en": "By train to Puchberg am Schneeberg and then by bus, this climbing area can be reached from Vienna in 2 hours. Due to the waterfall and the simple routes, this area is particularly suitable for families.\n",
     "topo": {
@@ -18,7 +20,7 @@
     "type": "Point",
     "coordinates": [
       15.8565029,
-      47.7951980
+      47.795198
     ]
   }
 }
