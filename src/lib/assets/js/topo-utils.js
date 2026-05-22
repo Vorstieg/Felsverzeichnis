@@ -1,5 +1,4 @@
 import { Vector3 } from 'three';
-import { userState } from '$lib/state/editor.svelte.js';
 import { generateId } from './id-utils.js';
 
 export const availableTopoTags = [
@@ -62,7 +61,7 @@ export function convertRouteType(route, newType) {
     }
 }
 
-export function calculateRouteLength(route) {
+export function calculateRouteLength(route, scale = 1) {
     if (!route.points || route.points.length < 2) return 0;
     let len = 0;
     for (let i = 0; i < route.points.length - 1; i++) {
@@ -70,14 +69,14 @@ export function calculateRouteLength(route) {
         const p2 = new Vector3(...route.points[i + 1]);
         len += p1.distanceTo(p2);
     }
-    return parseFloat((len * (userState.topo.scale || 1)).toFixed(1));
+    return parseFloat((len * scale).toFixed(1));
 }
 
-export function calculateBoltAmount(route) {
-    if (!route.fixPoints) return 0;
+export function calculateBoltAmount(route, fixPoints = []) {
+    if (!route.fixPoints || !fixPoints) return 0;
     let count = 0;
     route.fixPoints.forEach(id => {
-        const fp = userState.topo.fixPoints.find(p => p.id === id);
+        const fp = fixPoints.find(p => p.id === id);
         if (fp && fp.type === 'bolt') count++;
     });
     return count;

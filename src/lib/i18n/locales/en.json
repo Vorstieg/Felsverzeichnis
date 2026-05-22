@@ -2,7 +2,8 @@
   "menu": {
     "map": "Map",
     "list": "List",
-    "info": "Info"
+    "info": "Info",
+    "creator": "Creator"
   },
   "site": {
     "description": "Find climbing areas accessible by public transport from Vienna",

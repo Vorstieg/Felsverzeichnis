@@ -2,7 +2,9 @@
   "menu": {
     "map": "Karte",
     "list": "Liste",
-    "info": "Info"
+    "info": "Info",
+    "creator": "Creator",
+    "creator": "Creator"
   },
   "site": {
     "title": "Felsverzeichnis",
@@ -154,7 +156,11 @@
     "Weite Haken": "Weite Haken",
     "Abgespeckt": "Abgespeckt",
     "Klassiker": "Klassiker",
-    "Boulder-Start": "Boulder-Start"
+    "Boulder-Start": "Boulder-Start",
+    "sports-climbing": "Sportklettern",
+    "bouldering": "Bouldern",
+    "multi-pitch": "Mehrseillängen",
+    "trad": "Traditionell"
   },
   "ui": {
     "remove": "Entfernen",

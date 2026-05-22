@@ -14,11 +14,11 @@
       "type": "geojson",
       "cluster": true,
       "clusterRadius": 20,
-      "data": {}
+      "data": { "type": "FeatureCollection", "features": [] }
     },
     "routes": {
       "type": "geojson",
-      "data": {}
+      "data": { "type": "FeatureCollection", "features": [] }
     }
   },
   "layers":[
