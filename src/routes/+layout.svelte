@@ -84,7 +84,7 @@
             </a>
         </div>
     </div>
-	<div class="absolute h-fit fixed w-full sm:w-auto bottom-0 sm:bottom-auto p-2 left-5 sm:left-15 top-4 z-[1000]">
+	<div class="absolute hidden h-fit fixed w-full sm:block sm:w-auto bottom-0 sm:bottom-auto p-2 left-5 sm:left-15 top-4 z-[1000]">
 		<span class="text-4xl md:text-5xl font-black text-stroke-8 text-stroke-white">{$_('site.title')}</span>
 	</div>
 	<main id="main" class="overflow-auto" tabindex="-1">

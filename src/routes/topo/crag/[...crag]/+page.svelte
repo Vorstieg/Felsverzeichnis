@@ -11,6 +11,7 @@
 	import RouteLine from '$lib/components/topo/RouteLine.svelte';
 	import CssObject from '$lib/components/topo/CssObject.svelte';
 	import Topo2DViewer from '$lib/components/topo/Topo2DViewer.svelte';
+	import TopoLegend from '$lib/components/topo/TopoLegend.svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -70,6 +71,17 @@
 		data.topo?.fixPoints?.some(fp => fp.position2D)
 	);
 	let displayMode = $state('3d');
+	let isTopoLegendOpen = $state(false);
+	let usedTopoSymbolTypes = $derived(
+		Array.from(
+			new Set(
+				(data.route?.fixPoints
+					? data.topo?.fixPoints?.filter(fp => data.route.fixPoints?.includes(fp.id))
+					: data.topo?.fixPoints
+				)?.map(fp => fp.type) || []
+			)
+		)
+	);
 	
 	let lastPath = $state('');
 	$effect(() => {
@@ -533,6 +545,7 @@
 				<button
 					class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
 					onclick={() => isDaylightSimulation = !isDaylightSimulation}
+					aria-label="Toggle daylight simulator"
 					title="Daylight Simulator"
 				>
 					<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
@@ -771,6 +784,24 @@
 		{/if}
 	</InfoPanel>
 </main>
+
+{#if !isTopoLegendOpen}
+	<button
+		type="button"
+		class="fixed right-4 top-5 z-[30000] grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white text-sm text-black shadow-sm transition-transform hover:scale-105 sm:bottom-7 sm:left-7 sm:right-auto sm:top-auto"
+		onclick={() => isTopoLegendOpen = true}
+		aria-label="Open topo legend"
+		title="Topo legend"
+	>
+		<i class="fa-solid fa-map-signs"></i>
+	</button>
+{/if}
+
+<TopoLegend
+	open={isTopoLegendOpen}
+	usedTypes={usedTopoSymbolTypes}
+	onClose={() => isTopoLegendOpen = false}
+/>
 
 <style>
     :global(.route-label) {
