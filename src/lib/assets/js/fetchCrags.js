@@ -16,28 +16,34 @@ const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}
 		return true;
 	});
 
-	const crags = await Promise.all(
-		targetFiles.map(async (file) => {
-			const res = await fetch(`${API_URL}/${file.path}`);
-			const data = await res.json();
-			
-			const cragPath = file.path.split('/').slice(0, -1).join('/');
-			data.properties.path = cragPath;
-			
-			const imageExts = ['.jpg', '.jpeg', '.png', '.gif'];
-			const previewFile = allFiles.find(f => 
-				f.type === 'file' && 
-				f.path.startsWith(cragPath + '/') && 
-				imageExts.some(ext => f.name.toLowerCase().endsWith(ext))
-			);
-			
-			if (previewFile) {
-				data.properties.previewImage = `${API_URL}/${previewFile.path}`;
-			}
-			
-			return data;
-		})
-	);
+	const crags = [];
+	const BATCH_SIZE = 10;
+	for (let i = 0; i < targetFiles.length; i += BATCH_SIZE) {
+		const batch = targetFiles.slice(i, i + BATCH_SIZE);
+		const batchResults = await Promise.all(
+			batch.map(async (file) => {
+				const res = await fetch(`${API_URL}/${file.path}`);
+				const data = await res.json();
+				
+				const cragPath = file.path.split('/').slice(0, -1).join('/');
+				data.properties.path = cragPath;
+				
+				const imageExts = ['.jpg', '.jpeg', '.png', '.gif'];
+				const previewFile = allFiles.find(f => 
+					f.type === 'file' && 
+					f.path.startsWith(cragPath + '/') && 
+					imageExts.some(ext => f.name.toLowerCase().endsWith(ext))
+				);
+				
+				if (previewFile) {
+					data.properties.previewImage = `${API_URL}/${previewFile.path}`;
+				}
+				
+				return data;
+			})
+		);
+		crags.push(...batchResults);
+	}
 
 	let sortedCrags = crags.sort((a, b) => new Date(b.properties.date) - new Date(a.properties.date));
 
