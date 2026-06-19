@@ -37,7 +37,10 @@ export function resize(element) {
 			}
 		} else if (direction > 0) {
 			// Moving down
-			closestHeight = targetHeights.slice().reverse().find((h) => h < currentHeight);
+			closestHeight = targetHeights
+				.slice()
+				.reverse()
+				.find((h) => h < currentHeight);
 			if (!closestHeight) {
 				closestHeight = targetHeights[0];
 			}
@@ -66,7 +69,7 @@ export function resize(element) {
 
 		element.style.transition =
 			'top 0.2s ease-out, height 0.2s ease-out, border-radius 0.2s ease-out';
-		
+
 		if (closestHeight === targetHeights[targetHeights.length - 1]) {
 			// Full height
 			element.style.top = `0`;
@@ -108,7 +111,7 @@ export function resize(element) {
 		lastTimestamp = Date.now();
 		active.classList.add('selected');
 		element.style.transition = 'border-radius 0.2s ease-out';
-		
+
 		// On interaction, ensure we are in partial-height style (rounded top only)
 		element.style.borderRadius = `1.5rem 1.5rem 0 0`;
 		// Remove inline margin to respect CSS class (w-auto left-0 right-0 -> 0 margin)

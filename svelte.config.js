@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-node';
 import { mdsvex } from 'mdsvex';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeSlug from 'rehype-slug';
@@ -19,19 +19,9 @@ const config = {
 	],
 
 	kit: {
-		adapter: adapter({
-			fallback: '404.html'
-		}),
+		adapter: adapter(),
 		paths: {
 			base: process.env.BASE_PATH
-		},
-		prerender: {
-			entries: [
-				'*',
-				'/about',
-				'/list',
-				'/map'
-			]
 		}
 	}
 };

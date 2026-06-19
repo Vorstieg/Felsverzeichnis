@@ -72,7 +72,7 @@
 		map.getCanvas().style.cursor = 'default';
 
 		map.on('click', 'places', (e) => {
-			if (e.features[0]?.properties?.path)
+			if (map.getZoom() >= 12.0 && e.features[0]?.properties?.path)
 				goto(`${base}/map/crag/${e.features[0].properties.path}`);
 		});
 
@@ -82,32 +82,28 @@
 		});
 
 		map.on('mouseenter', 'places', function() {
-			map.getCanvas().style.cursor = 'pointer';
+			if (map.getZoom() >= 12.0) {
+				map.getCanvas().style.cursor = 'pointer';
+			}
 		});
 
 		map.on('mouseleave', 'places', function() {
 			map.getCanvas().style.cursor = 'default';
 		});
 
-		map.on('mouseenter', 'places-cluster', function() {
-			map.getCanvas().style.cursor = 'pointer';
+		map.on('mouseenter', 'places-dots', function() {
+			if (map.getZoom() < 12.0) {
+				map.getCanvas().style.cursor = 'pointer';
+			}
 		});
 
-		map.on('mouseleave', 'places-cluster', function() {
+		map.on('mouseleave', 'places-dots', function() {
 			map.getCanvas().style.cursor = 'default';
 		});
 
-		map.on('click', 'places-cluster', async (e) => {
-			const features = map.queryRenderedFeatures(e.point, {
-				layers: ['places-cluster']
-			});
-			const clusterId = features[0].properties.cluster_id;
-			const zoom = await map.getSource('places').getClusterExpansionZoom(clusterId);
-
-			map.easeTo({
-				center: features[0].geometry.coordinates,
-				zoom
-			});
+		map.on('click', 'places-dots', (e) => {
+			if (map.getZoom() < 12.0 && e.features[0]?.properties?.path)
+				goto(`${base}/map/crag/${e.features[0].properties.path}`);
 		});
 	});
 
@@ -139,7 +135,6 @@
 		map.addImage('bouldering', (await map.loadImage(base + '/icons/bouldering.png')).data);
 		map.addImage('train', (await map.loadImage(base + '/icons/train.png')).data);
 		map.addImage('bus', (await map.loadImage(base + '/icons/bus.png')).data);
-		map.addImage('cluster', (await map.loadImage(base + '/icons/cluster.png')).data);
 		map.addImage('parking-space', (await map.loadImage(base + '/icons/parking.png')).data);
 		map.getSource('places').setData(places);
 		map.getSource('routes').setData(routes);

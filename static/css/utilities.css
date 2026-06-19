@@ -16,16 +16,39 @@
 	padding-left: 0;
 }
 
-.text-stroke { -webkit-text-stroke-color: #e0e0e0 }
-.text-stroke-transparent { -webkit-text-stroke-color: transparent }
-.text-stroke-black { -webkit-text-stroke-color: #000 }
-.text-stroke-white { -webkit-text-stroke-color: #fff }
+.text-stroke {
+	-webkit-text-stroke-color: #e0e0e0;
+}
+.text-stroke-transparent {
+	-webkit-text-stroke-color: transparent;
+}
+.text-stroke-black {
+	-webkit-text-stroke-color: #000;
+}
+.text-stroke-white {
+	-webkit-text-stroke-color: #fff;
+}
 
-.text-stroke { -webkit-text-stroke-width: 1px; paint-order: stroke fill; }
-.text-stroke-0 { -webkit-text-stroke-width: 0; paint-order: stroke fill; }
-.text-stroke-2 { -webkit-text-stroke-width: 2px; paint-order: stroke fill;}
-.text-stroke-4 { -webkit-text-stroke-width: 4px; paint-order: stroke fill; }
-.text-stroke-8 { -webkit-text-stroke-width: 8px; paint-order: stroke fill;}
+.text-stroke {
+	-webkit-text-stroke-width: 1px;
+	paint-order: stroke fill;
+}
+.text-stroke-0 {
+	-webkit-text-stroke-width: 0;
+	paint-order: stroke fill;
+}
+.text-stroke-2 {
+	-webkit-text-stroke-width: 2px;
+	paint-order: stroke fill;
+}
+.text-stroke-4 {
+	-webkit-text-stroke-width: 4px;
+	paint-order: stroke fill;
+}
+.text-stroke-8 {
+	-webkit-text-stroke-width: 8px;
+	paint-order: stroke fill;
+}
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .no-scrollbar::-webkit-scrollbar {
@@ -34,6 +57,6 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-	-ms-overflow-style: none;  /* IE and Edge */
-	scrollbar-width: none;  /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
 }

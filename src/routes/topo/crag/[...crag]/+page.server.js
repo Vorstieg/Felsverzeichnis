@@ -1,61 +1,68 @@
 import { error } from '@sveltejs/kit';
 
-export const entries = async () => {
-	const jsonFiles = import.meta.glob('/src/entries/**/*.json');
-	const entriesList = [];
-
-	for (const path in jsonFiles) {
-		if (path.endsWith('-topo.json')) {
-			const parts = path.split('/');
-			const dirPath = parts.slice(3, -1).join('/');
-
-			entriesList.push({ crag: dirPath });
-
-			try {
-				const module = await jsonFiles[path]();
-				const topo = module.default;
-
-				if (topo && topo.routes) {
-					for (const route of topo.routes) {
-						entriesList.push({ crag: `${dirPath}/${route.id}` });
-					}
-				}
-			} catch (e) {
-				console.error(`Error loading topo for entries generation: ${path}`, e);
-			}
-		}
-	}
-
-	return entriesList;
-};
-
 export const load = async ({ params, url }) => {
 	try {
-		let topo
-		let route
-		let path
+		let topo;
+		let route;
+		let path;
 
-		const jsonFiles = import.meta.glob('/src/entries/**/*.json');
+		const API_URL = 'http://felslager.vorstieg.eu/api/fs';
+		const fetchJson = async (p) => {
+			try {
+				const res = await fetch(`${API_URL}/${p}`);
+				if (res.ok) return await res.json();
+				return null;
+			} catch (e) {
+				return null;
+			}
+		};
 
-		if (jsonFiles[`/src/entries/${params.crag}/${params.crag.split('/').at(-1)}-topo.json`]) {
-			topo = (await jsonFiles[`/src/entries/${params.crag}/${params.crag.split('/').at(-1)}-topo.json`]()).default;
+		const cragName1 = params.crag.split('/').at(-1);
+		topo = await fetchJson(`${params.crag}/${cragName1}-topo.json`);
+		
+		if (topo) {
 			path = params.crag;
+		} else {
+			const parentPath = params.crag.split('/').slice(0, -1).join('/');
+			if (parentPath) {
+				const cragName2 = params.crag.split('/').at(-2);
+				topo = await fetchJson(`${parentPath}/${cragName2}-topo.json`);
+				if (topo) {
+					route = topo.routes?.find((it) => it.id === cragName1);
+					path = parentPath;
+				}
+			}
 		}
-		else if (jsonFiles[`/src/entries/${params.crag.split('/').slice(0, -1).join("/")}/${params.crag.split('/').at(-2)}-topo.json`]) {
-			topo = (await jsonFiles[`/src/entries/${params.crag.split('/').slice(0, -1).join("/")}/${params.crag.split('/').at(-2)}-topo.json`]()).default;
-			route = topo.routes.find((it) => it.id === params.crag.split('/').at(-1));
-			path = params.crag.split('/').slice(0, -1).join("/");
-		}
-		const pojo = (obj) => obj ? JSON.parse(JSON.stringify(obj)) : obj;
+
+		const pojo = (obj) => (obj ? JSON.parse(JSON.stringify(obj)) : obj);
 
 		if (!topo) {
 			error(404, `Crag or route not found: ${params.crag}`);
+		}
+
+		// Check if a .glb model exists
+		let has3D = false;
+		let modelUrl = null;
+		try {
+			const dirRes = await fetch(`${API_URL}/${path}`);
+			if (dirRes.ok) {
+				const files = await dirRes.json();
+				const glbFileName = `${path.split('/').at(-1)}.glb`;
+				if (files.some(f => f.name === glbFileName)) {
+					has3D = true;
+					modelUrl = `${API_URL}/${path}/${glbFileName}`;
+				}
+			}
+		} catch (e) {
+			// Ignore
 		}
 
 		return {
 			path,
 			topo: pojo(topo),
 			route: pojo(route),
+			has3D,
+			modelUrl,
 			name: topo?.name,
 			description_de: topo?.description_de,
 			description_en: topo?.description_en,

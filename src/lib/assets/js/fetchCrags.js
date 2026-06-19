@@ -1,17 +1,40 @@
 import { cragsPerPage } from '$lib/config';
 
 const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}) => {
+	const API_URL = 'http://felslager.vorstieg.eu/api/fs';
+	
+	const indexRes = await fetch(`${API_URL}/?recursive=true`);
+	if (!indexRes.ok) throw new Error('Failed to fetch crag index from API');
+	const allFiles = await indexRes.json();
+
+	const targetFiles = allFiles.filter(f => {
+		if (f.type !== 'file') return false;
+		if (!f.path.endsWith('.json')) return false;
+		if (f.path.includes('-transit')) return false;
+		if (f.path.includes('-parking')) return false;
+		if (f.path.includes('-topo')) return false;
+		return true;
+	});
+
 	const crags = await Promise.all(
-		Object.entries(
-			import.meta.glob([
-				'/src/entries/**/*.json',
-				'!/src/entries/**/*-transit*.json',
-				'!/src/entries/**/*-parking*.json',
-				'!/src/entries/**/*-topo*.json'
-			])
-		).map(async ([path, resolver]) => {
-			const data = (await resolver()).default;
-			data.properties.path = path.split('/').slice(3, -1).join('/');
+		targetFiles.map(async (file) => {
+			const res = await fetch(`${API_URL}/${file.path}`);
+			const data = await res.json();
+			
+			const cragPath = file.path.split('/').slice(0, -1).join('/');
+			data.properties.path = cragPath;
+			
+			const imageExts = ['.jpg', '.jpeg', '.png', '.gif'];
+			const previewFile = allFiles.find(f => 
+				f.type === 'file' && 
+				f.path.startsWith(cragPath + '/') && 
+				imageExts.some(ext => f.name.toLowerCase().endsWith(ext))
+			);
+			
+			if (previewFile) {
+				data.properties.previewImage = `${API_URL}/${previewFile.path}`;
+			}
+			
 			return data;
 		})
 	);
@@ -21,7 +44,9 @@ const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}
 	if (search) {
 		sortedCrags = sortedCrags.filter(
 			(crag) =>
-				crag.properties.name.toLowerCase().includes(search.toLowerCase()) || crag.properties.type.includes(search) || crag.properties.path.toLowerCase().includes(search.toLowerCase())
+				crag.properties.name.toLowerCase().includes(search.toLowerCase()) ||
+				crag.properties.type.includes(search) ||
+				crag.properties.path.toLowerCase().includes(search.toLowerCase())
 		);
 	}
 

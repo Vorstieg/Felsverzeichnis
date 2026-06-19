@@ -36,7 +36,7 @@
 		}
 	});
 
-	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security, grade, equipment } = data;
+	const { type, name, path, topo, topoJson, transit, parking, meta, has3DTopo, tags, security, grade, equipment, images } = data;
 
 	const equipmentIcons = {
 		'Expressschlingen': `${base}/icons/quickdraw.png`,
@@ -58,18 +58,6 @@
 		}
 	}
 
-	const imageFiles = import.meta.glob(
-		'/src/entries/**/*.{jpg,jpeg,png,gif,pdf}',
-		{
-			eager: true,
-			query: {
-				enhanced: true,
-				w: '1280;640;400'
-			}
-		}
-	);
-	const images = Object.entries(imageFiles).filter(([key]) => new RegExp(`^/src/entries/${path}/.*$`).test(key)).map(([, value]) => value);
-
 	async function share() {
 		await navigator.share({
 			title: name,
@@ -83,7 +71,7 @@
 	<div class="absolute top-0 bottom-0 left-0 right-0 z-[30000] bg-black opacity-70"></div>
 	<div onclick={() => fullscreenImage = undefined}
 			 class="absolute top-0 bottom-0 left-0 right-0 z-[30000] flex justify-center items-center">
-		<enhanced:img class="self-center" src={fullscreenImage} />
+		<img class="self-center max-h-full max-w-full object-contain" src={fullscreenImage} alt="Fullscreen Crag" />
 	</div>
 {/if}
 <main class="z-[500] h-24">
@@ -95,21 +83,19 @@
 			class="flex-1 overflow-y-auto w-full px-5 mb-4 overflow-x-hidden min-h-0"
 		>
 			{#if images?.length === 1}
-				<enhanced:img onclick={() => fullscreenImage = images[0].default}
-											class="mx-auto h-71 object-cover rounded-md cursor-pointer" src={images[0].default} />
+				<img onclick={() => fullscreenImage = images[0]}
+					class="mx-auto h-71 object-cover rounded-md cursor-pointer" src={images[0]} alt="Crag" />
 			{:else if images?.length >= 1}
 				<div class="flex flex-col flex-wrap content-start h-73 overflow-x-auto no-scrollbar">
-					{#each images as image ,i}
+					{#each images as image, i}
 						{#if i === 0}
-							<enhanced:img onclick={() => fullscreenImage = image.default}
-														class="w-60 h-71 mr-1.5 mb-1.5 rounded-2xl object-cover cursor-pointer"
-														sizes="(min-width:1920px) 1280px, (min-width:1080px) 640px, (min-width:768px) 400px"
-														src={image.default} />
+							<img onclick={() => fullscreenImage = image}
+								class="w-60 h-71 mr-1.5 mb-1.5 rounded-2xl object-cover cursor-pointer"
+								src={image} alt="Crag" />
 						{:else}
-							<enhanced:img onclick={() => fullscreenImage = image.default}
-														class="w-34.5 h-34.5 mr-1.5 mb-1.5 rounded-2xl object-cover cursor-pointer"
-														sizes="(min-width:1920px) 1280px, (min-width:1080px) 640px, (min-width:768px) 400px"
-														src={image.default} />
+							<img onclick={() => fullscreenImage = image}
+								class="w-34.5 h-34.5 mr-1.5 mb-1.5 rounded-2xl object-cover cursor-pointer"
+								src={image} alt="Crag" />
 						{/if}
 					{/each}
 				</div>
@@ -216,7 +202,7 @@
 							</div>
 						{/if}
 
-						{#if topo}
+						{#if topo && topo.link && topo.link.trim() !== ''}
 							<a href={topo.link} target="_blank"
 								 class="border-1 border-gray-200 h-10 mb-2 mr-2 text-slate-600 hover:text-white hover:bg-ink inline-flex items-center justify-center p-1 px-3 text-base font-medium rounded-full no-underline">
 								<i class="fa-solid fa-route mr-2"></i>

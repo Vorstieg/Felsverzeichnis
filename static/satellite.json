@@ -1,113 +1,125 @@
 {
-  "version": 8,
-  "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
-  "sources": {
-    "satellite": {
-      "type": "raster",
-      "tiles": [
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-      ],
-      "tileSize": 256,
-      "attribution": "&copy; Esri, USGS | Esri, FAO, NOAA, USGS | Earthstar Geographics",
-      "maxzoom": 22
-    },
-    "terrainSource":{
-      "url":"https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=ic9EbrsUoaMeSBLjjuEO",
-      "type":"raster-dem"
-    },
-    "places": {
-      "type": "geojson",
-      "cluster": true,
-      "clusterRadius": 20,
-      "data": { "type": "FeatureCollection", "features": [] }
-    },
-    "routes": {
-      "type": "geojson",
-      "data": { "type": "FeatureCollection", "features": [] }
-    }
-  },
-  "layers": [
-    {
-      "id": "base",
-      "type": "raster",
-      "source": "satellite"
-    },
-    {
-      "id": "routes-outline",
-      "type": "line",
-      "source": "routes",
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "#fff",
-        "line-width": 7
-      }
-    },
-    {
-      "id": "routes",
-      "type": "line",
-      "source": "routes",
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "#12538b",
-        "line-width": 5
-      }
-    },
-    {
-      "id": "places",
-      "type": "symbol",
-      "source": "places",
-      "filter": ["!", ["has", "point_count"]],
-      "layout": {
-        "icon-image": ["get", "type"],
-        "icon-size": 0.8,
-        "icon-allow-overlap": true,
-        "text-optional": true,
-        "text-field": ["get", "name"],
-        "text-offset": [0, 1.8],
-        "text-anchor": "top",
-        "text-font": ["Noto Sans Bold"],
-        "text-size": 14,
-        "visibility": "visible",
-        "text-max-width": 8
-      },
-      "paint": {
-        "text-color": "rgba(47,57,72,1)",
-        "text-halo-blur": 0,
-        "text-halo-color": "rgba(255,255,255,1)",
-        "text-halo-width": 3
-      }
-    },
-    {
-      "id": "places-cluster",
-      "type": "symbol",
-      "source": "places",
-      "filter": ["has", "point_count"],
-      "layout": {
-        "icon-image": "cluster",
-        "icon-size": 0.8,
-        "icon-allow-overlap": true,
-        "text-field": "{point_count_abbreviated}",
-        "text-offset": [1.1, 0.3],
-        "text-anchor": "top",
-        "text-font": ["Noto Sans Bold"],
-        "text-size": 14,
-        "visibility": "visible",
-        "text-max-width": 8
-      },
-      "paint": {
-        "text-color": "rgba(47,57,72,1)"
-      }
-    }
-  ],
-  "terrain": {
-    "source": "terrainSource",
-    "exaggeration": 1
-  },
-  "sky": {}
+	"version": 8,
+	"glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+	"sources": {
+		"satellite": {
+			"type": "raster",
+			"tiles": [
+				"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+			],
+			"tileSize": 256,
+			"attribution": "&copy; Esri, USGS | Esri, FAO, NOAA, USGS | Earthstar Geographics",
+			"maxzoom": 22
+		},
+		"terrainSource": {
+			"url": "https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=ic9EbrsUoaMeSBLjjuEO",
+			"type": "raster-dem"
+		},
+		"places": {
+			"type": "geojson",
+			"cluster": false,
+			"data": { "type": "FeatureCollection", "features": [] }
+		},
+		"routes": {
+			"type": "geojson",
+			"data": { "type": "FeatureCollection", "features": [] }
+		}
+	},
+	"layers": [
+		{
+			"id": "base",
+			"type": "raster",
+			"source": "satellite"
+		},
+		{
+			"id": "routes-outline",
+			"type": "line",
+			"source": "routes",
+			"layout": {
+				"line-join": "round",
+				"line-cap": "round"
+			},
+			"paint": {
+				"line-color": "#fff",
+				"line-width": 7
+			}
+		},
+		{
+			"id": "routes",
+			"type": "line",
+			"source": "routes",
+			"layout": {
+				"line-join": "round",
+				"line-cap": "round"
+			},
+			"paint": {
+				"line-color": "#12538b",
+				"line-width": 5
+			}
+		},
+		{
+			"id": "places",
+			"type": "symbol",
+			"source": "places",
+			"minzoom": 11.5,
+			"layout": {
+				"icon-image": ["get", "type"],
+				"icon-size": 0.8,
+				"icon-allow-overlap": true,
+				"text-optional": true,
+				"text-field": ["get", "name"],
+				"text-offset": [0, 1.8],
+				"text-anchor": "top",
+				"text-font": ["Noto Sans Bold"],
+				"text-size": 14,
+				"visibility": "visible",
+				"text-max-width": 8
+			},
+			"paint": {
+				"text-color": "rgba(47,57,72,1)",
+				"text-halo-blur": 0,
+				"text-halo-color": "rgba(255,255,255,1)",
+				"text-halo-width": 3,
+				"icon-opacity": ["step", ["zoom"], 0.0, 12.0, 1.0],
+				"text-opacity": ["step", ["zoom"], 0.0, 12.0, 1.0]
+			}
+		},
+		{
+			"id": "places-dots",
+			"type": "circle",
+			"source": "places",
+			"maxzoom": 12.5,
+			"paint": {
+				"circle-color": [
+					"match",
+					["get", "type"],
+					"sports-climbing",
+					"#3b82f6",
+					"multi-pitch",
+					"#10b981",
+					"bouldering",
+					"#f97316",
+					"trad",
+					"#eab308",
+					"bus",
+					"#6366f1",
+					"train",
+					"#8b5cf6",
+					"parking-space",
+					"#6b7280",
+					"#3b82f6"
+				],
+				"circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 3.5, 12, 6],
+				"circle-stroke-width": 1.5,
+				"circle-stroke-color": "#ffffff",
+				"circle-opacity": ["step", ["zoom"], 1.0, 12.0, 0.0],
+				"circle-stroke-opacity": ["step", ["zoom"], 1.0, 12.0, 0.0]
+			}
+		}
+	],
+	"terrain": {
+		"source": "terrainSource",
+		"exaggeration": 1
+	},
+	"sky": {}
 }

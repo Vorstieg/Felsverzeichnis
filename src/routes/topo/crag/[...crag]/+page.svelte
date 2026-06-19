@@ -61,9 +61,7 @@
 	let progress = $state(0);
 	let modelLoaded = $state(false);
 
-	const glbFiles = import.meta.glob('/src/entries/**/*.glb', { eager: true, query: '?url', import: 'default' });
-
-	let has3D = $derived(data.path ? !!glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`] : false);
+	let has3D = $derived(data.has3D);
 	let has2D = $derived(
 		!!data.topo?.image2D || 
 		data.topo?.routes?.some(r => r.points2D?.length > 0) || 
@@ -455,7 +453,7 @@
 			</HTML>
 
 			<Model
-				modelUrl={glbFiles[`/src/entries/${data.path}/${data.path.split('/').pop()}.glb`]}
+				modelUrl={data.modelUrl}
 				onload={() => modelLoaded = true}
 			/>
 			{#if visualRoutes && progress >= 1}

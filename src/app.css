@@ -3,19 +3,19 @@
 @plugin '@tailwindcss/typography';
 
 @theme {
-  --color-primary-50: #fff7ed;
-  --color-primary-100: #ffedd5;
-  --color-primary-200: #fed6aa;
-  --color-primary-300: #fdb974;
-  --color-primary-400: #fb903c;
-  --color-primary-500: #f97b27;
-  --color-primary-600: #ea560c;
-  --color-primary-700: #c23f0c;
-  --color-primary-800: #7c2c12;
-  --color-primary-900: #7c2c12;
+	--color-primary-50: #fff7ed;
+	--color-primary-100: #ffedd5;
+	--color-primary-200: #fed6aa;
+	--color-primary-300: #fdb974;
+	--color-primary-400: #fb903c;
+	--color-primary-500: #f97b27;
+	--color-primary-600: #ea560c;
+	--color-primary-700: #c23f0c;
+	--color-primary-800: #7c2c12;
+	--color-primary-900: #7c2c12;
 
-  --color-ink: #2f3948;
-  --color-paper: #faf9f8;
+	--color-ink: #2f3948;
+	--color-paper: #faf9f8;
 }
 
 /*
@@ -27,11 +27,11 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
 }

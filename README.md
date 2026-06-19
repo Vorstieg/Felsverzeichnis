@@ -6,10 +6,10 @@ Felsverzeichnis is a web application designed to help climbers discover and expl
 
 ## Features
 
-*   **Crag Discovery:** Browse and search for climbing crags.
-*   **Detailed Crag Pages:** Access in-depth information about each crag, including location, public transport options, etc.
-*   **3D Visualizations:** Explore crags and routes with interactive 3D models (where available).
-*   **Route Editor:** Tools for creating and editing climbing routes.
+- **Crag Discovery:** Browse and search for climbing crags.
+- **Detailed Crag Pages:** Access in-depth information about each crag, including location, public transport options, etc.
+- **3D Visualizations:** Explore crags and routes with interactive 3D models (where available).
+- **Route Editor:** Tools for creating and editing climbing routes.
 
 ## Development
 
@@ -27,17 +27,21 @@ To get started with development, follow these steps:
     # or yarn install
     ```
 3.  **Start the development server:**
+
     ```bash
     npm run dev
     # or start the server and open the app in a new browser tab
     npm run dev -- --open
     ```
+
     The application will be available at `http://localhost:5173`.
 
 4.  **Building for production:**
+
     ```bash
     npm run build
     ```
+
     You can preview the production build with `npm run preview`.
 
 5.  **Linting and Formatting:**
