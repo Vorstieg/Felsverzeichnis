@@ -8,7 +8,7 @@ export async function load({ params, url }) {
 		let transit, transitTrack, parking;
 		let has3DTopo = false;
 
-		const API_URL = 'http://127.0.0.1:3001/api/fs';
+		const API_URL = 'https://felslager.vorstieg.eu/api/fs';
 		const fetchJson = async (path) => {
 			try {
 				const res = await fetch(`${API_URL}/${path}`);
@@ -78,6 +78,6 @@ export async function load({ params, url }) {
 			}
 		};
 	} catch (err) {
-		error(404, err);
+		error(404, { message: err.message || 'Not found' });
 	}
 };

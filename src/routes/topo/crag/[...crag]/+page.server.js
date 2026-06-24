@@ -9,7 +9,7 @@ export const load = async ({ params, url }) => {
 		let route;
 		let path;
 
-		const API_URL = 'http://127.0.0.1:3001/api/fs';
+		const API_URL = 'https://felslager.vorstieg.eu/api/fs';
 		const fetchJson = async (p) => {
 			try {
 				const res = await fetch(`${API_URL}/${p}`);
@@ -40,7 +40,7 @@ export const load = async ({ params, url }) => {
 		const pojo = (obj) => (obj ? JSON.parse(JSON.stringify(obj)) : obj);
 
 		if (!topo) {
-			error(404, `Crag or route not found: ${params.crag}`);
+			error(404, { message: `Crag or route not found: ${params.crag}` });
 		}
 
 		// Check if a .glb model exists
@@ -79,6 +79,6 @@ export const load = async ({ params, url }) => {
 			}
 		};
 	} catch (err) {
-		error(404, err);
+		error(404, { message: err.message || 'Not found' });
 	}
 };

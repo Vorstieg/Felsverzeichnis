@@ -1,12 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { base } from '$app/paths';
 
-// Ensures all pages under this layout (which is all of them) are statically prerendered at build time
-export const prerender = true;
-
 // Allows client side routing. Necessary for page transitions and link prefetching; change to false if you prefer ordinary routing without JS
 export const csr = true;
 
+console.log("=== LAYOUT LOADED ===");
 import { browser } from '$app/environment';
 import { init, addMessages, getLocaleFromNavigator } from 'svelte-i18n';
 import en from '$lib/i18n/locales/en.json';
