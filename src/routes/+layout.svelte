@@ -7,19 +7,7 @@
 	import '@fortawesome/fontawesome-free/css/brands.css';
 	import '@fortawesome/fontawesome-free/css/solid.css';
 
-	import { init, addMessages, _, locale, getLocaleFromNavigator } from 'svelte-i18n';
-	import en from '$lib/i18n/locales/en.json';
-	import de from '$lib/i18n/locales/de.json';
-
-	addMessages('en', en);
-	addMessages('de', de);
-
-	import { browser } from '$app/environment';
-
-	init({
-		fallbackLocale: 'de',
-		initialLocale: browser ? getLocaleFromNavigator() : 'de'
-	});
+	import { _, locale } from 'svelte-i18n';
 
 	/** @type {{children?: import('svelte').Snippet}} */
 	let { children } = $props();

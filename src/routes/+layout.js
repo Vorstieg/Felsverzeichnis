@@ -7,6 +7,19 @@ export const prerender = true;
 // Allows client side routing. Necessary for page transitions and link prefetching; change to false if you prefer ordinary routing without JS
 export const csr = true;
 
+import { browser } from '$app/environment';
+import { init, addMessages, getLocaleFromNavigator } from 'svelte-i18n';
+import en from '$lib/i18n/locales/en.json';
+import de from '$lib/i18n/locales/de.json';
+
+addMessages('en', en);
+addMessages('de', de);
+
+init({
+	fallbackLocale: 'de',
+	initialLocale: browser ? getLocaleFromNavigator() : 'de'
+});
+
 export const load = async ({ url }) => {
 	try {
 		return {
