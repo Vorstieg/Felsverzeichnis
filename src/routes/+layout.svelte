@@ -14,9 +14,11 @@
 	addMessages('en', en);
 	addMessages('de', de);
 
+	import { browser } from '$app/environment';
+
 	init({
 		fallbackLocale: 'de',
-		initialLocale: getLocaleFromNavigator()
+		initialLocale: browser ? getLocaleFromNavigator() : 'de'
 	});
 
 	/** @type {{children?: import('svelte').Snippet}} */
