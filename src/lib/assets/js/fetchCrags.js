@@ -4,9 +4,12 @@ import { browser } from '$app/environment';
 const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}) => {
 	const API_URL = browser ? 'https://felslager.vorstieg.eu/api/fs' : 'http://127.0.0.1:3001/api/fs';
 	
+	console.log(`[fetchCrags] SSR: ${!browser}, fetching index from ${API_URL}/?recursive=true`);
 	const indexRes = await fetch(`${API_URL}/?recursive=true`);
+	console.log(`[fetchCrags] Index fetched, status: ${indexRes.status}`);
 	if (!indexRes.ok) throw new Error('Failed to fetch crag index from API');
 	const allFiles = await indexRes.json();
+	console.log(`[fetchCrags] Index parsed, ${allFiles.length} files found`);
 
 	const targetFiles = allFiles.filter(f => {
 		if (f.type !== 'file') return false;
@@ -21,6 +24,7 @@ const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}
 	const BATCH_SIZE = 10;
 	for (let i = 0; i < targetFiles.length; i += BATCH_SIZE) {
 		const batch = targetFiles.slice(i, i + BATCH_SIZE);
+		console.log(`[fetchCrags] Processing batch ${i/BATCH_SIZE + 1}, sizes: ${batch.length}`);
 		const batchResults = await Promise.all(
 			batch.map(async (file) => {
 				const res = await fetch(`${API_URL}/${file.path}`);
