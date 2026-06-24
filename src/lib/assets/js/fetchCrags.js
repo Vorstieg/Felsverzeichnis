@@ -1,7 +1,7 @@
 import { cragsPerPage } from '$lib/config';
 
 const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}) => {
-	const API_URL = 'http://felslager.vorstieg.eu/api/fs';
+	const API_URL = 'https://felslager.vorstieg.eu/api/fs';
 	
 	const indexRes = await fetch(`${API_URL}/?recursive=true`);
 	if (!indexRes.ok) throw new Error('Failed to fetch crag index from API');
