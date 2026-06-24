@@ -2,6 +2,7 @@ import { cragsPerPage } from '$lib/config';
 import { browser } from '$app/environment';
 
 const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}) => {
+	const API_URL = browser ? 'https://felslager.vorstieg.eu/api/fs' : 'http://127.0.0.1:3001/api/fs';
 	console.log(`[fetchCrags] SSR: ${!browser}, fetching index from ${API_URL}/?recursive=true`);
 	const indexRes = await fetch(`${API_URL}/?recursive=true`);
 	console.log(`[fetchCrags] Index fetched, status: ${indexRes.status}`);
