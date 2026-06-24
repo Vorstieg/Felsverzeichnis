@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "bär",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/oetz/bär",
+    "name": "Bär",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/bär"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      10.8794727,
+      47.1960468
+    ]
+  }
+}

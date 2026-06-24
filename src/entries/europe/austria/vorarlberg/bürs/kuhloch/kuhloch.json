@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "kuhloch",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/bürs/kuhloch",
+    "name": "Kuhloch",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/kuhloch"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.7944902,
+      47.1494893
+    ]
+  }
+}

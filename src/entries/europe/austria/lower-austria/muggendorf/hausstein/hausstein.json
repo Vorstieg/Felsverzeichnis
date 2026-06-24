@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "hausstein",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/muggendorf/hausstein",
+    "name": "Hausstein",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/hausstein"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.9336013,
+      47.9168299
+    ]
+  }
+}

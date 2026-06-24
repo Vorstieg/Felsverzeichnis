@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "hohenberger-nadel",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/türnitzer-alpen/hohenberger-nadel",
+    "name": "Hohenberger Nadel",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/hohenberger-nadel/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.5785388,
+      47.8976659
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "zigeunerloch",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/grazer-bergland/zigeunerloch",
+    "name": "Zigeunerloch",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/zigeunerloch/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.136877,
+      47.8544298
+    ]
+  }
+}

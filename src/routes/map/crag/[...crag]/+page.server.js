@@ -1,11 +1,14 @@
 import { error } from '@sveltejs/kit';
+import fetchCrags from '$lib/assets/js/fetchCrags';
 
-export const load = async ({ params, url }) => {
+export async function load({ params, url }) {
 	try {
+		const crags = await fetchCrags({ limit: -1 });
+
 		let transit, transitTrack, parking;
 		let has3DTopo = false;
 
-		const API_URL = 'http://felslager.vorstieg.eu/api/fs';
+		const API_URL = 'http://127.0.0.1:3001/api/fs';
 		const fetchJson = async (path) => {
 			try {
 				const res = await fetch(`${API_URL}/${path}`);

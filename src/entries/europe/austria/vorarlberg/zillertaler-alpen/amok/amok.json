@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "amok",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/zillertaler-alpen/amok",
+    "name": "Amok",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/amok/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.6399483,
+      47.321872
+    ]
+  }
+}

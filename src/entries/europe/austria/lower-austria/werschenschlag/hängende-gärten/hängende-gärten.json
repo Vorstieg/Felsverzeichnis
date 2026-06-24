@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "hängende-gärten",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/werschenschlag/hängende-gärten",
+    "name": "Hängende Gärten",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/hängende-gärten"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.3217059,
+      48.5666295
+    ]
+  }
+}

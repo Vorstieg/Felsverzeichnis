@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "klettergarten-villacher-alpen-arena",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/carinthia/gailtaler-alpen-lienzer-dolomiten/klettergarten-villacher-alpen-arena",
+    "name": "Klettergarten Villacher Alpen Arena",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/klettergarten-villacher-alpen-arena/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.8110514,
+      46.6025487
+    ]
+  }
+}

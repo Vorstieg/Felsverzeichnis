@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "brünn",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/koblach/brünn",
+    "name": "Brünn",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/brünn"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.6121118,
+      47.3317909
+    ]
+  }
+}

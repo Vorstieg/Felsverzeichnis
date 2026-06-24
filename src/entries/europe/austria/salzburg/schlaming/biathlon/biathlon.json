@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "biathlon",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/schlaming/biathlon",
+    "name": "Biathlon",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/biathlon"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.2077342,
+      47.4996588
+    ]
+  }
+}

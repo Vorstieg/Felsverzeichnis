@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "arena",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/mixnitz/arena",
+    "name": "Arena",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/arena"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.3789651,
+      47.336686
+    ]
+  }
+}

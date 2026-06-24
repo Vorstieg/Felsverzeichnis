@@ -1,0 +1,27 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "greifbar",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/hard/greifbar",
+    "name": "Greifbar",
+    "type": [
+      "bouldering",
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/greifbar"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.7093679,
+      47.4939938
+    ]
+  }
+}

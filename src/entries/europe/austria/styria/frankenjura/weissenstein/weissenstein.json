@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "weissenstein",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/frankenjura/weissenstein",
+    "name": "Weissenstein",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/weissenstein/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.3926424,
+      47.3425257
+    ]
+  }
+}

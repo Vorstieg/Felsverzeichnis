@@ -1,0 +1,27 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "schleierwasserfall",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/carinthia/brandstatt/schleierwasserfall",
+    "name": "Schleierwasserfall",
+    "type": [
+      "bouldering",
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/schleierwasserfall"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.4486827,
+      47.0039792
+    ]
+  }
+}

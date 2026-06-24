@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "bouldergebiet-merkenstein",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/wienerwald/bouldergebiet-merkenstein",
+    "name": "Bouldergebiet Merkenstein",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/bouldergebiet-merkenstein/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.133608,
+      47.980893
+    ]
+  }
+}

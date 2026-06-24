@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "schrei-aus-stein",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/allgäuer-alpen/schrei-aus-stein",
+    "name": "Schrei aus Stein",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/schrei-aus-stein/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.3610887,
+      47.5450116
+    ]
+  }
+}

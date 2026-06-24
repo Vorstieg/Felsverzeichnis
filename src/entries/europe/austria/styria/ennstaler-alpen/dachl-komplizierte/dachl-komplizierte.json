@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "dachl-komplizierte",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/ennstaler-alpen/dachl-komplizierte",
+    "name": "Dachl Komplizierte",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/dachl-komplizierte/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.6301557,
+      47.5660582
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "batman",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/weißbach-bei-lofer/batman",
+    "name": "Batman",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/batman"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.7649339,
+      47.5087656
+    ]
+  }
+}

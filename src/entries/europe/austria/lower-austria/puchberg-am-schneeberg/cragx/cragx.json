@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "cragx",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/puchberg-am-schneeberg/cragx",
+    "name": "CragX",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/cragx"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.9321731,
+      47.7710839
+    ]
+  }
+}

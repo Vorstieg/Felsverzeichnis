@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "großer-buchstein-normalweg",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/ennstaler-alpen/großer-buchstein-normalweg",
+    "name": "Großer Buchstein Normalweg",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/großer-buchstein-normalweg/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.5958465,
+      47.6142585
+    ]
+  }
+}

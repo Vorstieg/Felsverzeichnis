@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "herkules",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/mäder/herkules",
+    "name": "Herkules",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/herkules"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.6100331,
+      47.343879
+    ]
+  }
+}

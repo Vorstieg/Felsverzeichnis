@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "kalbling-nordwestgrat",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/ennstaler-alpen/kalbling-nordwestgrat",
+    "name": "Kalbling Nordwestgrat",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/kalbling-nordwestgrat/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.5189368,
+      47.5479257
+    ]
+  }
+}

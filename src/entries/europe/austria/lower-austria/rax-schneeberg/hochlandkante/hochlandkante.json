@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "hochlandkante",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/hochlandkante",
+    "name": "Hochlandkante",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/hochlandkante/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.0200364,
+      47.8106129
+    ]
+  }
+}

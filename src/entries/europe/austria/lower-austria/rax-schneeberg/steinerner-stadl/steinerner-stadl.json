@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "steinerner-stadl",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/steinerner-stadl",
+    "name": "Steinerner Stadl",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/steinerner-stadl/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.1507904,
+      47.8525928
+    ]
+  }
+}

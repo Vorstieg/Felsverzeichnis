@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "vibrator",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/söll/vibrator",
+    "name": "Vibrator",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/vibrator"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.1940612,
+      47.5319093
+    ]
+  }
+}

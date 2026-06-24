@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "fenstergucker",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/hochschwab-gruppe/fenstergucker",
+    "name": "Fenstergucker",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/fenstergucker/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.0437378,
+      47.5475842
+    ]
+  }
+}

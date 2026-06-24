@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "long-is-her",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/tennen-gebirge/long-is-her",
+    "name": "Long is her",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/long-is-her/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.234031,
+      47.4952561
+    ]
+  }
+}

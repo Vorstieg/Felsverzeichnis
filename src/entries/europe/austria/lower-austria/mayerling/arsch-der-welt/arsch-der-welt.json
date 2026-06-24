@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "arsch-der-welt",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/mayerling/arsch-der-welt",
+    "name": "Arsch der Welt",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/arsch-der-welt"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.1197415,
+      48.0191964
+    ]
+  }
+}

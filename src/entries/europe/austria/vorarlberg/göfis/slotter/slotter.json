@@ -1,0 +1,27 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "slotter",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/göfis/slotter",
+    "name": "Slotter",
+    "type": [
+      "bouldering",
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/slotter"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.6347875,
+      47.2295083
+    ]
+  }
+}

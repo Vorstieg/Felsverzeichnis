@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "osterhasi",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/osterhasi",
+    "name": "Osterhasi",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/osterhasi/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.0523964,
+      47.8314495
+    ]
+  }
+}

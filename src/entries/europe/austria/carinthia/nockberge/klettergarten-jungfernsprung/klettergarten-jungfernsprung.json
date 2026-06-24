@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "klettergarten-jungfernsprung",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/carinthia/nockberge/klettergarten-jungfernsprung",
+    "name": "Klettergarten Jungfernsprung",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/klettergarten-jungfernsprung/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.6372339,
+      46.774962
+    ]
+  }
+}

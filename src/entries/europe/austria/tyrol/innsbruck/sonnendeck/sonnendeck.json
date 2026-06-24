@@ -1,0 +1,27 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "sonnendeck",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/innsbruck/sonnendeck",
+    "name": "Sonnendeck",
+    "type": [
+      "bouldering",
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/sonnendeck"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      11.3684518,
+      47.3105551
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "stams",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/stams/stams",
+    "name": "Klettergarten Stams",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/stams"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      10.9829623,
+      47.2859277
+    ]
+  }
+}

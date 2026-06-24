@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "halloween",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/weißbach-bei-lofer/halloween",
+    "name": "Halloween",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/halloween"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.7648852,
+      47.508806
+    ]
+  }
+}

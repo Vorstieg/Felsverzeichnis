@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "schmittkamin",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/gailtaler-alpen-lienzer-dolomiten/schmittkamin",
+    "name": "Schmittkamin",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/schmittkamin/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.8049164,
+      46.7714034
+    ]
+  }
+}

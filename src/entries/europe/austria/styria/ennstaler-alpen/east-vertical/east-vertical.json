@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "east-vertical",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/ennstaler-alpen/east-vertical",
+    "name": "East Vertical",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/east-vertical/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.628152,
+      47.6297925
+    ]
+  }
+}

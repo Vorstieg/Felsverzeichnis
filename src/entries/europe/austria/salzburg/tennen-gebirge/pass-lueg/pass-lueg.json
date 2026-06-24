@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "pass-lueg",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/tennen-gebirge/pass-lueg",
+    "name": "Klettergarten Pass Lueg",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/pass-lueg/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.1912057,
+      47.5790915
+    ]
+  }
+}

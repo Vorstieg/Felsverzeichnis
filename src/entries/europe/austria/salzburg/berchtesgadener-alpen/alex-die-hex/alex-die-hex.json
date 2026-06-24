@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "alex-die-hex",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/berchtesgadener-alpen/alex-die-hex",
+    "name": "Alex die Hex",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/alex-die-hex/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.8039954,
+      47.5043812
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "die-vollendung",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/ennstaler-alpen/die-vollendung",
+    "name": "Die Vollendung",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/die-vollendung/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.6622051,
+      47.5773368
+    ]
+  }
+}

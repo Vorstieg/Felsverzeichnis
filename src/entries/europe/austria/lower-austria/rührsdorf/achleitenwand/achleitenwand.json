@@ -1,0 +1,27 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "achleitenwand",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rührsdorf/achleitenwand",
+    "name": "Achleitenwand",
+    "type": [
+      "bouldering",
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/achleitenwand"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.4779697,
+      48.4049263
+    ]
+  }
+}

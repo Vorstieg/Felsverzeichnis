@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "traumland",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/wanzenau/traumland",
+    "name": "Traumland",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/traumland"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.607952,
+      48.6268247
+    ]
+  }
+}

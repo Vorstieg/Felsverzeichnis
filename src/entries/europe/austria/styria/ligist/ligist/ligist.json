@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "ligist",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/ligist/ligist",
+    "name": "Klettergarten Ligist",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/ligist"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.1846471,
+      46.987863
+    ]
+  }
+}

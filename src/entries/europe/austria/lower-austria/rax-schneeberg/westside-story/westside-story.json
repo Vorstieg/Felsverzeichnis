@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "westside-story",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/westside-story",
+    "name": "Westside Story",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/westside-story/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.798976,
+      47.7338116
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "galerie",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/kematen-in-tirol/galerie",
+    "name": "Klettergarten Galerie",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/galerie"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      11.2827011,
+      47.2686579
+    ]
+  }
+}

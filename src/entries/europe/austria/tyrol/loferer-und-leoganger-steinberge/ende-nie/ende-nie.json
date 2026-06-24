@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "ende-nie",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/loferer-und-leoganger-steinberge/ende-nie",
+    "name": "Ende nie",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/ende-nie/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      10.8438607,
+      47.3175048
+    ]
+  }
+}

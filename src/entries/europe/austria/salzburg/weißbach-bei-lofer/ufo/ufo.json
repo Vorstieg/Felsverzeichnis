@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "ufo",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/weißbach-bei-lofer/ufo",
+    "name": "Ufo",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/ufo"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.7679868,
+      47.5135012
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "paulasteig",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/rax-schneeberg/paulasteig",
+    "name": "Paulasteig",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/paulasteig/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.6823605,
+      47.6853737
+    ]
+  }
+}

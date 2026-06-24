@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "griffig",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/st-ulrich-am-pillersee/griffig",
+    "name": "Griffig",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/griffig"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.5640527,
+      47.5549281
+    ]
+  }
+}

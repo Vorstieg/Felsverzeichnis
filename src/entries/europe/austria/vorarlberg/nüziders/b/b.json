@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "b",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/nüziders/b",
+    "name": "b",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/b"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.7830319,
+      47.1767863
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "sledgehammer",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/going/sledgehammer",
+    "name": "Sledgehammer",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/sledgehammer"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.3567803,
+      47.5447483
+    ]
+  }
+}

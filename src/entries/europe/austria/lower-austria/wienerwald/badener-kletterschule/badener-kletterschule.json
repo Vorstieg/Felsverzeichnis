@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "badener-kletterschule",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/wienerwald/badener-kletterschule",
+    "name": "Badener Kletterschule",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/badener-kletterschule/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.190206,
+      48.0195461
+    ]
+  }
+}

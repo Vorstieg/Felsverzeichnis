@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "pocksberg",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/mäder/pocksberg",
+    "name": "Klettergarten Pocksberg",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/pocksberg"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.6098402,
+      47.3437661
+    ]
+  }
+}

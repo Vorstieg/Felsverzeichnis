@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "niemandsland",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/niemandsland",
+    "name": "Niemandsland",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/niemandsland/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.744375,
+      47.7565449
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "klobenstein",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/kössen/klobenstein",
+    "name": "Klobenstein",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/klobenstein"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.3987631,
+      47.6908535
+    ]
+  }
+}

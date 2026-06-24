@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "töschling",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/carinthia/töschling/töschling",
+    "name": "Töschling",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/töschling"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.109443,
+      46.6358895
+    ]
+  }
+}

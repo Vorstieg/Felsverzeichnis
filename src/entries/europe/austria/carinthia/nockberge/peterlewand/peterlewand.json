@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "peterlewand",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/carinthia/nockberge/peterlewand",
+    "name": "Peterlewand",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/peterlewand/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.9570975,
+      46.6751302
+    ]
+  }
+}

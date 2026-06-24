@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "fischerwand",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/hochschwab-gruppe/fischerwand",
+    "name": "Klettergarten Fischerwand",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/fischerwand/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.2578525,
+      47.4694152
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "john-wayne-der-alpen",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/john-wayne-der-alpen",
+    "name": "John Wayne der Alpen",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/john-wayne-der-alpen/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.7565509,
+      47.7451146
+    ]
+  }
+}

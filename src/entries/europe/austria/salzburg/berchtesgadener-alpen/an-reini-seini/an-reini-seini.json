@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "an-reini-seini",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/berchtesgadener-alpen/an-reini-seini",
+    "name": "An Reini Seini",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/an-reini-seini/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.7822013,
+      47.503784
+    ]
+  }
+}

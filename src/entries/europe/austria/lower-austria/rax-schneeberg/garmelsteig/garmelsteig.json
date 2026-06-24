@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "garmelsteig",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/garmelsteig",
+    "name": "Garmelsteig",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/garmelsteig/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.8092356,
+      47.7860805
+    ]
+  }
+}

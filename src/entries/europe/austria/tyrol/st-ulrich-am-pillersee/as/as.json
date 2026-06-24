@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "as",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/st-ulrich-am-pillersee/as",
+    "name": "AS",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/as"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.6048057,
+      47.5059927
+    ]
+  }
+}

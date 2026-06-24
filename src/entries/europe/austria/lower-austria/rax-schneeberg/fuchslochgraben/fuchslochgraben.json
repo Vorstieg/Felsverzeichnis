@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "fuchslochgraben",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/rax-schneeberg/fuchslochgraben",
+    "name": "Fuchslochgraben",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/fuchslochgraben/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.8102302,
+      47.7220035
+    ]
+  }
+}

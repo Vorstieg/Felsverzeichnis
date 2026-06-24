@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "panorama",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/tennen-gebirge/panorama",
+    "name": "Panorama",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/panorama/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.2369534,
+      47.4941874
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "da-capo",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/loferer-und-leoganger-steinberge/da-capo",
+    "name": "Da Capo",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/da-capo/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.5217407,
+      48.4023004
+    ]
+  }
+}

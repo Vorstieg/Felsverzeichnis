@@ -1,0 +1,27 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "kulmriegel",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/lower-austria/petersbaumgarten/kulmriegel",
+    "name": "Kulmriegel",
+    "type": [
+      "bouldering",
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/kulmriegel"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.1190142,
+      47.6358031
+    ]
+  }
+}

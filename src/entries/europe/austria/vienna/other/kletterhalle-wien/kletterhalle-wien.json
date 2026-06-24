@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "kletterhalle-wien",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/vienna/other/kletterhalle-wien",
+    "name": "Kletterhalle Wien",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/kletterhalle-wien/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      16.4505812,
+      48.2297748
+    ]
+  }
+}

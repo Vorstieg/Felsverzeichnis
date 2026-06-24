@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "werfener-traumpfad",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/tennen-gebirge/werfener-traumpfad",
+    "name": "Werfener Traumpfad",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/werfener-traumpfad/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.2379555,
+      47.4931667
+    ]
+  }
+}

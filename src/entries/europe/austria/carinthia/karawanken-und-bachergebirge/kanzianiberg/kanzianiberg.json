@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "kanzianiberg",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/carinthia/karawanken-und-bachergebirge/kanzianiberg",
+    "name": "Klettergarten Kanzianiberg",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/kanzianiberg/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      13.8722696,
+      46.5519236
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "nirvana",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/salzburg/weißbach-bei-lofer/nirvana",
+    "name": "Nirvana",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/nirvana"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      12.7793952,
+      47.5079995
+    ]
+  }
+}

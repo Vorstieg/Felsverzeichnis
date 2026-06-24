@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "klettergarten-rosenbach",
+    "date": "2026-05-28",
+    "updated": "2026-05-28",
+    "path": "europe/austria/carinthia/karawanken-und-bachergebirge/klettergarten-rosenbach",
+    "name": "Klettergarten Rosenbach",
+    "type": [
+      "sports-climbing"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettergarten/klettergarten-rosenbach/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      14.0449696,
+      46.5408288
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "david",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/tyrol/obergurgl/david",
+    "name": "David",
+    "type": [
+      "bouldering"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "27crags.com",
+      "link": "https://27crags.com/crags/david"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      11.0166765,
+      46.8640714
+    ]
+  }
+}

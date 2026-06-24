@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "beilstein-ostkante",
+    "date": "2026-05-29",
+    "updated": "2026-05-29",
+    "path": "europe/austria/styria/hochschwab-gruppe/beilstein-ostkante",
+    "name": "Beilstein Ostkante",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/beilstein-ostkante/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      15.1135845,
+      47.6041832
+    ]
+  }
+}

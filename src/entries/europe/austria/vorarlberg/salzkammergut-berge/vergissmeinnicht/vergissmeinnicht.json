@@ -1,0 +1,26 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "vergissmeinnicht",
+    "date": "2026-05-31",
+    "updated": "2026-05-31",
+    "path": "europe/austria/vorarlberg/salzkammergut-berge/vergissmeinnicht",
+    "name": "Vergissmeinnicht",
+    "type": [
+      "multi-pitch"
+    ],
+    "description_de": "",
+    "description_en": "",
+    "topo": {
+      "site": "bergsteigen.com",
+      "link": "https://www.bergsteigen.com/touren/klettern/vergissmeinnicht/"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      9.6112628,
+      47.3317785
+    ]
+  }
+}
