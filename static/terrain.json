@@ -18,9 +18,9 @@
 			"url": "https://api.maptiler.com/tiles/v3/tiles.json?key=ic9EbrsUoaMeSBLjjuEO",
 			"type": "vector"
 		},
-		"terrain_rgb": {
-			"url": "https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=ic9EbrsUoaMeSBLjjuEO",
-			"type": "raster-dem"
+		"globalTerrainSource": {
+      "type": "raster-dem",
+      "url": "https://tiles.mapterhorn.com/tilejson.json"
 		},
 		"places": {
 			"type": "geojson",
@@ -327,9 +327,9 @@
 			"filter": ["==", "class", "sand"]
 		},
 		{
-			"id": "Hillshade",
+			"id": "global-hillshade",
 			"type": "hillshade",
-			"source": "terrain_rgb",
+			"source": "globalTerrainSource",
 			"layout": {
 				"visibility": "visible"
 			},
@@ -2863,7 +2863,11 @@
 	"bearing": 0,
 	"pitch": 0,
 
-	"sky": {},
+	"terrain": {
+    "source": "globalTerrainSource",
+    "exaggeration": 1
+  },
+  "sky": {},
 	"center": [0, 0],
 	"zoom": 1
 }
