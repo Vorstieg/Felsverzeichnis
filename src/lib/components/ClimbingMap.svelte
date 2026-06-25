@@ -5,6 +5,7 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
 	import { afterNavigate, goto } from '$app/navigation';
+	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
 
 	afterNavigate((_navigation) => {
 		fillLayers(locations);
@@ -80,6 +81,7 @@
 			await drawLayers();
 			map.on('styledata', async () => drawLayers());
 		});
+		map.on('style.load', () => slowRasterTileDecay(map));
 
 		map.on('mouseenter', 'places', function() {
 			if (map.getZoom() >= 12.0) {
