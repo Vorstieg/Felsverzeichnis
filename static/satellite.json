@@ -2,7 +2,7 @@
 	"version": 8,
 	"glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
 	"sources": {
-		"satellite": {
+		"worldImagery": {
 			"type": "raster",
 			"tiles": [
 				"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -11,9 +11,9 @@
 			"attribution": "&copy; Esri, USGS | Esri, FAO, NOAA, USGS | Earthstar Geographics",
 			"maxzoom": 22
 		},
-		"terrainSource": {
-			"url": "https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=ic9EbrsUoaMeSBLjjuEO",
-			"type": "raster-dem"
+		"globalTerrainSource": {
+      "type": "raster-dem",
+      "url": "https://tiles.mapterhorn.com/tilejson.json"
 		},
 		"places": {
 			"type": "geojson",
@@ -27,9 +27,9 @@
 	},
 	"layers": [
 		{
-			"id": "base",
+			"id": "world-imagery",
 			"type": "raster",
-			"source": "satellite"
+			"source": "worldImagery"
 		},
 		{
 			"id": "routes-outline",
@@ -118,7 +118,7 @@
 		}
 	],
 	"terrain": {
-		"source": "terrainSource",
+		"source": "globalTerrainSource",
 		"exaggeration": 1
 	},
 	"sky": {}

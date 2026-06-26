@@ -4,6 +4,7 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import * as THREE from 'three';
 	import { base } from '$app/paths';
+	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
 
 	let { 
 		coordinates = $bindable([0, 0]), 
@@ -168,6 +169,7 @@
 		};
 
 		map.on('style.load', () => {
+			slowRasterTileDecay(map);
 			if (!map.getLayer('3d-model')) {
 				map.addLayer(customLayer);
 			}
