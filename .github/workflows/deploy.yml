@@ -14,4 +14,4 @@ jobs:
           git pull origin main
           npm install
           npm run build
-          pm2 restart felsverzeichnis_prod
+          PM2_HOME=/home/vorstieg/.pm2 pm2 restart felsverzeichnis_prod
