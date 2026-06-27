@@ -10,23 +10,39 @@
 	afterNavigate((_navigation) => {
 		fillLayers(locations);
 		if (zoomToLocations) {
-			const coordinates = places.features.map(it => it.geometry.coordinates);
-			const bounds = coordinates.reduce((bounds, coord) => {
-				return bounds.extend(coord);
-			}, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+			const markerTarget = nextMarkerTarget || cameraTarget;
+			nextMarkerTarget = null;
+			if (markerTarget?.center) {
+				focusMarker(markerTarget.center, markerTarget.zoom);
+				return;
+			}
+			const requestedMinZoom = cameraTarget?.zoom || null;
+			const coordinates = places.features.map((it) => it.geometry.coordinates);
+			const bounds = coordinates.reduce(
+				(bounds, coord) => {
+					return bounds.extend(coord);
+				},
+				new maplibregl.LngLatBounds(coordinates[0], coordinates[0])
+			);
 			const mediaQuery = '(min-width: 40rem)';
 			const queries = window.matchMedia(mediaQuery);
 			if (detailsShown) {
 				if (queries.matches) {
-					map.fitBounds(bounds, { pitch, padding: { left: 200, top: 200, bottom: 200, right: 1000 } });
+					fitBounds(bounds, requestedMinZoom, {
+						pitch,
+						padding: { left: 200, top: 200, bottom: 200, right: 1000 }
+					});
 				} else {
-					map.fitBounds(bounds, { pitch, padding: { left: 50, top: 100, bottom: 600, right: 50 } });
+					fitBounds(bounds, requestedMinZoom, {
+						pitch,
+						padding: { left: 50, top: 100, bottom: 600, right: 50 }
+					});
 				}
 			} else {
 				if (queries.matches) {
-					map.fitBounds(bounds, { pitch, padding: 200 });
+					fitBounds(bounds, requestedMinZoom, { pitch, padding: 200 });
 				} else {
-					map.fitBounds(bounds, { pitch, padding: 100 });
+					fitBounds(bounds, requestedMinZoom, { pitch, padding: 100 });
 				}
 			}
 		}
@@ -40,7 +56,8 @@
 		center = [16.0, 48],
 		pitch = 50,
 		detailsShown = false,
-		zoomToLocations = false
+		zoomToLocations = false,
+		cameraTarget = null
 	} = $props();
 
 	let mapElement = $state();
@@ -48,6 +65,35 @@
 	let tileLayerMenuOpen = $state(false);
 	let places;
 	let routes;
+	let sectorShapes;
+	let cragFeatures = [];
+	let sectorPointFeatures = [];
+	let nextMarkerTarget = null;
+	let lastCameraTargetKey = null;
+
+	const sectorDetailZoom = 16.5;
+
+	$effect(() => {
+		if (!map || !zoomToLocations || !cameraTarget?.center) return;
+
+		const cameraTargetKey = JSON.stringify(cameraTarget);
+		if (cameraTargetKey === lastCameraTargetKey) return;
+		lastCameraTargetKey = cameraTargetKey;
+
+		focusMarker(cameraTarget.center, cameraTarget.zoom);
+	});
+
+	onMount(() => {
+		function onFocusMapTarget(event) {
+			nextMarkerTarget = event.detail;
+		}
+
+		window.addEventListener('crag-review:focus-map-target', onFocusMapTarget);
+
+		return () => {
+			window.removeEventListener('crag-review:focus-map-target', onFocusMapTarget);
+		};
+	});
 
 	onMount(async () => {
 		map = new maplibregl.Map({
@@ -74,7 +120,7 @@
 
 		map.on('click', 'places', (e) => {
 			if (map.getZoom() >= 12.0 && e.features[0]?.properties?.path)
-				goto(`${base}/map/crag/${e.features[0].properties.path}`);
+				openPlace(e.features[0].properties.path, e.features[0].geometry.coordinates);
 		});
 
 		map.on('load', async () => {
@@ -82,42 +128,81 @@
 			map.on('styledata', async () => drawLayers());
 		});
 		map.on('style.load', () => slowRasterTileDecay(map));
+		map.on('zoom', updateVisiblePlaces);
 
-		map.on('mouseenter', 'places', function() {
+		map.on('mouseenter', 'places', function () {
 			if (map.getZoom() >= 12.0) {
 				map.getCanvas().style.cursor = 'pointer';
 			}
 		});
 
-		map.on('mouseleave', 'places', function() {
+		map.on('mouseleave', 'places', function () {
 			map.getCanvas().style.cursor = 'default';
 		});
 
-		map.on('mouseenter', 'places-dots', function() {
+		map.on('mouseenter', 'places-dots', function () {
 			if (map.getZoom() < 12.0) {
 				map.getCanvas().style.cursor = 'pointer';
 			}
 		});
 
-		map.on('mouseleave', 'places-dots', function() {
+		map.on('mouseleave', 'places-dots', function () {
 			map.getCanvas().style.cursor = 'default';
 		});
 
 		map.on('click', 'places-dots', (e) => {
 			if (map.getZoom() < 12.0 && e.features[0]?.properties?.path)
-				goto(`${base}/map/crag/${e.features[0].properties.path}`);
+				openPlace(e.features[0].properties.path, e.features[0].geometry.coordinates);
 		});
 	});
 
+	function openPlace(path, coordinates) {
+		nextMarkerTarget = { center: coordinates };
+		goto(`${base}/map/crag/${path}`);
+	}
+
+	function focusMarker(markerCenter, requestedMinZoom = null) {
+		map.easeTo({
+			center: markerCenter,
+			zoom: Math.max(map.getZoom(), requestedMinZoom || zoom),
+			pitch
+		});
+	}
+
+	function fitBounds(bounds, requestedMinZoom, options) {
+		if (!requestedMinZoom) {
+			map.fitBounds(bounds, options);
+			return;
+		}
+
+		const camera = map.cameraForBounds(bounds, options);
+		if (!camera) {
+			map.fitBounds(bounds, options);
+			return;
+		}
+
+		map.easeTo({
+			...camera,
+			zoom: Math.max(camera.zoom, requestedMinZoom),
+			pitch: options.pitch ?? pitch
+		});
+	}
+
 	function fillLayers(locations) {
 		places = {
-			'type': 'FeatureCollection',
-			'features': []
+			type: 'FeatureCollection',
+			features: []
 		};
 		routes = {
-			'type': 'FeatureCollection',
-			'features': []
+			type: 'FeatureCollection',
+			features: []
 		};
+		sectorShapes = {
+			type: 'FeatureCollection',
+			features: []
+		};
+		cragFeatures = [];
+		sectorPointFeatures = [];
 		tracks.forEach((track) => {
 			routes.features.push(track);
 		});
@@ -126,20 +211,154 @@
 			if (Array.isArray(processedLocation.properties.type)) {
 				processedLocation.properties.type = processedLocation.properties.type[0];
 			}
-			places.features.push(processedLocation);
+			const sectors = processedLocation.properties.sectors || [];
+			processedLocation.properties.hasSectors = sectors.length > 0;
+			cragFeatures.push(processedLocation);
+
+			sectors.forEach((sector) => {
+				const sectorCoordinates = getSectorCoordinates(sector.geometry);
+				if (!sectorCoordinates) return;
+				const sectorProperties = {
+					name: sector.name,
+					path: `${processedLocation.properties.path}/${sector.id}`,
+					type: processedLocation.properties.type,
+					parentCrag: processedLocation.properties.name,
+					isSector: true
+				};
+
+				if (isPolygonGeometry(sector.geometry)) {
+					sectorShapes.features.push({
+						type: 'Feature',
+						geometry: sector.geometry,
+						properties: sectorProperties
+					});
+				}
+
+				sectorPointFeatures.push({
+					type: 'Feature',
+					geometry: {
+						type: 'Point',
+						coordinates: sectorCoordinates
+					},
+					properties: sectorProperties
+				});
+			});
 		});
+		updateVisiblePlaces();
 		if (map?.loaded) drawLayers();
 	}
 
+	function updateVisiblePlaces() {
+		if (!places) return;
+
+		const showSectorDetail = (map?.getZoom() || 0) >= sectorDetailZoom;
+		places.features = showSectorDetail
+			? [
+					...cragFeatures.filter((feature) => !feature.properties.hasSectors),
+					...sectorPointFeatures
+				]
+			: cragFeatures;
+
+		map?.getSource('places')?.setData(places);
+	}
+
+	function isPolygonGeometry(geometry) {
+		return geometry?.type === 'Polygon' || geometry?.type === 'MultiPolygon';
+	}
+
+	function getSectorCoordinates(geometry) {
+		if (!geometry?.coordinates) return null;
+		if (geometry.type === 'Point') return geometry.coordinates;
+
+		const coordinates = getGeometryCoordinates(geometry);
+
+		if (!Array.isArray(coordinates) || coordinates.length === 0) return null;
+
+		const usableCoordinates =
+			coordinates.length > 1 &&
+			coordinates[0][0] === coordinates[coordinates.length - 1][0] &&
+			coordinates[0][1] === coordinates[coordinates.length - 1][1]
+				? coordinates.slice(0, -1)
+				: coordinates;
+
+		const sums = usableCoordinates.reduce(
+			(acc, coordinate) => [acc[0] + coordinate[0], acc[1] + coordinate[1]],
+			[0, 0]
+		);
+
+		return [sums[0] / usableCoordinates.length, sums[1] / usableCoordinates.length];
+	}
+
+	function getGeometryCoordinates(geometry) {
+		if (geometry.type === 'Polygon') return geometry.coordinates?.[0];
+		if (geometry.type === 'MultiPolygon')
+			return geometry.coordinates?.flatMap((polygon) => polygon[0]);
+		return geometry.coordinates;
+	}
+
 	async function drawLayers() {
-		map.addImage('sports-climbing', (await map.loadImage(base + '/icons/sports-climbing.png')).data);
-		map.addImage('multi-pitch', (await map.loadImage(base + '/icons/multi-pitch.png')).data);
-		map.addImage('bouldering', (await map.loadImage(base + '/icons/bouldering.png')).data);
-		map.addImage('train', (await map.loadImage(base + '/icons/train.png')).data);
-		map.addImage('bus', (await map.loadImage(base + '/icons/bus.png')).data);
-		map.addImage('parking-space', (await map.loadImage(base + '/icons/parking.png')).data);
+		await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
+		await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
+		await addMapImage('bouldering', base + '/icons/bouldering.png');
+		await addMapImage('train', base + '/icons/train.png');
+		await addMapImage('bus', base + '/icons/bus.png');
+		await addMapImage('parking-space', base + '/icons/parking.png');
+		addSectorShapeLayers();
+		updateVisiblePlaces();
 		map.getSource('places').setData(places);
 		map.getSource('routes').setData(routes);
+		map.getSource('sector-shapes').setData(sectorShapes);
+	}
+
+	async function addMapImage(name, url) {
+		if (map.hasImage(name)) return;
+		map.addImage(name, (await map.loadImage(url)).data);
+	}
+
+	function addSectorShapeLayers() {
+		if (!map.getSource('sector-shapes')) {
+			map.addSource('sector-shapes', {
+				type: 'geojson',
+				data: sectorShapes
+			});
+		}
+
+		if (!map.getLayer('sector-shapes-fill')) {
+			map.addLayer(
+				{
+					id: 'sector-shapes-fill',
+					type: 'fill',
+					source: 'sector-shapes',
+					minzoom: sectorDetailZoom,
+					paint: {
+						'fill-color': '#f97316',
+						'fill-opacity': 0.18
+					}
+				},
+				'places'
+			);
+		}
+
+		if (!map.getLayer('sector-shapes-outline')) {
+			map.addLayer(
+				{
+					id: 'sector-shapes-outline',
+					type: 'line',
+					source: 'sector-shapes',
+					minzoom: sectorDetailZoom,
+					layout: {
+						'line-join': 'round',
+						'line-cap': 'round'
+					},
+					paint: {
+						'line-color': '#f97316',
+						'line-width': 2.5,
+						'line-opacity': 0.9
+					}
+				},
+				'places'
+			);
+		}
 	}
 
 	function setTransportTileLayer() {
@@ -159,24 +378,37 @@
 </script>
 
 <div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement}></div>
-<div class="fixed sm:left-15 left-5 top-35 sm:top-37 z-[1000]" onmouseleave={() => tileLayerMenuOpen = false}>
+<div
+	class="fixed sm:left-15 left-5 top-35 sm:top-37 z-[1000]"
+	onmouseleave={() => (tileLayerMenuOpen = false)}
+>
 	<button
 		class="cursor-pointer bg-white p-3 px-4 sm:p-2 sm:px-3 hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md"
-		onmouseenter={() => tileLayerMenuOpen = !tileLayerMenuOpen} class:rounded-b-none={tileLayerMenuOpen}><i
-		class="fa-solid fa-layer-group"></i></button>
+		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
+		class:rounded-b-none={tileLayerMenuOpen}><i class="fa-solid fa-layer-group"></i></button
+	>
 	{#if tileLayerMenuOpen}
-		<div class="flex flex-col justify-center" in:slide={{duration: 200}} out:slide={{duration: 200}}>
-			<button class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
-							onclick={setTransportTileLayer}>
+		<div
+			class="flex flex-col justify-center"
+			in:slide={{ duration: 200 }}
+			out:slide={{ duration: 200 }}
+		>
+			<button
+				class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
+				onclick={setTransportTileLayer}
+			>
 				<i class="fa-solid fa-bus-simple"></i>
 			</button>
-			<button class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
-							onclick={setSatelliteTileLayer}>
+			<button
+				class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
+				onclick={setSatelliteTileLayer}
+			>
 				<i class="fa-solid fa-satellite"></i>
 			</button>
 			<button
 				class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-full rounded-t-none"
-				onclick={setTerrainTileLayer}>
+				onclick={setTerrainTileLayer}
+			>
 				<i class="fa-solid fa-mountain"></i>
 			</button>
 		</div>
@@ -184,45 +416,45 @@
 </div>
 
 <style>
-    @import 'leaflet/dist/leaflet.css';
-    @import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-    @import "tailwindcss";
+	@import 'leaflet/dist/leaflet.css';
+	@import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+	@import 'tailwindcss';
 
-    :global(.maplibregl-ctrl-top-right) {
-        @apply fixed left-15 top-20 right-auto z-[1000];
-    }
+	:global(.maplibregl-ctrl-top-right) {
+		@apply fixed left-15 top-20 right-auto z-[1000];
+	}
 
-    :global(.maplibregl-ctrl-top-right) {
-        @media (width <= 40rem) {
-            @apply left-5 top-17;
-        }
-    }
+	:global(.maplibregl-ctrl-top-right) {
+		@media (width <= 40rem) {
+			@apply left-5 top-17;
+		}
+	}
 
-    :global(.maplibregl-ctrl-group) {
-        @apply cursor-pointer bg-white rounded-full border-1 border-gray-200 transition-all;
-    }
+	:global(.maplibregl-ctrl-group) {
+		@apply cursor-pointer bg-white rounded-full border-1 border-gray-200 transition-all;
+	}
 
-    :global(.maplibregl-ctrl-group button) {
-        @apply cursor-pointer bg-white rounded-full w-12 h-12;
-    }
+	:global(.maplibregl-ctrl-group button) {
+		@apply cursor-pointer bg-white rounded-full w-12 h-12;
+	}
 
-    :global(.maplibregl-ctrl-group button) {
-        @media (width <= 40rem) {
-            @apply w-13 h-13;
-        }
-    }
+	:global(.maplibregl-ctrl-group button) {
+		@media (width <= 40rem) {
+			@apply w-13 h-13;
+		}
+	}
 
-    :global(.maplibregl-ctrl-group:not(:empty)) {
-        @apply shadow-md;
-    }
+	:global(.maplibregl-ctrl-group:not(:empty)) {
+		@apply shadow-md;
+	}
 
-    :global(.maplibregl-ctrl-bottom-right) {
-        @apply bottom-2 right-2;
-    }
+	:global(.maplibregl-ctrl-bottom-right) {
+		@apply bottom-2 right-2;
+	}
 
-    :global(.maplibregl-ctrl-bottom-right) {
-        @media (width <= 40rem) {
-            @apply bottom-18 right-2;
-        }
-    }
+	:global(.maplibregl-ctrl-bottom-right) {
+		@media (width <= 40rem) {
+			@apply bottom-18 right-2;
+		}
+	}
 </style>

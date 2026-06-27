@@ -33,13 +33,14 @@
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
 
 	let { data } = $props();
+	let currentSectorName = $derived(data.sector?.name || data.sectorId);
+	let availableSectors = $derived(data.sectors || []);
 
 	let routeMetrics = $state({
 		slab: 'N/A',
 		vertical: 'N/A',
 		overhang: 'N/A'
 	});
-
 
 	let sunInfo = $state({ hours: 'Calculating...', chartData: null });
 
@@ -63,10 +64,10 @@
 
 	let has3D = $derived(data.has3D);
 	let has2D = $derived(
-		!!data.topo?.image2D || 
-		data.topo?.routes?.some(r => r.points2D?.length > 0) || 
-		data.topo?.outlines?.length > 0 ||
-		data.topo?.fixPoints?.some(fp => fp.position2D)
+		!!data.topo?.image2D ||
+			data.topo?.routes?.some((r) => r.points2D?.length > 0) ||
+			data.topo?.outlines?.length > 0 ||
+			data.topo?.fixPoints?.some((fp) => fp.position2D)
 	);
 	let displayMode = $state('3d');
 	let isTopoLegendOpen = $state(false);
@@ -74,20 +75,20 @@
 		Array.from(
 			new Set(
 				(data.route?.fixPoints
-					? data.topo?.fixPoints?.filter(fp => data.route.fixPoints?.includes(fp.id))
+					? data.topo?.fixPoints?.filter((fp) => data.route.fixPoints?.includes(fp.id))
 					: data.topo?.fixPoints
-				)?.map(fp => fp.type) || []
+				)?.map((fp) => fp.type) || []
 			)
 		)
 	);
-	
+
 	let lastPath = $state('');
 	$effect(() => {
 		const modeParam = $page.url.searchParams.get('mode');
 
 		if (data.path !== lastPath || modeParam) {
 			lastPath = data.path || '';
-			
+
 			if (modeParam === '2d' && has2D) {
 				displayMode = '2d';
 			} else if (modeParam === '3d' && has3D) {
@@ -106,7 +107,9 @@
 
 	function getParentRoute(childId: string) {
 		if (!data.topo || !data.topo.routes) return null;
-		return data.topo.routes.find(r => r.id === childId || (r.pitches && r.pitches.some(p => p.id === childId)));
+		return data.topo.routes.find(
+			(r) => r.id === childId || (r.pitches && r.pitches.some((p) => p.id === childId))
+		);
 	}
 
 	function focusRoute(route: any) {
@@ -126,7 +129,7 @@
 
 		// 2. Calculate Bounding Sphere
 		const box = new Box3();
-		points.forEach(p => box.expandByPoint(new Vector3(p[0], p[1], p[2])));
+		points.forEach((p) => box.expandByPoint(new Vector3(p[0], p[1], p[2])));
 		const center = new Vector3();
 		box.getCenter(center);
 		const sphere = new Sphere();
@@ -138,7 +141,11 @@
 		const sourceRoute = parent || route;
 
 		if (sourceRoute.orientation) {
-			orientation.set(sourceRoute.orientation[0], sourceRoute.orientation[1], sourceRoute.orientation[2]);
+			orientation.set(
+				sourceRoute.orientation[0],
+				sourceRoute.orientation[1],
+				sourceRoute.orientation[2]
+			);
 		}
 
 		orientation.normalize();
@@ -179,7 +186,7 @@
 
 	$effect(() => {
 		if (hoveredRouteId && modelLoaded && !isCameraMoving) {
-			const r = data.topo.routes.find(r => r.id === hoveredRouteId);
+			const r = data.topo.routes.find((r) => r.id === hoveredRouteId);
 			if (r) focusRoute(r);
 		}
 	});
@@ -191,16 +198,20 @@
 	});
 
 	$effect(() => {
-		const unsubscribe = progressStore.subscribe(value => {
+		const unsubscribe = progressStore.subscribe((value) => {
 			progress = value;
 		});
 		return unsubscribe;
 	});
 
-
-
-	let description = $derived($locale === 'de' ? data.topo?.description_de : data.topo?.description_en || data.topo?.description_de);
-	let displayWallDirection = $derived(wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection);
+	let description = $derived(
+		$locale === 'de'
+			? data.topo?.description_de
+			: data.topo?.description_en || data.topo?.description_de
+	);
+	let displayWallDirection = $derived(
+		wallDirection !== 'Unknown' ? $_('directions.' + wallDirection) : wallDirection
+	);
 	let displaySunHours = $derived(
 		sunInfo.hours === 'shade_all_day' || sunInfo.hours === 'no_geodata'
 			? $_('sun.' + sunInfo.hours)
@@ -239,7 +250,7 @@
 	let visualRoutes = $derived.by(() => {
 		if (!data || !data.topo || !data.topo.routes) return [];
 
-		return data.topo.routes.flatMap(route => {
+		return data.topo.routes.flatMap((route) => {
 			if (route.type?.includes('multi-pitch') && route.pitches) {
 				return route.pitches.map((pitch, idx) => ({
 					...pitch,
@@ -265,10 +276,10 @@
 
 	function translateFixPoint(type: string) {
 		const map: Record<string, string> = {
-			'bolt': 'Bohrhaken',
-			'belay': 'Umlenker',
-			'piton': 'Normalhaken',
-			'hourglass': 'Sanduhr'
+			bolt: 'Bohrhaken',
+			belay: 'Umlenker',
+			piton: 'Normalhaken',
+			hourglass: 'Sanduhr'
 		};
 		return map[type] || type;
 	}
@@ -346,7 +357,7 @@
 			targetElement = document.getElementById('css-renderer-target');
 			if (targetElement && scene && camera && size) {
 				cssRenderer = new CSS2DRenderer({ element: targetElement });
-				const unsubscribeSize = size.subscribe(value => {
+				const unsubscribeSize = size.subscribe((value) => {
 					if (cssRenderer && value.width && value.height) {
 						cssRenderer.setSize(value.width, value.height);
 					}
@@ -357,23 +368,26 @@
 				};
 			}
 		});
-		useTask(() => {
-			if (cssRenderer && scene && camera?.current) cssRenderer.render(scene, camera.current);
+		useTask(
+			() => {
+				if (cssRenderer && scene && camera?.current) cssRenderer.render(scene, camera.current);
 
-			if (animationState && camera?.current && controls) {
-				const elapsed = (Date.now() - animationState.startTime) / animationState.duration;
-				if (elapsed >= 1) {
-					camera.current.position.copy(animationState.endPos);
-					controls.target.copy(animationState.endTarget);
-					animationState = null;
-				} else {
-					const t = cubicOut(elapsed);
-					camera.current.position.lerpVectors(animationState.startPos, animationState.endPos, t);
-					controls.target.lerpVectors(animationState.startTarget, animationState.endTarget, t);
+				if (animationState && camera?.current && controls) {
+					const elapsed = (Date.now() - animationState.startTime) / animationState.duration;
+					if (elapsed >= 1) {
+						camera.current.position.copy(animationState.endPos);
+						controls.target.copy(animationState.endTarget);
+						animationState = null;
+					} else {
+						const t = cubicOut(elapsed);
+						camera.current.position.lerpVectors(animationState.startPos, animationState.endPos, t);
+						controls.target.lerpVectors(animationState.startTarget, animationState.endTarget, t);
+					}
+					controls.update();
 				}
-				controls.update();
-			}
-		}, { after: autoRenderTask, autoInvalidate: false });
+			},
+			{ after: autoRenderTask, autoInvalidate: false }
+		);
 		return null;
 	}
 
@@ -386,29 +400,48 @@
 		if (g.startsWith('8') || g.startsWith('9')) return '#d946ef';
 		return '#cccccc';
 	}
+
+	function getSectorRouteCount(sector: any) {
+		return (
+			sector.routesCount ||
+			sector.routeCount ||
+			sector.routes?.length ||
+			sector.assets?.routes?.length ||
+			0
+		);
+	}
 </script>
 
 <div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden">
 	{#if displayMode === '2d' && data.topo}
-		<Topo2DViewer 
-			topo={data.topo} 
-			routes={data.topo?.routes} 
+		<Topo2DViewer
+			topo={data.topo}
+			routes={data.topo?.routes}
 			selectedRouteId={data.route?.id}
 			onRouteSelect={(route) => goto(`${base}/topo/crag/${data.path || ''}/${route.id}`)}
 			bind:hoveredRouteId
 		/>
 	{:else}
-		<div id="css-renderer-target"
-				 style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"></div>
+		<div
+			id="css-renderer-target"
+			style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"
+		></div>
 
 		<Canvas {createRenderer} dpr={browser ? window.devicePixelRatio : 1}>
-			<T.PerspectiveCamera makeDefault position={[0, 1, 25]} fov={75} near={0.1} far={1000} bind:ref={camera}>
+			<T.PerspectiveCamera
+				makeDefault
+				position={[0, 1, 25]}
+				fov={75}
+				near={0.1}
+				far={1000}
+				bind:ref={camera}
+			>
 				<OrbitControls
 					enableZoom={true}
 					bind:ref={controls}
 					touches={{ ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE }}
-					onstart={() => isCameraMoving = true}
-					onend={() => isCameraMoving = false}
+					onstart={() => (isCameraMoving = true)}
+					onend={() => (isCameraMoving = false)}
 				/>
 			</T.PerspectiveCamera>
 			<T.AmbientLight intensity={ambientIntensity} />
@@ -430,74 +463,80 @@
 				<CssObject position={sunLightPosition}>
 					<div
 						class="flex items-center justify-center w-10 h-10 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
-						title={$_('ui.sun')}>
+						title={$_('ui.sun')}
+					>
 						<i class="fa-solid fa-sun text-yellow-600 text-xl"></i>
 					</div>
 				</CssObject>
-				<T.ArrowHelper
-					args={[sunDirectionVec3, sunPositionVec3, 2, 0xFDB813, 0.5, 0.25]}
-				/>
+				<T.ArrowHelper args={[sunDirectionVec3, sunPositionVec3, 2, 0xfdb813, 0.5, 0.25]} />
 			{/if}
 
 			<HTML center position={[0, 5, 0]}>
-			{#if progress < 1}
-				<div
-					class="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-3 transition-opacity duration-300">
-					<div class="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+				{#if progress < 1}
 					<div
-						class="text-sm font-medium text-gray-600 whitespace-nowrap">{$_('topo.loading')} {Math.round(progress * 100)}
-						%
+						class="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-3 transition-opacity duration-300"
+					>
+						<div
+							class="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"
+						></div>
+						<div class="text-sm font-medium text-gray-600 whitespace-nowrap">
+							{$_('topo.loading')}
+							{Math.round(progress * 100)}
+							%
+						</div>
 					</div>
-				</div>
-			{/if}
+				{/if}
 			</HTML>
 
-			<Model
-				modelUrl={data.modelUrl}
-				onload={() => modelLoaded = true}
-			/>
+			<Model modelUrl={data.modelUrl} onload={() => (modelLoaded = true)} />
 			{#if visualRoutes && progress >= 1}
 				{#each visualRoutes as route (route.id)}
 					<RouteLine
-						link={base + "/topo/crag/" + data.path + "/" + (route.parentId || route.id)}
+						link={base + '/topo/crag/' + data.path + '/' + (route.parentId || route.id)}
 						points={route.points}
 						name={route.name}
 						grade={route.grade}
 						id={route.id}
-						color={data.route?.id === (route.parentId || route.id) ? "#ff0000" : getGradeColor(route.grade)}
+						color={data.route?.id === (route.parentId || route.id)
+							? '#ff0000'
+							: getGradeColor(route.grade)}
 						width={data.route?.id === (route.parentId || route.id) ? 0.1 : 0.08}
 						isSelected={data.route?.id === (route.parentId || route.id)}
-						isCameraMoving={isCameraMoving}
+						{isCameraMoving}
 						isHoveredExternally={hoveredRouteId === (route.parentId || route.id)}
 					/>
 				{/each}
 			{/if}
 
 			{#if data && data.topo.fixPoints && progress >= 1 && data.route}
-				{#each data.topo.fixPoints.filter(fp => data.route.fixPoints?.includes(fp.id)) as point}
+				{#each data.topo.fixPoints.filter((fp) => data.route.fixPoints?.includes(fp.id)) as point}
 					<CssObject position={point.position}>
 						{#if point.type === 'anchor'}
 							<div
 								class="flex items-center justify-center w-5 h-5 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-orange-200"
-								title={$_('topo.fixpoints.anchor')}>
+								title={$_('topo.fixpoints.anchor')}
+							>
 								<i class="fa-solid fa-anchor text-xs text-orange-500"></i>
 							</div>
 						{:else if point.type === 'piton'}
 							<div
 								class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-gray-200"
-								title={$_('topo.fixpoints.piton')}>
+								title={$_('topo.fixpoints.piton')}
+							>
 								<i class="fa-solid fa-thumb-tack text-[10px] text-gray-500"></i>
 							</div>
 						{:else if point.type === 'hourglass'}
 							<div
 								class="flex items-center justify-center w-4 h-4 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-yellow-200"
-								title={$_('topo.fixpoints.hourglass')}>
+								title={$_('topo.fixpoints.hourglass')}
+							>
 								<i class="fa-solid fa-hourglass-half text-[10px] text-yellow-600"></i>
 							</div>
 						{:else}
 							<div
 								class="flex items-center justify-center w-3 h-3 bg-white/80 rounded-full shadow-sm backdrop-blur-sm border border-red-200"
-								title={$_('topo.fixpoints.bolt')}>
+								title={$_('topo.fixpoints.bolt')}
+							>
 								<div class="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
 							</div>
 						{/if}
@@ -510,39 +549,47 @@
 	{/if}
 </div>
 
-
 <main class="z-[500] h-24">
 	<InfoPanel onShare={share}>
 		{#snippet controls()}
 			{#if isDaylightSimulation && displayMode === '3d'}
 				<div
 					transition:slide={{ axis: 'x', duration: 300 }}
-					class="bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-auto h-8">
-					<input type="date"
-								 value={simulationDate}
-								 oninput={(e) => simulationDate = e.currentTarget.value}
-								 class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono"
+					class="bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-auto h-8"
+				>
+					<input
+						type="date"
+						value={simulationDate}
+						oninput={(e) => (simulationDate = e.currentTarget.value)}
+						class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono"
 					/>
 					<div class="w-px h-4 bg-gray-300 mx-1"></div>
 					<span class="text-xs font-bold text-gray-500 w-8 text-right font-mono">
-			            					            						{Math.floor(simulationTime)}
-						:{(Math.floor((simulationTime % 1) * 60)).toString().padStart(2, '0')}
-			            					            					</span> <input
-					type="range"
-					min="0"
-					max="24"
-					step="0.25"
-					value={simulationTime}
-					oninput={(e) => simulationTime = parseFloat(e.currentTarget.value)}
-					class="w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-				/>
+						{Math.floor(simulationTime)}
+						:{Math.floor((simulationTime % 1) * 60)
+							.toString()
+							.padStart(2, '0')}
+					</span>
+					<input
+						type="range"
+						min="0"
+						max="24"
+						step="0.25"
+						value={simulationTime}
+						oninput={(e) => (simulationTime = parseFloat(e.currentTarget.value))}
+						class="w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+					/>
 				</div>
 			{/if}
 
 			{#if displayMode === '3d'}
 				<button
-					class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation ? 'rounded-r-full rounded-l-none' : 'rounded-full'} {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white'}"
-					onclick={() => isDaylightSimulation = !isDaylightSimulation}
+					class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation
+						? 'rounded-r-full rounded-l-none'
+						: 'rounded-full'} {isDaylightSimulation
+						? 'bg-yellow-100 text-yellow-600 border-yellow-300'
+						: 'bg-white'}"
+					onclick={() => (isDaylightSimulation = !isDaylightSimulation)}
 					aria-label="Toggle daylight simulator"
 					title="Daylight Simulator"
 				>
@@ -551,17 +598,25 @@
 			{/if}
 
 			{#if has2D && has3D}
-				<div class="flex bg-white/90 backdrop-blur rounded-full p-1 shadow-sm border border-gray-200 pointer-events-auto ml-2 h-8 items-center">
-					<button 
-						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode === '3d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
-						onclick={() => displayMode = '3d'}
+				<div
+					class="flex bg-white/90 backdrop-blur rounded-full p-1 shadow-sm border border-gray-200 pointer-events-auto ml-2 h-8 items-center"
+				>
+					<button
+						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode ===
+						'3d'
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-gray-500 hover:text-gray-700'}"
+						onclick={() => (displayMode = '3d')}
 					>
 						<i class="fa-solid fa-cube text-[8px]"></i>
 						3D
 					</button>
-					<button 
-						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode === '2d' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
-						onclick={() => displayMode = '2d'}
+					<button
+						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode ===
+						'2d'
+							? 'bg-blue-600 text-white shadow-sm'
+							: 'text-gray-500 hover:text-gray-700'}"
+						onclick={() => (displayMode = '2d')}
 					>
 						<i class="fa-solid fa-image text-[8px]"></i>
 						2D
@@ -572,31 +627,56 @@
 
 		{#if data.route}
 			<div
-				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5">
-				<a href="{base}/topo/crag/{data.path}" class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors">
+				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
+			>
+				<a
+					href="{base}/topo/crag/{data.path}"
+					class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+					aria-label={$_('ui.back_to_topo')}
+				>
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
-				<h1 class="text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.route.name}</h1>
+				<div class="min-w-0">
+					<h1 class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.route.name}</h1>
+					{#if data.isSectorPath}
+						<div class="mt-1 flex items-center gap-2 sm:px-2">
+							<span
+								class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100"
+								>{$_('ui.sector')}: {currentSectorName}</span
+							>
+							<a
+								href="{base}/map/crag/{data.path}"
+								class="text-xs font-semibold text-slate-500 no-underline hover:text-blue-700"
+								>{$_('ui.open_map')}</a
+							>
+						</div>
+					{/if}
+				</div>
 			</div>
 
-			<div
-				class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
+			<div class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
 				<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mb-6">
 					<Tooltip text={$_('topo.wall_direction')}>
-						<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
+						<div
+							class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200"
+						>
 							<i class="fa-solid fa-compass text-gray-500"></i>
 							<span>{displayWallDirection}</span>
 						</div>
 					</Tooltip>
 					<Tooltip text={$_('topo.sun_hours')}>
-						<div class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
+						<div
+							class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100"
+						>
 							<i class="fa-solid fa-clock text-yellow-600"></i>
 							<span>{displaySunHours}</span>
 						</div>
 					</Tooltip>
 					{#if data.route.tags && data.route.tags.length > 0}
 						{#each data.route.tags as tag}
-							<span class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100">
+							<span
+								class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100"
+							>
 								{$_('tags.' + tag)}
 							</span>
 						{/each}
@@ -609,9 +689,10 @@
 						</div>
 					{/if}
 					{#if data.route.type}
-						<div class="border-b border-gray-200 p-3">{$_('topo.climbing_type')}: 
+						<div class="border-b border-gray-200 p-3">
+							{$_('topo.climbing_type')}:
 							{#if Array.isArray(data.route.type)}
-								{data.route.type.map(t => $_('types.' + t) || t).join(', ')}
+								{data.route.type.map((t) => $_('types.' + t) || t).join(', ')}
 							{:else}
 								{$_('types.' + data.route.type) || data.route.type}
 							{/if}
@@ -621,18 +702,26 @@
 						<div class="border-b border-gray-200 p-3">{$_('topo.grade')}: {data.route.grade}</div>
 					{/if}
 					{#if data.route.length}
-						<div class="border-b border-gray-200 p-3">{$_('topo.length')}: {data.route.length} m</div>
+						<div class="border-b border-gray-200 p-3">
+							{$_('topo.length')}: {data.route.length} m
+						</div>
 					{/if}
 					{#if data.route.boltAmount}
-						<div class="border-b border-gray-200 p-3">{$_('topo.required_draws')}: {data.route.boltAmount}</div>
+						<div class="border-b border-gray-200 p-3">
+							{$_('topo.required_draws')}: {data.route.boltAmount}
+						</div>
 					{/if}
 					{#if data.topo.rock}
-						<div class="border-b border-gray-200 p-3">{$_('topo.rock_type')}
-							: {$_('rock_types.' + data.topo.rock) || data.topo.rock}</div>
+						<div class="border-b border-gray-200 p-3">
+							{$_('topo.rock_type')}
+							: {$_('rock_types.' + data.topo.rock) || data.topo.rock}
+						</div>
 					{/if}
 				</div>
 				<div class="mt-6 w-full">
-					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.steepness_distribution')}</h3>
+					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
+						{$_('topo.steepness_distribution')}
+					</h3>
 					<div class="mb-8">
 						<SteepnessDistribution metrics={routeMetrics} />
 					</div>
@@ -648,55 +737,84 @@
 						</div>
 					{/if}
 				</div>
-
 			</div>
 		{:else}
 			<div
-				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5">
-				<a href="{base}/map/crag/{data.path}" class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors">
+				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
+			>
+				<a
+					href="{base}/map/crag/{data.path}"
+					class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+					aria-label={$_('ui.back_to_map')}
+				>
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
-				<h1 class="text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.topo.name}</h1>
+				<div class="min-w-0">
+					<h1 class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.cragName}</h1>
+				</div>
 			</div>
 
-			<div
-				class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
+			<div class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
 				<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mb-6">
 					<Tooltip text={$_('topo.wall_direction')}>
-						<div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
+						<div
+							class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200"
+						>
 							<i class="fa-solid fa-compass text-gray-500"></i>
 							<span>{displayWallDirection}</span>
 						</div>
 					</Tooltip>
 					<Tooltip text={$_('topo.sun_hours')}>
-						<div class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
+						<div
+							class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100"
+						>
 							<i class="fa-solid fa-clock text-yellow-600"></i>
 							<span>{displaySunHours}</span>
 						</div>
 					</Tooltip>
 					{#if data.topo.tags && data.topo.tags.length > 0}
 						{#each data.topo.tags as tag}
-							<span class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100">
+							<span
+								class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100"
+							>
 								{$_('tags.' + tag)}
 							</span>
 						{/each}
 					{/if}
 				</div>
 				<div class="flex flex-col mt-2 mb-10">
+					{#if availableSectors.length > 0}
+						<div class="mb-5 flex gap-2 overflow-x-auto pb-1">
+							{#each availableSectors as sector}
+								<a
+									href="{base}/topo/crag/{data.baseCragPath || data.path}/{sector.id}"
+									class="shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold no-underline transition-colors {data.sectorId ===
+									sector.id
+										? 'border-blue-200 bg-blue-600 text-white'
+										: 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'}"
+								>
+									{sector.name}
+									{#if getSectorRouteCount(sector)}
+										<span class="ml-1 opacity-70">({getSectorRouteCount(sector)})</span>
+									{/if}
+								</a>
+							{/each}
+						</div>
+					{/if}
 
 					<!-- Stats & Description -->
 					<div class="prose text-slate-800 mb-4">
 						<p class="text-sm text-gray-600">{description}</p>
-
 					</div>
 
-					{#if data.topo.routes || sunInfo.chartData}
-
+					{#if data.gradeRoutes?.length || sunInfo.chartData}
 						<div class="mb-8 w-full">
-							{#if data.topo.routes}
-								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.grade_distribution')}</h3>
+							{#if data.gradeRoutes?.length}
+								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
+									{$_('topo.grade_distribution')}
+								</h3>
 								<div class="h-32 w-full mb-6">
-									<GradeChart routes={data.topo.routes} />
+									<GradeChart routes={data.gradeRoutes} />
 								</div>
 							{/if}
 							{#if seasonChartData}
@@ -718,11 +836,14 @@
 					{#if data.topo.fixPoints && data.topo.fixPoints.length > 0}
 						<div class="w-full mb-8">
 							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.protection')}</h3>
-							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white p-4">
+							<div
+								class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white p-4"
+							>
 								<div class="flex flex-wrap gap-2">
 									{#each Object.entries(countFixPoints(data.topo.fixPoints)) as [type, count]}
 										<span
-											class="px-3 py-1 rounded-full bg-gray-50 text-sm font-medium text-gray-700 border border-gray-200">
+											class="px-3 py-1 rounded-full bg-gray-50 text-sm font-medium text-gray-700 border border-gray-200"
+										>
 											{count}x {$_('topo.fixpoints.' + type) || type}
 										</span>
 									{/each}
@@ -733,46 +854,59 @@
 
 					<!-- Route List -->
 					<div class="w-full">
-						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.routes')} ({data.topo.routes.length})</h3>
+						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
+							{$_('topo.routes')} ({data.topo.routes.length})
+						</h3>
 						<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
 							<table class="min-w-full divide-y divide-gray-200 !m-0">
 								<thead class="bg-gray-50">
-								<tr>
-									<th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-										{$_('topo.table.name')}
-									</th>
-									<th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-										{$_('topo.table.grade')}
-									</th>
-									<th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-										{$_('topo.table.length')}
-									</th>
-								</tr>
+									<tr>
+										<th
+											scope="col"
+											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+										>
+											{$_('topo.table.name')}
+										</th>
+										<th
+											scope="col"
+											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+										>
+											{$_('topo.table.grade')}
+										</th>
+										<th
+											scope="col"
+											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+										>
+											{$_('topo.table.length')}
+										</th>
+									</tr>
 								</thead>
 								<tbody class="bg-white divide-y divide-gray-200">
-								{#each data.topo.routes as route}
-									<tr
-										class="hover:bg-blue-50 cursor-pointer transition-colors"
-										onmouseenter={() => hoveredRouteId = route.id}
-										onmouseleave={() => hoveredRouteId = null}
-										onclick={() => {
-											hoveredRouteId = null;
-											goto(base + "/topo/crag/" + data.path + "/" +route.id);
-										}}>
-										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-											{route.name}
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap text-sm">
-											<span
-												class="px-2 py-1 rounded-md bg-gray-100 font-bold text-gray-700 text-xs border border-gray-300">
-												{route.grade}
-											</span>
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{route.length}m
-										</td>
-									</tr>
-								{/each}
+									{#each data.topo.routes as route}
+										<tr
+											class="hover:bg-blue-50 cursor-pointer transition-colors"
+											onmouseenter={() => (hoveredRouteId = route.id)}
+											onmouseleave={() => (hoveredRouteId = null)}
+											onclick={() => {
+												hoveredRouteId = null;
+												goto(base + '/topo/crag/' + data.path + '/' + route.id);
+											}}
+										>
+											<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+												{route.name}
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap text-sm">
+												<span
+													class="px-2 py-1 rounded-md bg-gray-100 font-bold text-gray-700 text-xs border border-gray-300"
+												>
+													{route.grade}
+												</span>
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{route.length}m
+											</td>
+										</tr>
+									{/each}
 								</tbody>
 							</table>
 						</div>
@@ -787,7 +921,7 @@
 	<button
 		type="button"
 		class="fixed right-4 top-5 z-[30000] grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white text-sm text-black shadow-sm transition-transform hover:scale-105 sm:bottom-7 sm:left-7 sm:right-auto sm:top-auto"
-		onclick={() => isTopoLegendOpen = true}
+		onclick={() => (isTopoLegendOpen = true)}
 		aria-label="Open topo legend"
 		title="Topo legend"
 	>
@@ -798,36 +932,36 @@
 <TopoLegend
 	open={isTopoLegendOpen}
 	usedTypes={usedTopoSymbolTypes}
-	onClose={() => isTopoLegendOpen = false}
+	onClose={() => (isTopoLegendOpen = false)}
 />
 
 <style>
-    :global(.route-label) {
-        background-color: rgba(255, 255, 255, 0.9);
-        color: black;
-        padding: 4px 8px;
-        border-radius: 5px;
-        font-size: 11px;
-        font-weight: bold;
-        font-family: sans-serif;
-        white-space: nowrap;
-        text-align: center;
-        cursor: pointer;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
+	:global(.route-label) {
+		background-color: rgba(255, 255, 255, 0.9);
+		color: black;
+		padding: 4px 8px;
+		border-radius: 5px;
+		font-size: 11px;
+		font-weight: bold;
+		font-family: sans-serif;
+		white-space: nowrap;
+		text-align: center;
+		cursor: pointer;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
 
-    @media (min-width: 768px) {
-        .topo-container {
-            -webkit-mask-image: linear-gradient(to right, black 98%, transparent 100%);
-            mask-image: linear-gradient(to right, black 98%, transparent 100%);
-        }
-    }
+	@media (min-width: 768px) {
+		.topo-container {
+			-webkit-mask-image: linear-gradient(to right, black 98%, transparent 100%);
+			mask-image: linear-gradient(to right, black 98%, transparent 100%);
+		}
+	}
 
-    .transition-transform {
-        transition: transform 0.3s ease-in-out;
-    }
+	.transition-transform {
+		transition: transform 0.3s ease-in-out;
+	}
 
-    .rotate-180 {
-        transform: rotate(180deg);
-    }
+	.rotate-180 {
+		transform: rotate(180deg);
+	}
 </style>
