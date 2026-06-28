@@ -1,6 +1,6 @@
 <script lang="ts">
-    import Chart from 'chart.js/auto';
-    import { _ } from 'svelte-i18n';
+	import Chart from 'chart.js/auto';
+	import { _ } from 'svelte-i18n';
 
 	let { routes } = $props();
 	let canvas: HTMLCanvasElement;
@@ -19,24 +19,83 @@
 
 		// Standard ordered grades (French scale)
 		const gradeOrder = [
-			'3a', '3a+', '3b', '3b+', '3c', '3c+',
-			'4a', '4a+', '4b', '4b+', '4c', '4c+',
-			'5a', '5a+', '5b', '5b+', '5c', '5c+',
-			'6a', '6a+', '6b', '6b+', '6c', '6c+',
-			'7a', '7a+', '7b', '7b+', '7c', '7c+',
-			'8a', '8a+', '8b', '8b+', '8c', '8c+',
-			'9a', '9a+', '9b', '9b+'
+			'3a',
+			'3a+',
+			'3b',
+			'3b+',
+			'3c',
+			'3c+',
+			'4a',
+			'4a+',
+			'4b',
+			'4b+',
+			'4c',
+			'4c+',
+			'5a',
+			'5a+',
+			'5b',
+			'5b+',
+			'5c',
+			'5c+',
+			'6a',
+			'6a+',
+			'6b',
+			'6b+',
+			'6c',
+			'6c+',
+			'7a',
+			'7a+',
+			'7b',
+			'7b+',
+			'7c',
+			'7c+',
+			'8a',
+			'8a+',
+			'8b',
+			'8b+',
+			'8c',
+			'8c+',
+			'9a',
+			'9a+',
+			'9b',
+			'9b+'
 		];
+		const uiaaToFrench: Record<string, string> = {
+			I: '1a',
+			II: '2a',
+			III: '3a',
+			IV: '4a',
+			'IV+': '4b',
+			'V-': '4c',
+			V: '5a',
+			'V+': '5b',
+			'VI-': '5c',
+			VI: '6a',
+			'VI+': '6a+',
+			'VII-': '6b',
+			VII: '6b+',
+			'VII+': '6c',
+			'VIII-': '6c+',
+			VIII: '7a',
+			'VIII+': '7a+',
+			'IX-': '7b',
+			IX: '7b+',
+			'IX+': '7c',
+			'X-': '7c+',
+			X: '8a',
+			'X+': '8a+',
+			'XI-': '8b',
+			XI: '8b+',
+			'XI+': '9a'
+		};
+		const grades = routes.flatMap(extractRouteGrades).map(normalizeGrade).filter(Boolean);
 
 		const counts: Record<string, number> = {};
 		let minIdx = gradeOrder.length;
 		let maxIdx = 0;
 		let hasData = false;
 
-		routes.forEach(r => {
-			if (!r.grade) return;
-			let g = r.grade.trim();
-
+		grades.forEach((g) => {
 			let idx = gradeOrder.indexOf(g);
 			if (idx === -1) {
 				if (gradeOrder.includes(g + 'a')) idx = gradeOrder.indexOf(g + 'a');
@@ -61,7 +120,7 @@
 			labels.push(grade);
 			dataCounts.push(counts[grade] || 0);
 
-			let hue = 130 - (i * 5.5);
+			let hue = 130 - i * 5.5;
 			if (hue < 0) hue = 0;
 
 			colors.push(`hsl(${hue}, 85%, 45%)`);
@@ -72,6 +131,25 @@
 			counts: dataCounts,
 			colors: colors
 		};
+
+		function extractRouteGrades(route: any): any[] {
+			if (!route) return [];
+			const routeGrades = [];
+			if (route.grade) routeGrades.push(route.grade);
+			if (Array.isArray(route.pitches)) {
+				route.pitches.forEach((pitch: any) => {
+					if (pitch?.grade) routeGrades.push(pitch.grade);
+				});
+			}
+			return routeGrades;
+		}
+
+		function normalizeGrade(grade: any): string | null {
+			if (grade === null || grade === undefined) return null;
+			const value = String(grade).trim();
+			if (!value) return null;
+			return uiaaToFrench[value.toUpperCase()] || value.toLowerCase();
+		}
 	}
 
 	function initGradeChart(node: HTMLCanvasElement, config: any) {
@@ -85,13 +163,15 @@
 			type: 'bar',
 			data: {
 				labels: [...data.labels],
-				datasets: [{
-					label: translations.routes,
-					data: [...data.counts],
-					backgroundColor: [...data.colors],
-					borderRadius: 4,
-					borderSkipped: false
-				}]
+				datasets: [
+					{
+						label: translations.routes,
+						data: [...data.counts],
+						backgroundColor: [...data.colors],
+						borderRadius: 4,
+						borderSkipped: false
+					}
+				]
 			},
 			options: {
 				responsive: true,
@@ -133,7 +213,8 @@
 				chart.data.datasets[0].label = translations.routes;
 
 				if (chart.options.plugins?.tooltip?.callbacks) {
-					chart.options.plugins.tooltip.callbacks.label = (ctx: any) => `${ctx.raw} ${translations.routes}`;
+					chart.options.plugins.tooltip.callbacks.label = (ctx: any) =>
+						`${ctx.raw} ${translations.routes}`;
 				}
 
 				chart.update();
@@ -152,14 +233,14 @@
 {/if}
 
 <style>
-    .chart-wrapper {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-    }
-    canvas {
-        width: 100%;
-        height: 100%;
-    }
+	.chart-wrapper {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+	}
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
 </style>
