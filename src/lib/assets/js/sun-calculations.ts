@@ -2,6 +2,11 @@ import SunCalc from 'suncalc';
 
 // Helper: Calculate general heading of the wall/route
 function calculateWallHeading(topo: any, route: any) {
+	// If there is no orientation data at all, return null
+	if (topo.wallAzimuth === undefined && !route?.orientation && !topo.routes?.some((r: any) => r.orientation)) {
+		return null;
+	}
+
 	// 1. Start with the base model rotation (wallAzimuth)
 	let heading = topo.wallAzimuth || 0;
 	let orientation = route?.orientation;
@@ -53,6 +58,8 @@ function calculateWallHeading(topo: any, route: any) {
 
 export function calculateWallDirection(topo: any, route: any) {
 	const heading = calculateWallHeading(topo, route);
+	if (heading === null) return 'Unknown';
+	
 	const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 	const dirIndex = Math.round(heading / 45) % 8;
 	return dirs[dirIndex];

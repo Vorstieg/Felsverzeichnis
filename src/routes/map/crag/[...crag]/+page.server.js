@@ -64,7 +64,9 @@ export async function load({ params, url }) {
 					...sectorTopo.routes.map((route) => ({
 						...route,
 						sectorId: sector.id,
-						sectorName: sector.name
+						sectorName: sector.name,
+						sectorWallAzimuth: sectorTopo.wallAzimuth,
+						sectorTags: sectorTopo.tags
 					}))
 				);
 			}
@@ -180,6 +182,10 @@ export async function load({ params, url }) {
 			}
 		}
 
+		if (transit) cragForUi.properties.transit = transit;
+		if (parking) cragForUi.properties.parking = parking;
+		if (transitTrack) cragForUi.properties.transitTrack = transitTrack;
+
 		return {
 			path: params.crag,
 			topoPath: params.crag,
@@ -188,10 +194,10 @@ export async function load({ params, url }) {
 			isSectorPath,
 			crag: cragForUi,
 			zoom: 16,
-			locations: [cragForUi, transit, parking].filter(Boolean),
+			locations: [cragForUi],
 			transit: transit?.geometry?.coordinates,
 			parking: parking?.geometry?.coordinates,
-			tracks: [transitTrack].filter(Boolean),
+			tracks: [],
 			center:
 				getGeometryCenter(isSectorPath ? sectorData?.geometry : crag.geometry) ||
 				crag.geometry.coordinates,

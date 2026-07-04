@@ -4,6 +4,16 @@
 	import { _ } from 'svelte-i18n';
 
 	let searchTerm = $state('');
+
+	function getTypeColor(typeId) {
+		switch(typeId) {
+			case 'sports-climbing': return 'bg-blue-500';
+			case 'bouldering': return 'bg-orange-500';
+			case 'multi-pitch': return 'bg-emerald-500';
+			case 'trad': return 'bg-yellow-500';
+			default: return 'bg-slate-400';
+		}
+	}
 </script>
 
 <svelte:head>
@@ -11,7 +21,7 @@
 </svelte:head>
 
 <div
-	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-26 left-15 right-0 py-2 top-18 sm:top-21 z-[1000]">
+	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-26 left-15 right-0 py-2 top-2 sm:top-21 z-[1000]">
 	<form action="/map/{searchTerm}">
 		<div class="flex mx-8 sm:max-w-120 shadow-md rounded-full">
 			<input bind:value={searchTerm}
@@ -25,11 +35,14 @@
 		</div>
 	</form>
 </div>
-<div class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-26 left-15 right-0 py-2 top-36 z-[1000] fade">
+<div class="fixed h-fit no-scrollbar overflow-x-auto flex sm:w-auto sm:left-26 left-15 right-0 py-2 top-16 sm:top-36 z-[1000] fade">
 	<span class="px-4"></span>
 	{#each types as type}
 		<a href="{base}/map/{type}"
-			 class="cursor-pointer bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md items-center justify-center">{$_('types.' + type)}</a>
+			 class="cursor-pointer bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
+			 <span class="w-2.5 h-2.5 rounded-full mr-2 {getTypeColor(type)}"></span>
+			 {$_('types.' + type)}
+		</a>
 	{/each}
 	<span class="px-4"></span>
 </div>

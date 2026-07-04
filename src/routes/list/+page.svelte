@@ -4,17 +4,26 @@
 	import { _ } from 'svelte-i18n';
 
 	let searchTerm = $state('');
-</script>
 
+	function getTypeColor(typeId) {
+		switch(typeId) {
+			case 'sports-climbing': return 'bg-blue-500';
+			case 'bouldering': return 'bg-orange-500';
+			case 'multi-pitch': return 'bg-emerald-500';
+			case 'trad': return 'bg-yellow-500';
+			default: return 'bg-slate-400';
+		}
+	}
+</script>
 
 <svelte:head>
 	<title>{$_('page.list.title')}</title>
 	<meta data-key="description" name="description" content={$_('site.description')}>
 </svelte:head>
 
-<div class="bg-gray-100 border-1 border-gray-200 fixed h-50 left-0 right-0 top-0 shadow-md z-[500]"></div>
+<div class="bg-gray-100 border-1 border-gray-200 fixed h-36 sm:h-50 left-0 right-0 top-0 shadow-md z-[500]"></div>
 <div
-	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-18 sm:top-21 z-[1000]">
+	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
 	<form action="/list/{searchTerm}">
 		<div class="flex mx-8 sm:max-w-120 shadow-md rounded-full">
 			<input bind:value={searchTerm}
@@ -29,11 +38,14 @@
 	</form>
 </div>
 <div
-	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-36 z-[1000] fade">
+	class="fixed h-fit no-scrollbar flex overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-16 sm:top-36 z-[1000] fade">
 	<span class="px-4"></span>
 	{#each types as type}
 		<a href="{base}/list/{type}"
-			 class="cursor-pointer bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md items-center justify-center">{$_('types.' + type)}</a>
+			 class="cursor-pointer bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
+			 <span class="w-2.5 h-2.5 rounded-full mr-2 {getTypeColor(type)}"></span>
+			 {$_('types.' + type)}
+		</a>
 	{/each}
 	<span class="px-4"></span>
 </div>

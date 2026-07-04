@@ -46,6 +46,15 @@
 
 	let type = $derived(data.type);
 	let name = $derived(data.name);
+	let displayTitle = $derived.by(() => {
+		if (activeSectorId) {
+			const sectorName = data.crag?.properties?.sectors?.find((s) => s.id === activeSectorId)?.name;
+			const baseName = data.crag?.properties?.name || name;
+			if (sectorName && baseName.includes(sectorName)) return baseName;
+			return sectorName ? `${baseName} - ${sectorName}` : `${baseName} - ${activeSectorId}`;
+		}
+		return data.crag?.properties?.name || name;
+	});
 	let path = $derived(data.path);
 	let topoPath = $derived(data.topoPath || data.path);
 	let topo = $derived(data.topo);
@@ -90,6 +99,86 @@
 		return $locale === 'de'
 			? sector.description_de || sector.description || sector.description_en
 			: sector.description_en || sector.description || sector.description_de;
+	}
+
+	function getSectorRouteCount(sector) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		if (routes.length > 0) return routes.length;
+		
+		return (
+			sector.routesCount ||
+			sector.routeCount ||
+			sector.routes?.length ||
+			sector.assets?.routes?.length ||
+			0
+		);
+	}
+
+	function getSectorGradeDistribution(sector) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		if (routes.length === 0) return [];
+
+		let easy = 0, medium = 0, hard = 0, veryHard = 0;
+		routes.forEach(r => {
+			const g = r.grade || '';
+			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
+			else if (g.startsWith('6')) medium++;
+			else if (g.startsWith('7')) hard++;
+			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
+		});
+		
+		const total = easy + medium + hard + veryHard;
+		if (total === 0) return [];
+		
+		return [
+			{ count: easy, percent: (easy/total)*100, colorClass: 'bg-green-500', label: '< 6a' },
+			{ count: medium, percent: (medium/total)*100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
+			{ count: hard, percent: (hard/total)*100, colorClass: 'bg-red-500', label: '7a - 7c+' },
+			{ count: veryHard, percent: (veryHard/total)*100, colorClass: 'bg-purple-600', label: '> 8a' }
+		].filter(b => b.count > 0);
+	}
+
+	function getSectorDirection(sector) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const mockTopo = { 
+			wallAzimuth: sector.wallAzimuth || sector.topo?.wallAzimuth || sector.properties?.wallAzimuth || routes[0]?.sectorWallAzimuth,
+			routes 
+		};
+		const dir = calculateWallDirection(mockTopo, null);
+		return dir !== 'Unknown' ? $_('directions.' + dir) : null;
+	}
+	
+	function getSectorTypes(sector) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		let t = routes[0]?.sectorTags;
+		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.type;
+		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.properties?.type;
+		if (!t || (Array.isArray(t) && t.length === 0)) t = data.crag?.properties?.type || data.type;
+		
+		let arr = [];
+		if (Array.isArray(t)) {
+			arr = t;
+		} else if (typeof t === 'string' && t.trim()) {
+			arr = t.includes(',') ? t.split(',').map(x => x.trim()) : [t];
+		}
+		
+		return arr.map(x => {
+			const translated = $_('tags.' + x);
+			return {
+				id: x,
+				name: translated === 'tags.' + x ? x : translated
+			};
+		});
+	}
+
+	function getTypeColorClass(typeId) {
+		switch(typeId) {
+			case 'sports-climbing': return 'bg-blue-100 text-blue-700 border-blue-200';
+			case 'bouldering': return 'bg-orange-100 text-orange-700 border-orange-200';
+			case 'multi-pitch': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+			case 'trad': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+			default: return 'bg-slate-100 text-slate-600 border-slate-200';
+		}
 	}
 
 	function getGeometryCenter(geometry) {
@@ -150,44 +239,20 @@
 <main class="z-[500] h-24">
 	<InfoPanel onShare={share}>
 		<div
-			class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row pt-6 pb-5"
+			class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
 		>
-			<h1 class="text-2xl font-bold my-0 text-slate-800 sm:px-2">{name}</h1>
+			{#if activeSectorId}
+				<a
+					href="{base}/map/crag/{data.basePath || path}"
+					class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+					aria-label={$_('ui.back')}
+				>
+					<i class="fa-solid fa-arrow-left text-gray-600"></i>
+				</a>
+			{/if}
+			<h1 class="text-2xl font-bold my-0 text-slate-800 sm:px-2">{displayTitle}</h1>
 		</div>
 		<div class="flex-1 overflow-y-auto w-full px-5 mb-4 overflow-x-hidden min-h-0">
-			{#if sectors.length > 0}
-				<section class="mb-5 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-					<div class="mb-3 flex items-center justify-between gap-3">
-						<h2 class="m-0 text-sm font-bold uppercase tracking-wide text-slate-500">
-							{$_('ui.sectors')}
-						</h2>
-					</div>
-					<div class="flex gap-2 overflow-x-auto pb-1">
-						<a
-							href="{base}/map/crag/{data.basePath || path}"
-							class="shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold no-underline transition-colors {activeSectorId
-								? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-								: 'border-blue-200 bg-blue-600 text-white'}"
-						>
-							{$_('ui.all_sectors')}
-						</a>
-						{#each sectors as sector}
-							<a
-								href="{base}/map/crag/{data.basePath || path}/{sector.id}"
-								onclick={(event) => openSector(event, sector)}
-								title={getSectorDescription(sector) || sector.name}
-								class="shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold no-underline transition-colors {activeSectorId ===
-								sector.id
-									? 'border-blue-200 bg-blue-600 text-white'
-									: 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'}"
-							>
-								{sector.name}
-							</a>
-						{/each}
-					</div>
-				</section>
-			{/if}
-
 			{#if images?.length === 1}
 				<img
 					onclick={() => (fullscreenImage = images[0])}
@@ -408,6 +473,89 @@
 					{#if data.gradeRoutes?.length}
 						<div class="h-40 w-full mt-5 mb-5 not-prose">
 							<GradeChart routes={data.gradeRoutes} />
+						</div>
+					{/if}
+
+					{#if sectors.length > 0 && !activeSectorId}
+						<div class="w-full mt-8 mb-5">
+							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
+								{$_('ui.sectors')} ({sectors.length})
+							</h3>
+							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
+								<table class="min-w-full divide-y divide-gray-200 !m-0">
+									<thead class="bg-gray-50">
+										<tr>
+											<th
+												scope="col"
+												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+											>
+												{$_('topo.table.name')}
+											</th>
+											<th
+												scope="col"
+												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+											>
+												{$_('topo.routes')}
+											</th>
+											<th
+												scope="col"
+												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+											>
+												{$_('ui.tags')}
+											</th>
+										</tr>
+									</thead>
+									<tbody class="bg-white divide-y divide-gray-200">
+										{#each sectors as sector}
+											<tr
+												class="hover:bg-blue-50 cursor-pointer transition-colors {activeSectorId === sector.id ? 'bg-blue-50' : ''}"
+												onclick={(event) => openSector(event, sector)}
+												title={getSectorDescription(sector) || sector.name}
+											>
+												<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+													<span>{sector.name}</span>
+												</td>
+												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+													{#if getSectorRouteCount(sector) > 0}
+														<div class="flex items-center gap-3">
+															<span
+																class="px-2 py-1 rounded-md bg-gray-100 font-bold text-gray-700 text-xs border border-gray-300"
+															>
+																{getSectorRouteCount(sector)}
+															</span>
+															<div class="flex h-2 w-16 bg-gray-200 rounded-full overflow-hidden shrink-0">
+																{#each getSectorGradeDistribution(sector) as bucket}
+																	<div class="h-full {bucket.colorClass}" style="width: {bucket.percent}%" title="{bucket.label}: {bucket.count}"></div>
+																{/each}
+															</div>
+														</div>
+													{:else}
+														<span class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-xs border border-slate-200">
+															{$_('topo.no_topo')}
+														</span>
+													{/if}
+												</td>
+												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+													{#if getSectorTypes(sector).length > 0 || getSectorDirection(sector)}
+														<div class="flex items-center gap-2 flex-wrap">
+															{#each getSectorTypes(sector) as type}
+																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {getTypeColorClass(type.id)}">
+																	{type.name}
+																</span>
+															{/each}
+															{#if getSectorDirection(sector)}
+																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
+																	<i class="fa-solid fa-compass text-slate-400"></i> {getSectorDirection(sector)}
+																</span>
+															{/if}
+														</div>
+													{/if}
+												</td>
+											</tr>
+										{/each}
+									</tbody>
+								</table>
+							</div>
 						</div>
 					{/if}
 				</div>

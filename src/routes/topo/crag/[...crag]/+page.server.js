@@ -38,7 +38,9 @@ export const load = async ({ params, url }) => {
 					...sectorTopo.routes.map((route) => ({
 						...route,
 						sectorId: sector.id,
-						sectorName: sector.name
+						sectorName: sector.name,
+						sectorWallAzimuth: sectorTopo.wallAzimuth,
+						sectorTags: sectorTopo.tags
 					}))
 				);
 			}
@@ -176,6 +178,7 @@ export const load = async ({ params, url }) => {
 			has3D,
 			modelUrl,
 			cragName: indexedCrag?.properties?.name,
+			cragType: indexedCrag?.properties?.type,
 			name: topo?.name,
 			description_de: topo?.description_de,
 			description_en: topo?.description_en,

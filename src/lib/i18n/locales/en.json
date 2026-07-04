@@ -49,6 +49,7 @@
 		"slate": "Slate"
 	},
 	"topo": {
+		"no_topo": "No Topo",
 		"loading": "Loading 3D Model...",
 		"wall_direction": "Wall Direction",
 		"sun_hours": "Sun Hours",

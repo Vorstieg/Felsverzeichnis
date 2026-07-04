@@ -51,6 +51,7 @@
 		"slate": "Schiefer"
 	},
 	"topo": {
+		"no_topo": "Kein Topo",
 		"loading": "Lade 3D Modell...",
 		"wall_direction": "Wandausrichtung",
 		"sun_hours": "Sonnenstunden",

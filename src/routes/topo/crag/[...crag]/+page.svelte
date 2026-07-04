@@ -402,6 +402,9 @@
 	}
 
 	function getSectorRouteCount(sector: any) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		if (routes.length > 0) return routes.length;
+
 		return (
 			sector.routesCount ||
 			sector.routeCount ||
@@ -409,6 +412,73 @@
 			sector.assets?.routes?.length ||
 			0
 		);
+	}
+
+	function getSectorGradeDistribution(sector: any) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		if (routes.length === 0) return [];
+
+		let easy = 0, medium = 0, hard = 0, veryHard = 0;
+		routes.forEach(r => {
+			const g = r.grade || '';
+			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
+			else if (g.startsWith('6')) medium++;
+			else if (g.startsWith('7')) hard++;
+			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
+		});
+		
+		const total = easy + medium + hard + veryHard;
+		if (total === 0) return [];
+		
+		return [
+			{ count: easy, percent: (easy/total)*100, colorClass: 'bg-green-500', label: '< 6a' },
+			{ count: medium, percent: (medium/total)*100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
+			{ count: hard, percent: (hard/total)*100, colorClass: 'bg-red-500', label: '7a - 7c+' },
+			{ count: veryHard, percent: (veryHard/total)*100, colorClass: 'bg-purple-600', label: '> 8a' }
+		].filter(b => b.count > 0);
+	}
+
+	function getSectorDirection(sector: any) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const mockTopo = { 
+			wallAzimuth: sector.wallAzimuth || sector.topo?.wallAzimuth || sector.properties?.wallAzimuth || routes[0]?.sectorWallAzimuth,
+			routes 
+		};
+		const dir = calculateWallDirection(mockTopo, null);
+		return dir !== 'Unknown' ? $_('directions.' + dir) : null;
+	}
+	
+	function getSectorTypes(sector: any) {
+		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		let t = routes[0]?.sectorTags;
+		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.type;
+		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.properties?.type;
+		if (!t || (Array.isArray(t) && t.length === 0)) t = data.cragType;
+		
+		let arr: string[] = [];
+		if (Array.isArray(t)) {
+			arr = t;
+		} else if (typeof t === 'string' && t.trim()) {
+			arr = t.includes(',') ? t.split(',').map(x => x.trim()) : [t];
+		}
+		
+		return arr.map(x => {
+			const translated = $_('tags.' + x);
+			return {
+				id: x,
+				name: translated === 'tags.' + x ? x : translated
+			};
+		});
+	}
+
+	function getTypeColorClass(typeId: string) {
+		switch(typeId) {
+			case 'sports-climbing': return 'bg-blue-100 text-blue-700 border-blue-200';
+			case 'bouldering': return 'bg-orange-100 text-orange-700 border-orange-200';
+			case 'multi-pitch': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+			case 'trad': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+			default: return 'bg-slate-100 text-slate-600 border-slate-200';
+		}
 	}
 </script>
 
@@ -750,7 +820,7 @@
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
 				<div class="min-w-0">
-					<h1 class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.cragName}</h1>
+					<h1 class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.sectorId ? `${data.cragName} - ${currentSectorName}` : data.cragName}</h1>
 				</div>
 			</div>
 
@@ -783,24 +853,7 @@
 					{/if}
 				</div>
 				<div class="flex flex-col mt-2 mb-10">
-					{#if availableSectors.length > 0}
-						<div class="mb-5 flex gap-2 overflow-x-auto pb-1">
-							{#each availableSectors as sector}
-								<a
-									href="{base}/topo/crag/{data.baseCragPath || data.path}/{sector.id}"
-									class="shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold no-underline transition-colors {data.sectorId ===
-									sector.id
-										? 'border-blue-200 bg-blue-600 text-white'
-										: 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'}"
-								>
-									{sector.name}
-									{#if getSectorRouteCount(sector)}
-										<span class="ml-1 opacity-70">({getSectorRouteCount(sector)})</span>
-									{/if}
-								</a>
-							{/each}
-						</div>
-					{/if}
+
 
 					<!-- Stats & Description -->
 					<div class="prose text-slate-800 mb-4">
@@ -848,6 +901,88 @@
 										</span>
 									{/each}
 								</div>
+							</div>
+						</div>
+					{/if}
+
+					{#if availableSectors.length > 0 && !data.sectorId && !data.routeId}
+						<div class="w-full mb-8">
+							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
+								{$_('ui.sectors')} ({availableSectors.length})
+							</h3>
+							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
+								<table class="min-w-full divide-y divide-gray-200 !m-0">
+									<thead class="bg-gray-50">
+										<tr>
+											<th
+												scope="col"
+												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+											>
+												{$_('topo.table.name')}
+											</th>
+											<th
+												scope="col"
+												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+											>
+												{$_('topo.routes')}
+											</th>
+											<th
+												scope="col"
+												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+											>
+												{$_('ui.tags')}
+											</th>
+										</tr>
+									</thead>
+									<tbody class="bg-white divide-y divide-gray-200">
+										{#each availableSectors as sector}
+											<tr
+												class="hover:bg-blue-50 cursor-pointer transition-colors"
+												onclick={() => goto(`${base}/topo/crag/${data.baseCragPath || data.path}/${sector.id}`)}
+											>
+												<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+													<span>{sector.name}</span>
+												</td>
+												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+													{#if getSectorRouteCount(sector) > 0}
+														<div class="flex items-center gap-3">
+															<span
+																class="px-2 py-1 rounded-md bg-gray-100 font-bold text-gray-700 text-xs border border-gray-300"
+															>
+																{getSectorRouteCount(sector)}
+															</span>
+															<div class="flex h-2 w-16 bg-gray-200 rounded-full overflow-hidden shrink-0">
+																{#each getSectorGradeDistribution(sector) as bucket}
+																	<div class="h-full {bucket.colorClass}" style="width: {bucket.percent}%" title="{bucket.label}: {bucket.count}"></div>
+																{/each}
+															</div>
+														</div>
+													{:else}
+														<span class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-xs border border-slate-200">
+															{$_('topo.no_topo')}
+														</span>
+													{/if}
+												</td>
+												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+													{#if getSectorTypes(sector).length > 0 || getSectorDirection(sector)}
+														<div class="flex items-center gap-2 flex-wrap">
+															{#each getSectorTypes(sector) as type}
+																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {getTypeColorClass(type.id)}">
+																	{type.name}
+																</span>
+															{/each}
+															{#if getSectorDirection(sector)}
+																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
+																	<i class="fa-solid fa-compass text-slate-400"></i> {getSectorDirection(sector)}
+																</span>
+															{/if}
+														</div>
+													{/if}
+												</td>
+											</tr>
+										{/each}
+									</tbody>
+								</table>
 							</div>
 						</div>
 					{/if}

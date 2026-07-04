@@ -6,6 +6,8 @@
 	import { onMount } from 'svelte';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
+	import { fsApiUrl } from '$lib/config';
+	import * as turf from '@turf/turf';
 
 	afterNavigate((_navigation) => {
 		fillLayers(locations);
@@ -68,10 +70,16 @@
 	let sectorShapes;
 	let cragFeatures = [];
 	let sectorPointFeatures = [];
+	let poiFeatures = [];
+	let poiRoutes = [];
 	let nextMarkerTarget = null;
 	let lastCameraTargetKey = null;
 
+	// Module-level cache to persist POIs across navigations
+	const poiCache = new Map();
+
 	const sectorDetailZoom = 16.5;
+	const poiDetailZoom = 14;
 
 	$effect(() => {
 		if (!map || !zoomToLocations || !cameraTarget?.center) return;
@@ -126,9 +134,11 @@
 		map.on('load', async () => {
 			await drawLayers();
 			map.on('styledata', async () => drawLayers());
+			checkAndLoadVisiblePois();
 		});
 		map.on('style.load', () => slowRasterTileDecay(map));
 		map.on('zoom', updateVisiblePlaces);
+		map.on('moveend', checkAndLoadVisiblePois);
 
 		map.on('mouseenter', 'places', function () {
 			if (map.getZoom() >= 12.0) {
@@ -203,17 +213,46 @@
 		};
 		cragFeatures = [];
 		sectorPointFeatures = [];
-		tracks.forEach((track) => {
-			routes.features.push(track);
-		});
+		poiFeatures = [];
+		poiRoutes = [];
+		
 		locations.forEach((location) => {
 			const processedLocation = JSON.parse(JSON.stringify(location));
+			if (['parking-space', 'bus', 'train'].includes(processedLocation.properties?.type)) {
+				poiFeatures.push(processedLocation);
+				return;
+			}
+			
 			if (Array.isArray(processedLocation.properties.type)) {
 				processedLocation.properties.type = processedLocation.properties.type[0];
 			}
 			const sectors = processedLocation.properties.sectors || [];
 			processedLocation.properties.hasSectors = sectors.length > 0;
 			cragFeatures.push(processedLocation);
+			
+			const path = processedLocation.properties.path;
+			if (path && !poiCache.has(path)) {
+				poiCache.set(path, {
+					parking: processedLocation.properties.parking,
+					transit: processedLocation.properties.transit,
+					transitTrack: processedLocation.properties.transitTrack
+				});
+			} else if (path && poiCache.has(path)) {
+				const cached = poiCache.get(path);
+				if (!processedLocation.properties.parking && cached.parking) processedLocation.properties.parking = cached.parking;
+				if (!processedLocation.properties.transit && cached.transit) processedLocation.properties.transit = cached.transit;
+				if (!processedLocation.properties.transitTrack && cached.transitTrack) processedLocation.properties.transitTrack = cached.transitTrack;
+			}
+			
+			if (processedLocation.properties.parking) {
+				poiFeatures.push(processedLocation.properties.parking);
+			}
+			if (processedLocation.properties.transit) {
+				poiFeatures.push(processedLocation.properties.transit);
+			}
+			if (processedLocation.properties.transitTrack) {
+				poiRoutes.push(processedLocation.properties.transitTrack);
+			}
 
 			sectors.forEach((sector) => {
 				const sectorCoordinates = getSectorCoordinates(sector.geometry);
@@ -227,11 +266,24 @@
 				};
 
 				if (isPolygonGeometry(sector.geometry)) {
-					sectorShapes.features.push({
+					const feature = {
 						type: 'Feature',
 						geometry: sector.geometry,
 						properties: sectorProperties
-					});
+					};
+					try {
+						// Morphological opening: shrink then expand to round convex corners without increasing the size
+						const shrunk = turf.buffer(feature, -1.5, { units: 'meters', steps: 16 });
+						if (shrunk && shrunk.geometry && shrunk.geometry.type) {
+							const rounded = turf.buffer(shrunk, 1.5, { units: 'meters', steps: 16 });
+							sectorShapes.features.push(rounded && rounded.geometry ? rounded : feature);
+						} else {
+							// If the polygon is too small and disappears when shrunk, keep the original
+							sectorShapes.features.push(feature);
+						}
+					} catch (e) {
+						sectorShapes.features.push(feature);
+					}
 				}
 
 				sectorPointFeatures.push({
@@ -252,14 +304,27 @@
 		if (!places) return;
 
 		const showSectorDetail = (map?.getZoom() || 0) >= sectorDetailZoom;
-		places.features = showSectorDetail
-			? [
-					...cragFeatures.filter((feature) => !feature.properties.hasSectors),
-					...sectorPointFeatures
-				]
+		const showPoiDetail = (map?.getZoom() || 0) >= poiDetailZoom || detailsShown;
+
+		const visibleCrags = showSectorDetail
+			? cragFeatures.filter((feature) => !feature.properties.hasSectors)
 			: cragFeatures;
 
+		places.features = [
+			...visibleCrags,
+			...(showSectorDetail ? sectorPointFeatures : []),
+			...(showPoiDetail ? poiFeatures : [])
+		];
+
 		map?.getSource('places')?.setData(places);
+		
+		if (routes) {
+			routes.features = [
+				...tracks,
+				...(showPoiDetail ? poiRoutes : [])
+			];
+			map?.getSource('routes')?.setData(routes);
+		}
 	}
 
 	function isPolygonGeometry(geometry) {
@@ -294,6 +359,91 @@
 		if (geometry.type === 'MultiPolygon')
 			return geometry.coordinates?.flatMap((polygon) => polygon[0]);
 		return geometry.coordinates;
+	}
+	
+	const loadedPoisForCrags = new Set();
+
+	async function checkAndLoadVisiblePois() {
+		if (!map) return;
+		const showPoiDetail = (map.getZoom() || 0) >= poiDetailZoom || detailsShown;
+		if (!showPoiDetail) return;
+		
+		const bounds = map.getBounds();
+		const visibleCrags = cragFeatures.filter(feature => {
+			if (!feature.properties || !feature.properties.path) return false;
+			const path = feature.properties.path;
+			if (loadedPoisForCrags.has(path) || (poiCache.has(path) && poiCache.get(path).fetched)) return false;
+			
+			// Only load for actual crags
+			const type = feature.properties.type;
+			if (type !== 'sports-climbing' && type !== 'bouldering' && type !== 'trad' && type !== 'multi-pitch') return false;
+			
+			let coord;
+			if (feature.geometry?.type === 'Point') {
+				coord = feature.geometry.coordinates;
+			} else if (feature.geometry?.type === 'Polygon') {
+				coord = feature.geometry.coordinates[0]?.[0];
+			} else if (feature.geometry?.type === 'MultiPolygon') {
+				coord = feature.geometry.coordinates[0]?.[0]?.[0];
+			} else {
+				return false;
+			}
+			
+			return bounds.contains(coord);
+		});
+
+		if (visibleCrags.length === 0) return;
+
+		for (const crag of visibleCrags) {
+			loadedPoisForCrags.add(crag.properties.path);
+		}
+
+		let added = false;
+		await Promise.all(visibleCrags.map(async (crag) => {
+			const cragPath = crag.properties.path;
+			const cragSlug = cragPath.split('/').at(-1);
+			const cached = poiCache.get(cragPath) || {};
+
+			try {
+				const parkingRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-parking.json`);
+				if (parkingRes.ok) {
+					const parking = await parkingRes.json();
+					crag.properties.parking = parking;
+					poiFeatures.push(parking);
+					cached.parking = parking;
+					added = true;
+				}
+			} catch (e) {}
+
+			try {
+				const transitRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit.json`);
+				if (transitRes.ok) {
+					const transit = await transitRes.json();
+					crag.properties.transit = transit;
+					poiFeatures.push(transit);
+					cached.transit = transit;
+					added = true;
+				}
+			} catch (e) {}
+
+			try {
+				const trackRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit-track.json`);
+				if (trackRes.ok) {
+					const track = await trackRes.json();
+					crag.properties.transitTrack = track;
+					poiRoutes.push(track);
+					cached.transitTrack = track;
+					added = true;
+				}
+			} catch (e) {}
+			
+			cached.fetched = true;
+			poiCache.set(cragPath, cached);
+		}));
+
+		if (added) {
+			updateVisiblePlaces();
+		}
 	}
 
 	async function drawLayers() {
@@ -331,7 +481,25 @@
 					source: 'sector-shapes',
 					minzoom: sectorDetailZoom,
 					paint: {
-						'fill-color': '#f97316',
+						'fill-color': [
+							'match',
+							['get', 'type'],
+							'sports-climbing',
+							'#3b82f6',
+							'multi-pitch',
+							'#10b981',
+							'bouldering',
+							'#f97316',
+							'trad',
+							'#eab308',
+							'bus',
+							'#6366f1',
+							'train',
+							'#8b5cf6',
+							'parking-space',
+							'#6b7280',
+							'#3b82f6'
+						],
 						'fill-opacity': 0.18
 					}
 				},
@@ -351,7 +519,25 @@
 						'line-cap': 'round'
 					},
 					paint: {
-						'line-color': '#f97316',
+						'line-color': [
+							'match',
+							['get', 'type'],
+							'sports-climbing',
+							'#3b82f6',
+							'multi-pitch',
+							'#10b981',
+							'bouldering',
+							'#f97316',
+							'trad',
+							'#eab308',
+							'bus',
+							'#6366f1',
+							'train',
+							'#8b5cf6',
+							'parking-space',
+							'#6b7280',
+							'#3b82f6'
+						],
 						'line-width': 2.5,
 						'line-opacity': 0.9
 					}
@@ -379,7 +565,7 @@
 
 <div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement}></div>
 <div
-	class="fixed sm:left-15 left-5 top-35 sm:top-37 z-[1000]"
+	class="fixed sm:left-15 left-2 top-18 sm:top-37 z-[1000]"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
 >
 	<button
@@ -426,7 +612,7 @@
 
 	:global(.maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
-			@apply left-5 top-17;
+			@apply left-2 top-2;
 		}
 	}
 
