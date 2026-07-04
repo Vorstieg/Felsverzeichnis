@@ -565,7 +565,7 @@
 
 <div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement}></div>
 <div
-	class="fixed sm:left-15 left-2 top-18 sm:top-37 z-[1000]"
+	class="fixed sm:left-15 left-5 top-19 sm:top-37 z-[1000]"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
 >
 	<button
@@ -612,7 +612,7 @@
 
 	:global(.maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
-			@apply left-2 top-2;
+			@apply left-5 top-1;
 		}
 	}
 
