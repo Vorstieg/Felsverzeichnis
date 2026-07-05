@@ -11,6 +11,7 @@
 	let fullscreenImage = $state();
 	let sunInfo = $state({ hours: 'N/A' });
 	let wallDirection = $state('N/A');
+	let searchTerm = $state('');
 
 	/** @type {{data: any}} */
 	let { data } = $props();
@@ -236,6 +237,23 @@
 		/>
 	</div>
 {/if}
+
+<div
+	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-26 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
+	<form action="/map/{searchTerm}">
+		<div class="flex mx-4 sm:mx-8 sm:max-w-120 shadow-md rounded-full">
+			<input bind:value={searchTerm}
+						 class="block p-2.5 w-full z-20 text-sm bg-white rounded-l-full border-3 border-white focus:border-ink"
+						 placeholder={$_('page.list.search_placeholder')} />
+			<button type="submit"
+							class="top-0 w-12 p-2.5 bg-white text-sm font-medium h-full border-3 border-white rounded-r-full hover:border-ink hover:bg-ink hover:text-white">
+				<i class="fa-solid fa-magnifying-glass"></i>
+				<span class="sr-only">Search</span>
+			</button>
+		</div>
+	</form>
+</div>
+
 <main class="z-[500] h-24">
 	<InfoPanel onShare={share}>
 		<div

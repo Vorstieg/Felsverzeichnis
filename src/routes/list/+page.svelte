@@ -39,7 +39,7 @@
 </div>
 <div
 	class="fixed h-fit no-scrollbar flex overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-16 sm:top-36 z-[1000] fade">
-	<span class="px-4"></span>
+	<div class="max-sm:w-8 sm:w-8 shrink-0"></div>
 	{#each types as type}
 		<a href="{base}/list/{type}"
 			 class="cursor-pointer bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
@@ -47,14 +47,14 @@
 			 {$_('types.' + type)}
 		</a>
 	{/each}
-	<span class="px-4"></span>
+	<div class="max-sm:w-8 sm:w-8 shrink-0"></div>
 </div>
 
 <style>
     @media (width <= 40rem) {
         .fade {
-            -webkit-mask: linear-gradient(to right, transparent 10%, #fff 15% 90%, transparent 95%),
-            linear-gradient(to left, transparent 10%, #fff 15% 90%, transparent 95%);
+            -webkit-mask: linear-gradient(to right, transparent 0px, #fff 32px, #fff calc(100% - 32px), transparent 100%);
+            mask: linear-gradient(to right, transparent 0px, #fff 32px, #fff calc(100% - 32px), transparent 100%);
         }
     }
 </style>

@@ -52,10 +52,10 @@
 </svelte:head>
 
 <div class="layout">
-    <div class="fixed w-full sm:w-auto bottom-0 sm:bottom-auto p-2 sm:right-10 sm:top-5 z-[3000]">
-        <div class="row h-16 sm:h-auto flex w-full bg-white justify-center shadow-md border-1 border-gray-200 rounded-full">
+    <div class="fixed w-full sm:w-auto bottom-0 sm:bottom-auto p-0 sm:p-2 sm:right-10 sm:top-5 z-[3000]">
+        <div class="row h-16 sm:h-auto flex w-full bg-white justify-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] sm:shadow-md border-t-1 sm:border-1 border-gray-200 rounded-none sm:rounded-full">
             <a href="{base}/map"
-                 class="font-semibold grid sm:w-auto w-1/3 cursor-pointer rounded-full bg-white rounded-r-none py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+                 class="font-semibold grid sm:w-auto w-1/3 cursor-pointer rounded-none sm:rounded-full sm:rounded-r-none bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
                  type="button">
                 <i class="font-semibold sm:hidden! fa-solid fa-map-location-dot mb-2"></i>
                 {$_('menu.map')}
@@ -67,7 +67,7 @@
                 {$_('menu.list')}
             </a>
             <a href="{base}/about"
-                 class="font-semibold grid sm:w-auto w-1/3 cursor-pointer bg-white rounded-full rounded-l-none border-l border-slate-200 py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+                 class="font-semibold grid sm:w-auto w-1/3 cursor-pointer bg-white rounded-none sm:rounded-full sm:rounded-l-none py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
                  type="button">
                 <i class="font-semibold sm:hidden! fa-solid fa-circle-info mb-2"></i>
                 {$_('menu.info')}

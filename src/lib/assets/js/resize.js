@@ -69,6 +69,7 @@ export function resize(element) {
 
 		element.style.transition =
 			'top 0.2s ease-out, height 0.2s ease-out, border-radius 0.2s ease-out';
+		document.body.style.setProperty('--info-panel-transition', 'bottom 0.2s ease-out');
 
 		if (closestHeight === targetHeights[targetHeights.length - 1]) {
 			// Full height
@@ -82,11 +83,14 @@ export function resize(element) {
 			element.style.height = `${closestHeight}px`;
 		}
 
+		document.body.style.setProperty('--info-panel-height', `${closestHeight}px`);
+
 		// Ensure no inline margin overrides class styles on mobile (we want 0)
 		element.style.marginInline = '';
 
 		setTimeout(() => {
 			element.style.transition = '';
+			document.body.style.setProperty('--info-panel-transition', 'none');
 		}, 200);
 	}
 
@@ -111,6 +115,7 @@ export function resize(element) {
 		lastTimestamp = Date.now();
 		active.classList.add('selected');
 		element.style.transition = 'border-radius 0.2s ease-out';
+		document.body.style.setProperty('--info-panel-transition', 'none');
 
 		// On interaction, ensure we are in partial-height style (rounded top only)
 		element.style.borderRadius = `1.5rem 1.5rem 0 0`;
@@ -119,6 +124,7 @@ export function resize(element) {
 
 		setTimeout(() => {
 			element.style.transition = '';
+			document.body.style.setProperty('--info-panel-transition', 'none');
 		}, 200);
 	}
 
@@ -146,6 +152,7 @@ export function resize(element) {
 
 		element.style.top = `${newTop}px`;
 		element.style.height = `${newHeight}px`;
+		document.body.style.setProperty('--info-panel-height', `${newHeight}px`);
 		lastY = currentY;
 	}
 
@@ -165,13 +172,16 @@ export function resize(element) {
 
 		element.style.transition =
 			'top 0.2s ease-out, height 0.2s ease-out, border-radius 0.2s ease-out';
+		document.body.style.setProperty('--info-panel-transition', 'bottom 0.2s ease-out');
 		element.style.marginInline = ''; // Clear inline margin
 		element.style.top = `0`;
 		element.style.borderRadius = `0`;
 		element.style.height = `${window.innerHeight}px`;
+		document.body.style.setProperty('--info-panel-height', `${window.innerHeight}px`);
 
 		setTimeout(() => {
 			element.style.transition = '';
+			document.body.style.setProperty('--info-panel-transition', 'none');
 		}, 200);
 	};
 
@@ -185,6 +195,7 @@ export function resize(element) {
 			if (element.contains(top)) {
 				element.removeChild(top);
 			}
+			document.body.style.removeProperty('--info-panel-height');
 		}
 	};
 }

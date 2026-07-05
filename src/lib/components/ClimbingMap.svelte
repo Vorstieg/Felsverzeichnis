@@ -563,15 +563,17 @@
 	}
 </script>
 
-<div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement}></div>
+<div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement} class:details-shown={detailsShown}></div>
 <div
-	class="fixed sm:left-15 left-5 top-19 sm:top-37 z-[1000]"
+	class="fixed sm:left-15 sm:right-auto right-4 sm:top-37 z-[1000] flex sm:flex-col flex-col-reverse items-center style-selector-btn"
+	style={detailsShown ? `--dynamic-bottom: calc(var(--info-panel-height, 50vh) + 84px);` : ''}
 	onmouseleave={() => (tileLayerMenuOpen = false)}
 >
 	<button
-		class="cursor-pointer bg-white p-3 px-4 sm:p-2 sm:px-3 hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md"
+		class="cursor-pointer bg-white w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md"
 		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
-		class:rounded-b-none={tileLayerMenuOpen}><i class="fa-solid fa-layer-group"></i></button
+		class:sm:rounded-b-none={tileLayerMenuOpen}
+		class:max-sm:rounded-t-none={tileLayerMenuOpen}><i class="fa-solid fa-layer-group text-lg"></i></button
 	>
 	{#if tileLayerMenuOpen}
 		<div
@@ -580,19 +582,19 @@
 			out:slide={{ duration: 200 }}
 		>
 			<button
-				class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
+				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-t-none max-sm:rounded-t-full"
 				onclick={setTransportTileLayer}
 			>
 				<i class="fa-solid fa-bus-simple"></i>
 			</button>
 			<button
-				class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
+				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
 				onclick={setSatelliteTileLayer}
 			>
 				<i class="fa-solid fa-satellite"></i>
 			</button>
 			<button
-				class="cursor-pointer p-3 py-2 hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-full rounded-t-none"
+				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-b-full max-sm:rounded-b-none"
 				onclick={setTerrainTileLayer}
 			>
 				<i class="fa-solid fa-mountain"></i>
@@ -607,27 +609,42 @@
 	@import 'tailwindcss';
 
 	:global(.maplibregl-ctrl-top-right) {
-		@apply fixed left-15 top-20 right-auto z-[1000];
+		@apply fixed left-15 top-20 right-auto z-[1000] !m-0;
 	}
 
 	:global(.maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
-			@apply left-5 top-1;
+			@apply left-auto right-4 top-auto;
+			bottom: 5rem;
+			transition: var(--info-panel-transition, bottom 0.2s ease-out);
+		}
+	}
+
+	:global(.details-shown .maplibregl-ctrl-top-right) {
+		@media (width <= 40rem) {
+			bottom: calc(var(--info-panel-height, 50vh) + 16px) !important;
+		}
+	}
+
+	.style-selector-btn {
+		@media (width <= 40rem) {
+			bottom: var(--dynamic-bottom, 9.25rem);
+			transition: var(--info-panel-transition, bottom 0.2s ease-out);
 		}
 	}
 
 	:global(.maplibregl-ctrl-group) {
-		@apply cursor-pointer bg-white rounded-full border-1 border-gray-200 transition-all;
+		@apply cursor-pointer bg-white rounded-full w-12 h-12 border-1 border-gray-200 transition-all flex items-center justify-center !m-0;
 	}
 
-	:global(.maplibregl-ctrl-group button) {
-		@apply cursor-pointer bg-white rounded-full w-12 h-12;
-	}
-
-	:global(.maplibregl-ctrl-group button) {
+	:global(.maplibregl-ctrl-group) {
 		@media (width <= 40rem) {
 			@apply w-13 h-13;
 		}
+	}
+
+	:global(.maplibregl-ctrl-group button) {
+		@apply w-full h-full rounded-full;
 	}
 
 	:global(.maplibregl-ctrl-group:not(:empty)) {
@@ -640,7 +657,8 @@
 
 	:global(.maplibregl-ctrl-bottom-right) {
 		@media (width <= 40rem) {
-			@apply bottom-18 right-2;
+			@apply left-2 right-auto;
+			bottom: 4.5rem;
 		}
 	}
 </style>
