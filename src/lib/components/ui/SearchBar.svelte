@@ -14,7 +14,7 @@
 	let suggestions = $derived.by(() => {
 		if (!searchTerm || searchTerm.length < 3) return [];
 		const lowerSearch = searchTerm.toLowerCase();
-		const locations = $page.data.locations || [];
+		const locations = $page.data.allLocations || $page.data.locations || $page.data.crags || [];
 		return locations
 			.filter(loc => loc.properties?.name?.toLowerCase().includes(lowerSearch))
 			.slice(0, 3);
