@@ -458,6 +458,14 @@
 		map.getSource('places').setData(places);
 		map.getSource('routes').setData(routes);
 		map.getSource('sector-shapes').setData(sectorShapes);
+
+		if (zoomToLocations && map.getLayer('places') && map.getLayer('places-dots')) {
+			map.setLayerZoomRange('places', 0, 24);
+			map.setPaintProperty('places', 'icon-opacity', 1);
+			map.setPaintProperty('places', 'text-opacity', 1);
+			map.setPaintProperty('places-dots', 'circle-opacity', 0);
+			map.setPaintProperty('places-dots', 'circle-stroke-opacity', 0);
+		}
 	}
 
 	async function addMapImage(name, url) {

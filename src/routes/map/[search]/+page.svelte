@@ -2,6 +2,8 @@
 	import { base } from '$app/paths';
 	import { types } from '$lib/config';
 	import { _ } from 'svelte-i18n';
+	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
+	import CragList from '$lib/components/CragList.svelte';
 
 	/** @type {{data: any}} */
 	let { data } = $props();
@@ -21,6 +23,13 @@
 			case 'trad': return 'bg-yellow-500';
 			default: return 'bg-slate-400';
 		}
+	}
+
+	async function share() {
+		await navigator.share({
+			title: 'Search Results',
+			url: window.location.href
+		});
 	}
 </script>
 
@@ -68,3 +77,16 @@
         }
     }
 </style>
+
+{#if data.locations && data.locations.length > 1}
+	<InfoPanel closeUrl="{base}/map" onShare={share}>
+		<div class="px-5 pt-6 pb-2">
+			<h2 class="text-xl font-bold text-slate-800">
+				{data.locations.length} {$_('ui.results', { default: 'Results' })}
+			</h2>
+		</div>
+		<div class="flex-1 overflow-y-auto px-5 pb-4">
+			<CragList crags={data.locations} isCompact={true} />
+		</div>
+	</InfoPanel>
+{/if}
