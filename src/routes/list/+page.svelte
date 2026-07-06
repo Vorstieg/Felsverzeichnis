@@ -42,7 +42,7 @@
 	<div class="max-sm:w-8 sm:w-8 shrink-0"></div>
 	{#each types as type}
 		<a href="{base}/list/{type}"
-			 class="cursor-pointer bg-white hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
+			 class="cursor-pointer bg-white font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
 			 <span class="w-2.5 h-2.5 rounded-full mr-2 {getTypeColor(type)}"></span>
 			 {$_('types.' + type)}
 		</a>

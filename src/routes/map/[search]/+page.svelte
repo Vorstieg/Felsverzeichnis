@@ -65,7 +65,7 @@
 	<div class="max-sm:w-4 sm:w-8 shrink-0"></div>
 	{#each types as type}
 		<a href="{base}/map/{type}"
-			 class="cursor-pointer {search === type ? 'bg-ink text-white' : 'bg-white text-slate-800'} hover:shadow-xl font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
+			 class="cursor-pointer {search === type ? 'bg-ink text-white' : 'bg-white text-slate-800'} font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
 			 <span class="w-2.5 h-2.5 rounded-full mr-2 {getTypeColor(type)}"></span>
 			 {$_('types.' + type)}
 		</a>

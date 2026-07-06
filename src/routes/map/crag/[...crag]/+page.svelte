@@ -2,6 +2,7 @@
 	import { base } from '$app/paths';
 	import { snapToBiggestHeight } from '$lib/assets/js/resize.js';
 	import { afterNavigate, goto } from '$app/navigation';
+	import { navigating } from '$app/stores';
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
 	import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
@@ -12,6 +13,11 @@
 	let sunInfo = $state({ hours: 'N/A' });
 	let wallDirection = $state('N/A');
 	let searchTerm = $state('');
+	let navigatingTo = $state(null);
+
+	afterNavigate(() => {
+		navigatingTo = null;
+	});
 
 	/** @type {{data: any}} */
 	let { data } = $props();
@@ -151,6 +157,24 @@
 			{ count: hard, percent: (hard/total)*100, colorClass: 'bg-red-500', label: '7a - 7c+' },
 			{ count: veryHard, percent: (veryHard/total)*100, colorClass: 'bg-purple-600', label: '> 8a' }
 		].filter(b => b.count > 0);
+	}
+
+	function getConicGradient(buckets) {
+		let gradient = [];
+		let currentPercent = 0;
+		const colorMap = {
+			'bg-green-500': '#22c55e',
+			'bg-yellow-400': '#facc15',
+			'bg-red-500': '#ef4444',
+			'bg-purple-600': '#9333ea'
+		};
+		for (const bucket of buckets) {
+			const nextPercent = currentPercent + bucket.percent;
+			const color = colorMap[bucket.colorClass] || '#ccc';
+			gradient.push(`${color} ${currentPercent}% ${nextPercent}%`);
+			currentPercent = nextPercent;
+		}
+		return `conic-gradient(${gradient.join(', ')})`;
 	}
 
 	function getSectorDirection(sector) {
@@ -298,7 +322,7 @@
 				{#if images?.length === 1}
 				<img
 					onclick={() => (fullscreenImage = images[0])}
-					class="mx-auto h-71 object-cover rounded-md cursor-pointer"
+					class="w-full h-71 object-cover rounded-2xl cursor-pointer"
 					src={images[0]}
 					alt="Crag"
 				/>
@@ -417,13 +441,18 @@
 								{#if has3DTopo}
 									<a
 										href="{base}/topo/crag/{topoPath}"
+										onclick={() => navigatingTo = '3d'}
 										class="relative group w-full h-24 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 no-underline bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-300 hover:-translate-y-1 hover:scale-[1.02] flex flex-col items-center justify-center overflow-hidden hover:ring-8 hover:ring-blue-500/5"
 									>
 										<div class="flex flex-row items-center gap-2 sm:gap-3 z-10 px-2">
 											<div
 												class="w-10 h-10 shrink-0 rounded-full bg-slate-100 shadow-inner flex items-center justify-center group-hover:bg-blue-50 group-hover:scale-110 transition-all duration-300"
 											>
-												<i class="fa-solid fa-cube text-xl text-blue-600"></i>
+												{#if navigatingTo === '3d'}
+													<i class="fa-solid fa-spinner fa-spin text-xl text-blue-600"></i>
+												{:else}
+													<i class="fa-solid fa-cube text-xl text-blue-600"></i>
+												{/if}
 											</div>
 											<div class="flex flex-col">
 												<span
@@ -440,13 +469,18 @@
 								{#if has2D}
 									<a
 										href="{base}/topo/crag/{topoPath}?mode=2d"
+										onclick={() => navigatingTo = '2d'}
 										class="relative group w-full h-24 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 no-underline bg-white hover:bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:-translate-y-1 hover:scale-[1.02] flex flex-col items-center justify-center overflow-hidden hover:ring-8 hover:ring-emerald-500/5"
 									>
 										<div class="flex flex-row items-center gap-2 sm:gap-3 z-10 px-2">
 											<div
 												class="w-10 h-10 shrink-0 rounded-full bg-slate-100 shadow-inner flex items-center justify-center group-hover:bg-emerald-50 group-hover:scale-110 transition-all duration-300"
 											>
-												<i class="fa-solid fa-image text-xl text-emerald-600"></i>
+												{#if navigatingTo === '2d'}
+													<i class="fa-solid fa-spinner fa-spin text-xl text-emerald-600"></i>
+												{:else}
+													<i class="fa-solid fa-image text-xl text-emerald-600"></i>
+												{/if}
 											</div>
 											<div class="flex flex-col">
 												<span
@@ -529,19 +563,19 @@
 										<tr>
 											<th
 												scope="col"
-												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+												class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
 											>
 												{$_('topo.table.name')}
 											</th>
 											<th
 												scope="col"
-												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+												class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
 											>
 												{$_('topo.routes')}
 											</th>
 											<th
 												scope="col"
-												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+												class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
 											>
 												{$_('ui.tags')}
 											</th>
@@ -554,30 +588,24 @@
 												onclick={(event) => openSector(event, sector)}
 												title={getSectorDescription(sector) || sector.name}
 											>
-												<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 													<span>{sector.name}</span>
 												</td>
-												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">
 													{#if getSectorRouteCount(sector) > 0}
-														<div class="flex items-center gap-3">
-															<span
-																class="px-2 py-1 rounded-md bg-gray-100 font-bold text-gray-700 text-xs border border-gray-300"
-															>
-																{getSectorRouteCount(sector)}
-															</span>
-															<div class="flex h-2 w-16 bg-gray-200 rounded-full overflow-hidden shrink-0">
-																{#each getSectorGradeDistribution(sector) as bucket}
-																	<div class="h-full {bucket.colorClass}" style="width: {bucket.percent}%" title="{bucket.label}: {bucket.count}"></div>
-																{/each}
+														<div class="flex items-center gap-2">
+															<div class="relative w-6 h-6 rounded-full shrink-0 flex items-center justify-center shadow-inner" style="background: {getConicGradient(getSectorGradeDistribution(sector))}">
+																<div class="absolute inset-0 m-auto w-3.5 h-3.5 bg-white rounded-full shadow-sm"></div>
 															</div>
+															<span class="font-bold text-gray-700 text-xs">{getSectorRouteCount(sector)}</span>
 														</div>
 													{:else}
-														<span class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-xs border border-slate-200">
+														<span class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-[10px] border border-slate-200">
 															{$_('topo.no_topo')}
 														</span>
 													{/if}
 												</td>
-												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">
 													{#if getSectorTypes(sector).length > 0 || getSectorDirection(sector)}
 														<div class="flex items-center gap-2 flex-wrap">
 															{#each getSectorTypes(sector) as type}
