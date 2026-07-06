@@ -1,10 +1,10 @@
 import { error } from '@sveltejs/kit';
-import fetchCrags from '$lib/assets/js/fetchCrags';
 import { fsApiUrl } from '$lib/config';
 
-export async function load({ params, url }) {
+export async function load({ params, url, parent, fetch }) {
 	try {
-		const crags = await fetchCrags({ limit: -1 });
+		const parentData = await parent();
+		const crags = parentData.locations || [];
 
 		let transit, transitTrack, parking;
 		let has3DTopo = false;
@@ -101,30 +101,44 @@ export async function load({ params, url }) {
 			relativeParts[0] &&
 				matchingCrag?.properties?.sectors?.some((sector) => sector.id === relativeParts[0])
 		);
-		let crag,
-			sectorData = null;
 		let basePath = matchingCrag?.properties?.path || params.crag;
 		let sectorId = isSectorPath ? relativeParts[0] : null;
 		const cragName = basePath.split('/').at(-1);
 
-		if (isSectorPath) {
-			crag = await fetchJson(`${basePath}/${cragName}.json`);
+		let crag = matchingCrag;
+		let sectorData = null;
 
-			if (crag) {
-				sectorData = normalizeSectorData(
-					await fetchJson(`${basePath}/${sectorId}/${sectorId}.json`)
-				);
+		if (!crag) {
+			crag = await fetchJson(`${params.crag}/${cragName}.json`);
+			if (!crag) {
+				const parts = params.crag.split('/');
+				if (parts.length > 1) {
+					sectorId = parts.pop();
+					basePath = parts.join('/');
+					const baseName = basePath.split('/').at(-1);
+					crag = await fetchJson(`${basePath}/${baseName}.json`);
+					if (crag) {
+						isSectorPath = true;
+						sectorData = normalizeSectorData(await fetchJson(`${basePath}/${sectorId}/${sectorId}.json`));
+					}
+				}
 			}
 		} else {
-			crag = await fetchJson(`${params.crag}/${cragName}.json`);
+			if (isSectorPath) {
+				sectorData = crag.properties?.sectors?.find((s) => s.id === sectorId);
+				if (!sectorData) {
+					sectorData = normalizeSectorData(
+						await fetchJson(`${basePath}/${sectorId}/${sectorId}.json`)
+					);
+				}
+			}
 		}
 
 		if (!crag) {
 			throw new Error(`Crag data not found at ${params.crag}`);
 		}
 
-		const indexedCrag = crags.find((it) => it.properties?.path === basePath);
-		const cragForUi = indexedCrag || crag;
+		const cragForUi = crag;
 
 		const streamDetails = async () => {
 			let images = [];
@@ -207,26 +221,26 @@ export async function load({ params, url }) {
 			locations: [cragForUi],
 			tracks: [],
 			center:
-				getGeometryCenter(isSectorPath ? sectorData?.geometry : crag.geometry) ||
-				crag.geometry.coordinates,
+				getGeometryCenter(isSectorPath ? sectorData?.geometry : cragForUi.geometry) ||
+				cragForUi.geometry.coordinates,
 			cameraTarget:
 				isSectorPath && getGeometryCenter(sectorData?.geometry)
 					? { center: getGeometryCenter(sectorData.geometry), zoom: 18 }
 					: null,
 			name:
 				isSectorPath && sectorData?.name
-					? `${crag.properties.name} - ${sectorData.name}`
-					: crag.properties.name,
-			topo: isSectorPath && sectorData?.topo ? sectorData.topo : crag.properties.topo,
+					? `${cragForUi.properties.name} - ${sectorData.name}`
+					: cragForUi.properties.name,
+			topo: isSectorPath && sectorData?.topo ? sectorData.topo : cragForUi.properties.topo,
 			description_de:
 				isSectorPath && sectorData?.description_de
 					? sectorData.description_de
-					: crag.properties.description_de,
+					: cragForUi.properties.description_de,
 			description_en:
 				isSectorPath && sectorData?.description_en
 					? sectorData.description_en
-					: crag.properties.description_en,
-			type: isSectorPath && sectorData?.type ? sectorData.type : crag.properties.type,
+					: cragForUi.properties.description_en,
+			type: isSectorPath && sectorData?.type ? sectorData.type : cragForUi.properties.type,
 			sector: normalizeSectorData(sectorData),
 			detailsShown: true,
 			zoomToLocations: true,
@@ -234,12 +248,12 @@ export async function load({ params, url }) {
 				lang: 'de',
 				title:
 					(isSectorPath && sectorData?.name
-						? `${crag.properties.name} - ${sectorData.name}`
-						: crag.properties.name) + ' - Felsverzeichnis',
+						? `${cragForUi.properties.name} - ${sectorData.name}`
+						: cragForUi.properties.name) + ' - Felsverzeichnis',
 				description:
 					(isSectorPath && sectorData?.description_de
 						? sectorData.description_de
-						: crag.properties.description_de) || '',
+						: cragForUi.properties.description_de) || '',
 				type: 'article',
 				author: 'Vorstieg Software FlexCo',
 				url: url.href
