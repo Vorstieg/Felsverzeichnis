@@ -2,6 +2,8 @@
 	import { base } from '$app/paths';
 	import { types } from '$lib/config';
 	import { _ } from 'svelte-i18n';
+	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+	import { searchSuggestionsActive } from '$lib/stores/search.js';
 
 	/** @type {{data: any}} */
 	let { data } = $props();
@@ -34,27 +36,11 @@
 
 <div class="bg-gray-100 border-1 border-gray-200 fixed h-36 sm:h-50 left-0 right-0 top-0 shadow-md z-[500]"></div>
 <div
-	class="fixed h-fit no-scrollbar overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
-	<form action="/list/{searchTerm}">
-		<div class="flex mx-8 sm:max-w-120 shadow-md rounded-full">
-			<input bind:value={searchTerm}
-						 class="block p-2.5 w-full z-20 text-sm bg-white rounded-l-full border-3 border-white focus:border-ink"
-						 placeholder={$_('page.list.search_placeholder')} />
-			<button type="submit"
-							class="top-0 w-12 p-2.5 bg-white text-sm font-medium border-3 border-white h-full hover:border-ink hover:bg-ink hover:text-white">
-				<i class="fa-solid fa-magnifying-glass"></i>
-				<span class="sr-only">Search</span>
-			</button>
-			<button onclick={resetSearch}
-							class="top-0 w-12 p-2.5 bg-white text-sm font-medium border-3 border-white h-full hover:border-ink rounded-r-full hover:bg-ink hover:text-white">
-				<i class="fa-solid fa-xmark"></i>
-				<span class="sr-only">Clear</span>
-			</button>
-		</div>
-	</form>
+	class="fixed h-fit overflow-visible sm:w-auto sm:left-8 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
+	<SearchBar actionBase="/list" bind:searchTerm showClear={true} onClear={resetSearch} containerClass="mx-8 sm:max-w-120" />
 </div>
 <div
-	class="fixed h-fit no-scrollbar flex overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 top-16 sm:top-36 z-[1000] fade">
+	class="fixed h-fit no-scrollbar flex overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 transition-all duration-300 ease-out z-[1000] fade filter-wrapper" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
 	<div class="max-sm:w-8 sm:w-8 shrink-0"></div>
 	{#each types as type}
 		<a href="{base}/list/{type}"
@@ -67,6 +53,14 @@
 </div>
 
 <style>
+	.filter-wrapper {
+		top: calc(4.5rem + var(--dropdown-offset, 0px));
+	}
+	@media (min-width: 640px) {
+		.filter-wrapper {
+			top: calc(9rem + var(--dropdown-offset, 0px));
+		}
+	}
     @media (width <= 40rem) {
         .fade {
             -webkit-mask: linear-gradient(to right, transparent 0px, #fff 32px, #fff calc(100% - 32px), transparent 100%);

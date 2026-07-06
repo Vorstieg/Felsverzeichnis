@@ -685,4 +685,10 @@
 			bottom: 4.5rem;
 		}
 	}
+
+	:global(.maplibregl-ctrl-top-right) {
+		@media (width > 40rem) {
+			top: 5.75rem;
+		}
+	}
 </style>
