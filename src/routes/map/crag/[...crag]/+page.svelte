@@ -31,17 +31,31 @@
 			: sunInfo.hours
 	);
 
+	let details = $state();
+
+	$effect(() => {
+		const stream = data.streamed?.details;
+		if (stream) {
+			details = null;
+			stream.then(res => {
+				if (data.streamed?.details === stream) {
+					details = res;
+				}
+			});
+		}
+	});
+
 	let has2D = $derived(
-		!!data.topoJson?.image2D ||
-			data.topoJson?.routes?.some((r) => r.points2D?.length > 0) ||
-			data.topoJson?.outlines?.length > 0 ||
-			data.topoJson?.fixPoints?.some((fp) => fp.position2D)
+		!!details?.topoJson?.image2D ||
+			details?.topoJson?.routes?.some((r) => r.points2D?.length > 0) ||
+			details?.topoJson?.outlines?.length > 0 ||
+			details?.topoJson?.fixPoints?.some((fp) => fp.position2D)
 	);
 
 	$effect(() => {
-		if (data.topoJson) {
-			sunInfo = calculateSunInfo(data.topoJson);
-			wallDirection = calculateWallDirection(data.topoJson);
+		if (details?.topoJson) {
+			sunInfo = calculateSunInfo(details.topoJson);
+			wallDirection = calculateWallDirection(details.topoJson);
 		}
 	});
 
@@ -59,14 +73,14 @@
 	let path = $derived(data.path);
 	let topoPath = $derived(data.topoPath || data.path);
 	let topo = $derived(data.topo);
-	let topoJson = $derived(data.topoJson);
-	let transit = $derived(data.transit);
-	let parking = $derived(data.parking);
-	let has3DTopo = $derived(data.has3DTopo);
+	let topoJson = $derived(details?.topoJson);
+	let transit = $derived(details?.transit);
+	let parking = $derived(details?.parking);
+	let has3DTopo = $derived(details?.has3DTopo);
 	let tags = $derived(data.tags);
 	let security = $derived(data.security);
 	let equipment = $derived(data.equipment);
-	let images = $derived(data.images);
+	let images = $derived(details?.images);
 
 	const equipmentIcons = {
 		Expressschlingen: `${base}/icons/quickdraw.png`,
@@ -103,7 +117,7 @@
 	}
 
 	function getSectorRouteCount(sector) {
-		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
 		if (routes.length > 0) return routes.length;
 		
 		return (
@@ -116,7 +130,7 @@
 	}
 
 	function getSectorGradeDistribution(sector) {
-		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
 		if (routes.length === 0) return [];
 
 		let easy = 0, medium = 0, hard = 0, veryHard = 0;
@@ -140,7 +154,7 @@
 	}
 
 	function getSectorDirection(sector) {
-		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
 		const mockTopo = { 
 			wallAzimuth: sector.wallAzimuth || sector.topo?.wallAzimuth || sector.properties?.wallAzimuth || routes[0]?.sectorWallAzimuth,
 			routes 
@@ -150,7 +164,7 @@
 	}
 	
 	function getSectorTypes(sector) {
-		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
 		let t = routes[0]?.sectorTags;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.type;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.properties?.type;
@@ -271,7 +285,17 @@
 			<h1 class="text-2xl font-bold my-0 text-slate-800 sm:px-2">{displayTitle}</h1>
 		</div>
 		<div class="flex-1 overflow-y-auto w-full px-5 mb-4 overflow-x-hidden min-h-0">
-			{#if images?.length === 1}
+			{#if !details}
+				<div class="animate-pulse flex flex-col space-y-4 pt-4">
+					<div class="h-40 bg-gray-200 rounded-2xl w-full"></div>
+					<div class="h-4 bg-gray-200 rounded w-5/6"></div>
+					<div class="h-4 bg-gray-200 rounded w-3/4"></div>
+					<div class="h-4 bg-gray-200 rounded w-1/2"></div>
+					<div class="h-10 mt-4 bg-gray-200 rounded-full w-full"></div>
+					<div class="h-10 bg-gray-200 rounded-full w-full"></div>
+				</div>
+			{:else}
+				{#if images?.length === 1}
 				<img
 					onclick={() => (fullscreenImage = images[0])}
 					class="mx-auto h-71 object-cover rounded-md cursor-pointer"
@@ -578,6 +602,7 @@
 					{/if}
 				</div>
 			</div>
+			{/if}
 		</div>
 	</InfoPanel>
 </main>

@@ -126,65 +126,75 @@ export async function load({ params, url }) {
 		const indexedCrag = crags.find((it) => it.properties?.path === basePath);
 		const cragForUi = indexedCrag || crag;
 
-		// Fetch directory listing to find images
-		let images = [];
-		try {
-			const imageScanPath = params.crag;
-			const dirRes = await fetch(`${API_URL}/${imageScanPath}`);
-			if (dirRes.ok) {
-				const files = await dirRes.json();
-				const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.pdf'];
-				images = files
-					.filter(
-						(f) => f.type === 'file' && imageExts.some((ext) => f.name.toLowerCase().endsWith(ext))
-					)
-					.map((f) => `${API_URL}/${imageScanPath}/${f.name}`);
-			}
-		} catch (e) {
-			// Ignore
-		}
-
-		const assetPath = isSectorPath ? basePath : params.crag;
-		const assetName = assetPath.split('/').at(-1);
-		transit = await fetchJson(`${assetPath}/${assetName}-transit.json`);
-		transitTrack = await fetchJson(`${assetPath}/${assetName}-transit-track.json`);
-		parking = await fetchJson(`${assetPath}/${assetName}-parking.json`);
-
-		let topoJson = null;
-		let gradeRoutes = [];
-		const modelCandidates = [];
-		if (isSectorPath) {
-			topoJson = await fetchJson(`${basePath}/${sectorId}/${sectorId}-topo.json`);
-			gradeRoutes = topoJson?.routes || [];
-			modelCandidates.push({ path: `${basePath}/${sectorId}`, fileName: `${sectorId}.glb` });
-		} else {
-			topoJson = await fetchJson(`${params.crag}/${cragName}-topo.json`);
-			const sectorRoutes = await aggregateSectorRoutes(
-				basePath,
-				cragForUi.properties?.sectors || []
-			);
-			gradeRoutes = sectorRoutes.length > 0 ? sectorRoutes : topoJson?.routes || [];
-			modelCandidates.push({ path: params.crag, fileName: `${cragName}.glb` });
-		}
-		if (topoJson) {
+		const streamDetails = async () => {
+			let images = [];
 			try {
-				for (const candidate of modelCandidates) {
-					const dirRes = await fetch(`${API_URL}/${candidate.path}`);
-					if (!dirRes.ok) continue;
+				const imageScanPath = params.crag;
+				const dirRes = await fetch(`${API_URL}/${imageScanPath}`);
+				if (dirRes.ok) {
 					const files = await dirRes.json();
-					if (files.some((file) => file.type === 'file' && file.name === candidate.fileName)) {
-						has3DTopo = true;
-						break;
-					}
+					const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.pdf'];
+					images = files
+						.filter(
+							(f) => f.type === 'file' && imageExts.some((ext) => f.name.toLowerCase().endsWith(ext))
+						)
+						.map((f) => `${API_URL}/${imageScanPath}/${f.name}`);
 				}
 			} catch (e) {
 				// Ignore
 			}
-		}
 
-		if (transit) cragForUi.properties.transit = transit;
-		if (parking) cragForUi.properties.parking = parking;
-		if (transitTrack) cragForUi.properties.transitTrack = transitTrack;
+			const assetPath = isSectorPath ? basePath : params.crag;
+			const assetName = assetPath.split('/').at(-1);
+			const transit = await fetchJson(`${assetPath}/${assetName}-transit.json`);
+			const transitTrack = await fetchJson(`${assetPath}/${assetName}-transit-track.json`);
+			const parking = await fetchJson(`${assetPath}/${assetName}-parking.json`);
+
+			let topoJson = null;
+			let gradeRoutes = [];
+			const modelCandidates = [];
+			let has3DTopo = false;
+
+			if (isSectorPath) {
+				topoJson = await fetchJson(`${basePath}/${sectorId}/${sectorId}-topo.json`);
+				gradeRoutes = topoJson?.routes || [];
+				modelCandidates.push({ path: `${basePath}/${sectorId}`, fileName: `${sectorId}.glb` });
+			} else {
+				topoJson = await fetchJson(`${params.crag}/${cragName}-topo.json`);
+				const sectorRoutes = await aggregateSectorRoutes(
+					basePath,
+					cragForUi.properties?.sectors || []
+				);
+				gradeRoutes = sectorRoutes.length > 0 ? sectorRoutes : topoJson?.routes || [];
+				modelCandidates.push({ path: params.crag, fileName: `${cragName}.glb` });
+			}
+			
+			if (topoJson) {
+				try {
+					for (const candidate of modelCandidates) {
+						const dirRes = await fetch(`${API_URL}/${candidate.path}`);
+						if (!dirRes.ok) continue;
+						const files = await dirRes.json();
+						if (files.some((file) => file.type === 'file' && file.name === candidate.fileName)) {
+							has3DTopo = true;
+							break;
+						}
+					}
+				} catch (e) {
+					// Ignore
+				}
+			}
+
+			return {
+				images,
+				transit: transit?.geometry?.coordinates,
+				parking: parking?.geometry?.coordinates,
+				transitTrack,
+				topoJson,
+				gradeRoutes,
+				has3DTopo
+			};
+		};
 
 		return {
 			path: params.crag,
@@ -195,8 +205,6 @@ export async function load({ params, url }) {
 			crag: cragForUi,
 			zoom: 16,
 			locations: [cragForUi],
-			transit: transit?.geometry?.coordinates,
-			parking: parking?.geometry?.coordinates,
 			tracks: [],
 			center:
 				getGeometryCenter(isSectorPath ? sectorData?.geometry : crag.geometry) ||
@@ -210,9 +218,6 @@ export async function load({ params, url }) {
 					? `${crag.properties.name} - ${sectorData.name}`
 					: crag.properties.name,
 			topo: isSectorPath && sectorData?.topo ? sectorData.topo : crag.properties.topo,
-			topoJson,
-			gradeRoutes,
-			images,
 			description_de:
 				isSectorPath && sectorData?.description_de
 					? sectorData.description_de
@@ -225,7 +230,6 @@ export async function load({ params, url }) {
 			sector: normalizeSectorData(sectorData),
 			detailsShown: true,
 			zoomToLocations: true,
-			has3DTopo,
 			meta: {
 				lang: 'de',
 				title:
@@ -239,6 +243,9 @@ export async function load({ params, url }) {
 				type: 'article',
 				author: 'Vorstieg Software FlexCo',
 				url: url.href
+			},
+			streamed: {
+				details: streamDetails()
 			}
 		};
 	} catch (err) {
