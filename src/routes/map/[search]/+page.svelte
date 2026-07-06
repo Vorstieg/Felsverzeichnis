@@ -8,8 +8,12 @@
 	/** @type {{data: any}} */
 	let { data } = $props();
 
-	const { search } = data;
-	let searchTerm = $state(search);
+	let search = $derived(data.search);
+	let searchTerm = $state(data.search);
+
+	$effect(() => {
+		searchTerm = data.search;
+	});
 
 	function resetSearch() {
 		searchTerm = '';

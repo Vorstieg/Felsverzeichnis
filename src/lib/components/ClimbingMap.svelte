@@ -91,6 +91,28 @@
 		focusMarker(cameraTarget.center, cameraTarget.zoom);
 	});
 
+	function updateMarkerVisibility() {
+		if (!map || !map.getLayer('places') || !map.getLayer('places-dots')) return;
+
+		if (zoomToLocations) {
+			map.setLayerZoomRange('places', 0, 24);
+			map.setPaintProperty('places', 'icon-opacity', 1);
+			map.setPaintProperty('places', 'text-opacity', 1);
+			map.setPaintProperty('places-dots', 'circle-opacity', 0);
+			map.setPaintProperty('places-dots', 'circle-stroke-opacity', 0);
+		} else {
+			map.setLayerZoomRange('places', 11.5, 24);
+			map.setPaintProperty('places', 'icon-opacity', ['step', ['zoom'], 0.0, 12.0, 1.0]);
+			map.setPaintProperty('places', 'text-opacity', ['step', ['zoom'], 0.0, 12.0, 1.0]);
+			map.setPaintProperty('places-dots', 'circle-opacity', ['step', ['zoom'], 1.0, 12.0, 0.0]);
+			map.setPaintProperty('places-dots', 'circle-stroke-opacity', ['step', ['zoom'], 1.0, 12.0, 0.0]);
+		}
+	}
+
+	$effect(() => {
+		updateMarkerVisibility();
+	});
+
 	onMount(() => {
 		function onFocusMapTarget(event) {
 			nextMarkerTarget = event.detail;
@@ -459,13 +481,7 @@
 		map.getSource('routes').setData(routes);
 		map.getSource('sector-shapes').setData(sectorShapes);
 
-		if (zoomToLocations && map.getLayer('places') && map.getLayer('places-dots')) {
-			map.setLayerZoomRange('places', 0, 24);
-			map.setPaintProperty('places', 'icon-opacity', 1);
-			map.setPaintProperty('places', 'text-opacity', 1);
-			map.setPaintProperty('places-dots', 'circle-opacity', 0);
-			map.setPaintProperty('places-dots', 'circle-stroke-opacity', 0);
-		}
+		updateMarkerVisibility();
 	}
 
 	async function addMapImage(name, url) {

@@ -12,5 +12,5 @@ export const load = async ({ params }) => {
 		throw redirect(302, `${base}/map/crag/${locations[0].properties.path}`);
 	}
 
-	return { locations, search, zoomToLocations: true };
+	return { locations, search, zoomToLocations: true, detailsShown: locations.length > 1 };
 };
