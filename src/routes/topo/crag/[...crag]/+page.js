@@ -127,6 +127,7 @@ export const load = async ({ params, url, fetch }) => {
 		// Check if a .glb model exists
 		let has3D = false;
 		let modelUrl = null;
+		let lowResModelUrl = null;
 
 		const modelCandidates = isSectorPath
 			? [{ path: sectorPath, fileName: `${sectorId}.glb` }]
@@ -141,6 +142,11 @@ export const load = async ({ params, url, fetch }) => {
 					if (glbFile) {
 						has3D = true;
 						modelUrl = `${API_URL}/${candidate.path}/${candidate.fileName}`;
+						
+						const lowResName = candidate.fileName.replace('.glb', '-low.glb');
+						if (files.some((f) => f.name === lowResName)) {
+							lowResModelUrl = `${API_URL}/${candidate.path}/${lowResName}`;
+						}
 						break;
 					}
 				}
@@ -162,6 +168,7 @@ export const load = async ({ params, url, fetch }) => {
 			route: pojo(route),
 			has3D,
 			modelUrl,
+			lowResModelUrl,
 			cragName: indexedCrag?.properties?.name,
 			cragType: indexedCrag?.properties?.type,
 			name: topo?.name,

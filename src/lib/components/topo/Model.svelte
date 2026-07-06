@@ -75,6 +75,7 @@
 	import { T, useThrelte } from '@threlte/core';
 	import { interactivity, Text } from '@threlte/extras';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
 	interactivity();
 
@@ -126,6 +127,7 @@
 		// Cache miss: Load the model fresh using GLTFLoader.
 		// The browser's HTTP cache will still prevent re-downloading if available.
 		const loader = new GLTFLoader();
+		loader.setMeshoptDecoder(MeshoptDecoder);
 		loader.load(
 			modelUrl,
 			(gltf) => {
@@ -154,16 +156,16 @@
 		<T.Mesh>
 			<T.SphereGeometry args={[0.1]} />
 			<T.MeshBasicMaterial color="red" wireframe={true} />
-			<Text
-				text={'Error: ' + error.message}
-				anchorX='center'
-				anchorY='middle'
-				position={[0,-0.3,0]}
-				fontSize={0.08}
-				castShadow={false}
-				receiveShadow={false}
-			/>
 		</T.Mesh>
+		<Text
+			text={'Error: ' + error.message}
+			anchorX='center'
+			anchorY='middle'
+			position={[0,-0.3,0]}
+			fontSize={0.08}
+			castShadow={false}
+			receiveShadow={false}
+		/>
 	</T.Group>
 {:else if scene}
 	<!-- Use a #key block to ensure the <T> component reacts correctly if the 'scene' object reference changes.

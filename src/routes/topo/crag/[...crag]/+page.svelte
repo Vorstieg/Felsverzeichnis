@@ -61,6 +61,31 @@
 	const { progress: progressStore } = useProgress();
 	let progress = $state(0);
 	let modelLoaded = $state(false);
+	let initialLoadComplete = $state(false);
+
+	let isSlowNetwork = $state(false);
+	let forceHighRes = $state(false);
+
+	$effect(() => {
+		if (modelLoaded) {
+			initialLoadComplete = true;
+		}
+	});
+
+	$effect(() => {
+		if (browser && navigator.connection) {
+			const conn = navigator.connection;
+			if (conn.saveData || conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g' || conn.effectiveType === '3g' || conn.type === 'cellular') {
+				isSlowNetwork = true;
+			}
+		}
+	});
+
+	let activeModelUrl = $derived(
+		data.lowResModelUrl && !forceHighRes 
+			? data.lowResModelUrl 
+			: data.modelUrl
+	);
 
 	let has3D = $derived(data.has3D);
 	let has2D = $derived(
@@ -542,7 +567,7 @@
 			{/if}
 
 			<HTML center position={[0, 5, 0]}>
-				{#if progress < 1}
+				{#if !initialLoadComplete}
 					<div
 						class="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-3 transition-opacity duration-300"
 					>
@@ -551,15 +576,22 @@
 						></div>
 						<div class="text-sm font-medium text-gray-600 whitespace-nowrap">
 							{$_('topo.loading')}
-							{Math.round(progress * 100)}
-							%
+							{Math.round(progress * 100)}%
 						</div>
 					</div>
 				{/if}
 			</HTML>
 
-			<Model modelUrl={data.modelUrl} onload={() => (modelLoaded = true)} />
-			{#if visualRoutes && progress >= 1}
+			<Model modelUrl={activeModelUrl} onload={() => (modelLoaded = true)} />
+			{#if data.lowResModelUrl && !isSlowNetwork && !forceHighRes && modelLoaded}
+				<Model 
+					modelUrl={data.modelUrl} 
+					visible={false} 
+					onload={() => { forceHighRes = true; }} 
+				/>
+			{/if}
+			
+			{#if visualRoutes && initialLoadComplete}
 				{#each visualRoutes as route (route.id)}
 					<RouteLine
 						link={base + '/topo/crag/' + data.path + '/' + (route.parentId || route.id)}
@@ -578,7 +610,7 @@
 				{/each}
 			{/if}
 
-			{#if data && data.topo.fixPoints && progress >= 1 && data.route}
+			{#if data && data.topo.fixPoints && initialLoadComplete && data.route}
 				{#each data.topo.fixPoints.filter((fp) => data.route.fixPoints?.includes(fp.id)) as point}
 					<CssObject position={point.position}>
 						{#if point.type === 'anchor'}
@@ -665,6 +697,24 @@
 				>
 					<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
 				</button>
+			{/if}
+
+			{#if displayMode === '3d' && data.lowResModelUrl}
+				{#if progress < 1 && (forceHighRes || (!isSlowNetwork && modelLoaded))}
+					<div class="pointer-events-auto flex items-center h-8 px-3 ml-2 text-xs font-bold text-blue-600 bg-blue-50 rounded-full border border-blue-100 shadow-sm gap-2">
+						<div class="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+						HD {Math.round(progress * 100)}%
+					</div>
+				{:else if !forceHighRes && isSlowNetwork}
+					<button
+						class="pointer-events-auto cursor-pointer h-8 px-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-sm flex items-center gap-1 transition-all ml-2"
+						onclick={() => (forceHighRes = true)}
+						title={$_('topo.load_high_res_title') || 'Load High-Res 3D Model'}
+					>
+						<i class="fa-solid fa-download"></i>
+						{$_('topo.load_high_res') || 'HD'}
+					</button>
+				{/if}
 			{/if}
 
 			{#if has2D && has3D}
@@ -1052,7 +1102,7 @@
 	</InfoPanel>
 </main>
 
-{#if !isTopoLegendOpen}
+{#if !isTopoLegendOpen && displayMode === '2d'}
 	<button
 		type="button"
 		class="fixed right-4 top-5 z-[30000] grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white text-sm text-black shadow-sm transition-transform hover:scale-105 sm:bottom-7 sm:left-7 sm:right-auto sm:top-auto"
