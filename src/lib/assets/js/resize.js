@@ -20,9 +20,9 @@ export function resize(element) {
 
 	function calculateTargetHeights() {
 		const screenHeight = window.innerHeight;
-		targetHeights = [screenHeight * 0.18, screenHeight * 0.5, screenHeight];
+		targetHeights = [screenHeight * 0.14, screenHeight * 0.5, screenHeight];
 
-		minHeight = screenHeight * 0.18;
+		minHeight = screenHeight * 0.14;
 		maxTop = screenHeight - minHeight;
 	}
 
@@ -156,16 +156,104 @@ export function resize(element) {
 		lastY = currentY;
 	}
 
+	let contentDragActive = false;
+	let contentInitialY = null;
+	let scrollContainer = null;
+	let initialScrollTop = 0;
+
+	function findScrollContainer(target) {
+		let curr = target;
+		while (curr && curr !== element && curr !== document.body) {
+			const overflowY = window.getComputedStyle(curr).overflowY;
+			if (overflowY === 'auto' || overflowY === 'scroll') {
+				if (curr.scrollHeight > curr.clientHeight) {
+					return curr;
+				}
+			}
+			curr = curr.parentNode;
+		}
+		return null;
+	}
+
+	function onContentTouchStart(event) {
+		if (!isMobile() || active) return;
+		if (event.target.closest('.grabber')) return;
+
+		contentInitialY = getEventY(event);
+		scrollContainer = findScrollContainer(event.target);
+		initialScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+		contentDragActive = false;
+	}
+
+	function onContentTouchMove(event) {
+		if (!isMobile() || contentInitialY === null || active === event.target) return;
+		if (event.target.closest('.grabber')) return;
+
+		const currentY = getEventY(event);
+		const deltaY = currentY - contentInitialY;
+		const currentHeight = parseFloat(element.style.height || 0);
+		const maxHeight = targetHeights[targetHeights.length - 1];
+
+		if (!contentDragActive) {
+			let shouldDragPanel = false;
+
+			if (deltaY < -5) {
+				// Swipe UP (scroll down)
+				if (Math.abs(currentHeight - maxHeight) > 5) {
+					shouldDragPanel = true;
+				}
+			} else if (deltaY > 5) {
+				// Swipe DOWN (scroll up)
+				if (initialScrollTop <= 0) {
+					shouldDragPanel = true;
+				}
+			}
+
+			if (shouldDragPanel) {
+				contentDragActive = true;
+				active = element;
+				const rect = element.getBoundingClientRect();
+				initialRect = { top: rect.top, height: rect.height };
+				initialPos = { y: contentInitialY };
+				lastY = contentInitialY;
+				lastTimestamp = Date.now();
+
+				element.style.transition = 'border-radius 0.2s ease-out';
+				document.body.style.setProperty('--info-panel-transition', 'none');
+				element.style.borderRadius = `1.5rem 1.5rem 0 0`;
+				element.style.marginInline = '';
+			}
+		}
+
+		if (contentDragActive) {
+			if (event.cancelable) event.preventDefault();
+			onMove(event);
+		}
+	}
+
+	function onContentTouchEnd(event) {
+		if (contentDragActive) {
+			onMouseup();
+			contentDragActive = false;
+		}
+		contentInitialY = null;
+		scrollContainer = null;
+	}
+
 	calculateTargetHeights();
 	element.appendChild(top);
 	top.addEventListener('mousedown', onMousedown);
 	top.addEventListener('touchstart', onMousedown);
 
-	window.addEventListener('mousemove', onMove);
-	window.addEventListener('touchmove', onMove);
+	window.addEventListener('mousemove', onMove, { passive: false });
+	window.addEventListener('touchmove', onMove, { passive: false });
 	window.addEventListener('mouseup', onMouseup);
 	window.addEventListener('touchend', onMouseup);
 	window.addEventListener('resize', calculateTargetHeights);
+
+	element.addEventListener('touchstart', onContentTouchStart, { passive: true });
+	element.addEventListener('touchmove', onContentTouchMove, { passive: false });
+	element.addEventListener('touchend', onContentTouchEnd);
 
 	snapToBiggestHeight = () => {
 		if (!isMobile()) return;
@@ -192,6 +280,11 @@ export function resize(element) {
 			window.removeEventListener('mouseup', onMouseup);
 			window.removeEventListener('touchend', onMouseup);
 			window.removeEventListener('resize', calculateTargetHeights);
+			
+			element.removeEventListener('touchstart', onContentTouchStart);
+			element.removeEventListener('touchmove', onContentTouchMove);
+			element.removeEventListener('touchend', onContentTouchEnd);
+
 			if (element.contains(top)) {
 				element.removeChild(top);
 			}
