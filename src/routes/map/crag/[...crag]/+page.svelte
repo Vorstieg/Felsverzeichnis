@@ -572,10 +572,10 @@
 												onclick={(event) => openSector(event, sector)}
 												title={getSectorDescription(sector) || sector.name}
 											>
-												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors align-middle">
 													{sector.name}
 												</td>
-												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">
+												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500 align-middle">
 													{#if getSectorRouteCount(sector) > 0}
 														<div class="flex items-center gap-2">
 															<div class="relative w-6 h-6 rounded-full shrink-0 flex items-center justify-center shadow-inner" style="background: {getConicGradient(getSectorGradeDistribution(sector))}">
@@ -589,7 +589,7 @@
 														</span>
 													{/if}
 												</td>
-												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">
+												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500 align-middle">
 													<div class="flex items-center gap-1.5 flex-wrap max-w-[150px] sm:max-w-none">
 														{#if getSectorDirection(sector)}
 															<div class="flex items-center gap-1 text-[9px] sm:text-[10px] font-semibold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 uppercase tracking-wide">
@@ -606,7 +606,7 @@
 														{/if}
 													</div>
 												</td>
-												<td class="pr-3 sm:pr-6 py-3 sm:py-4 whitespace-nowrap text-right">
+												<td class="pr-3 sm:pr-6 py-3 sm:py-4 whitespace-nowrap text-right align-middle">
 													<i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-blue-500 transition-colors text-xs sm:text-sm"></i>
 												</td>
 											</tr>
