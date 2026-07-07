@@ -14,7 +14,7 @@
 
 <!-- Extra Controls Slot (e.g. Sun Simulator) -->
 {#if controls}
-     <div class="floating-controls fixed left-4 right-4 sm:left-auto sm:bottom-auto sm:right-35 sm:top-25 lg:top-30 sm:mt-2 z-[30000] flex flex-col sm:flex-row items-end sm:items-center justify-end pointer-events-none gap-2"
+     <div class="floating-controls fixed left-4 right-4 sm:left-auto sm:bottom-auto {isOpen ? 'sm:right-35' : 'sm:right-5'} sm:top-25 lg:top-30 sm:mt-2 z-[30000] flex flex-col sm:flex-row items-end sm:items-center justify-end pointer-events-none gap-2 transition-all duration-300"
           style="--dynamic-bottom: {isOpen ? 'calc(var(--info-panel-height, 50vh) + 16px)' : 'calc(env(safe-area-inset-bottom, 0px) + 5.5rem)'};">
         {@render controls()}
      </div>
