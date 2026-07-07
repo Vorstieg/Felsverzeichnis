@@ -8,13 +8,14 @@
         onShare, 
         children,
         controls,
-        isOpen = true
+        isOpen = true,
+        hideCloseOnDesktop = false
     } = $props();
 </script>
 
 <!-- Extra Controls Slot (e.g. Sun Simulator) -->
 {#if controls}
-     <div class="floating-controls fixed left-4 right-4 sm:left-auto sm:bottom-auto {isOpen ? 'sm:right-35' : 'sm:right-5'} sm:top-25 lg:top-30 sm:mt-2 z-[30000] flex flex-col sm:flex-row items-end sm:items-center justify-end pointer-events-none gap-2 transition-all duration-300"
+     <div class="floating-controls fixed left-4 right-4 sm:left-auto sm:bottom-auto {isOpen ? 'sm:right-15' : 'sm:right-5'} sm:top-25 lg:top-30 sm:mt-2 z-[30000] flex flex-col sm:flex-row items-end sm:items-center justify-end pointer-events-none gap-2 transition-all duration-300"
           style="--dynamic-bottom: {isOpen ? 'calc(var(--info-panel-height, 50vh) + 16px)' : 'calc(env(safe-area-inset-bottom, 0px) + 5.5rem)'};">
         {@render controls()}
      </div>
@@ -27,19 +28,19 @@
         <div class="bg-gray-200 h-1 w-12 rounded-full self-center mt-2 sm:hidden shrink-0"></div>
     <!-- Close Button -->
     {#if onClose}
-        <button class="fixed right-5 sm:right-15 cursor-pointer bg-white w-8 h-8 pt-0.5 text-sm mt-2 hover:text-white hover:bg-ink rounded-full border-1 text-center border-gray-200 transition-all ml-3 z-[5000] shrink-0 text-gray-600"
+        <button class="absolute top-4 right-4 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000] shrink-0 text-gray-600 {hideCloseOnDesktop ? 'sm:hidden' : ''}"
                 onclick={onClose}>
             <i class="fa-lg fa-solid fa-xmark"></i>
         </button>
     {:else}
-        <a class="fixed right-5 sm:right-15 cursor-pointer bg-white w-8 h-8 pt-1.5 text-sm mt-2 hover:text-white hover:bg-ink rounded-full border-1 text-center border-gray-200 transition-all ml-3 z-[5000] shrink-0 text-gray-600"
+        <a class="absolute top-4 right-4 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000] shrink-0 text-gray-600 {hideCloseOnDesktop ? 'sm:hidden' : ''}"
            href={closeUrl}>
             <i class="fa-lg fa-solid fa-xmark"></i>
         </a>
     {/if}
 
     <!-- Share Button -->
-    <button class="fixed right-15 sm:right-25 cursor-pointer bg-white w-8 h-8 pt-0.5 text-sm mt-2 hover:text-white hover:bg-ink rounded-full border-1 text-center border-gray-200 transition-all ml-3 z-[5000]"
+    <button class="absolute top-4 right-14 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000]"
             onclick={onShare}>
         <i class="fa-solid fa-share-nodes"></i>
     </button>

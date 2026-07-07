@@ -2,6 +2,7 @@
 	import { base } from '$app/paths';
 	import { types } from '$lib/config';
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
 
@@ -17,6 +18,7 @@
 
 	function resetSearch() {
 		searchTerm = '';
+		goto(`${base}/list`);
 	}
 
 	function getTypeColor(typeId) {

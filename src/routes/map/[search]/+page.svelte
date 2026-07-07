@@ -2,6 +2,7 @@
 	import { base } from '$app/paths';
 	import { types } from '$lib/config';
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import CragList from '$lib/components/CragList.svelte';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
@@ -19,6 +20,7 @@
 
 	function resetSearch() {
 		searchTerm = '';
+		goto(`${base}/map`);
 	}
 
 	function getTypeColor(typeId) {

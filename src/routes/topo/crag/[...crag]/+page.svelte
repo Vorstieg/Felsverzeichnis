@@ -713,7 +713,7 @@
 </div>
 
 <main class="z-[500] h-24">
-	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)}>
+	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)} hideCloseOnDesktop={true}>
 		{#snippet controls()}
 			{#if displayMode === '3d' && data.lowResModelUrl}
 				{#if progress < 1 && (forceHighRes || (!isSlowNetwork && modelLoaded))}
