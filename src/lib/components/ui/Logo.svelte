@@ -1,0 +1,14 @@
+<script>
+    let { class: className = "w-8 h-8" } = $props();
+</script>
+
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class={className}>
+    <!-- Top Bar: Sports Climbing (Blue) -->
+    <path d="M 25 10 H 85 L 75 30 H 22 Z" fill="#3B82F6" />
+    
+    <!-- Middle Bar: Multi-pitch (Emerald/Green) -->
+    <path d="M 22 40 H 65 L 70 60 H 19 Z" fill="#10B981" />
+    
+    <!-- Bottom Bar: Bouldering (Orange) -->
+    <path d="M 19 70 H 35 L 30 90 H 16 Z" fill="#F97316" />
+</svg>

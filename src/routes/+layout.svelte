@@ -55,22 +55,28 @@
     <div class="fixed w-full sm:w-auto bottom-0 sm:bottom-auto p-0 sm:p-2 sm:right-10 sm:top-5 z-[3000]">
         <div class="row h-16 sm:h-auto flex w-full bg-white justify-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] sm:shadow-md border-t-1 sm:border-1 border-gray-200 rounded-none sm:rounded-full">
             <a href="{base}/map"
-                 class="font-semibold grid sm:w-auto w-1/3 cursor-pointer rounded-none sm:rounded-full sm:rounded-r-none bg-white py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+                 class="group flex flex-col items-center justify-center sm:flex sm:w-auto w-1/3 cursor-pointer rounded-none sm:rounded-full sm:rounded-r-none bg-white py-1.5 sm:py-3 px-2 sm:px-6 text-center text-[11px] sm:text-sm transition-all duration-200 active:scale-95 active:bg-slate-50 sm:active:scale-100 sm:hover:shadow-lg text-slate-600 sm:hover:text-white sm:hover:bg-ink {($page.url.pathname.startsWith(base + '/map') || $page.url.pathname === base + '/') ? 'sm:bg-slate-200' : ''}"
                  type="button">
-                <i class="font-semibold sm:hidden! fa-solid fa-map-location-dot mb-2"></i>
-                {$_('menu.map')}
+                <div class="sm:hidden flex items-center justify-center w-16 h-8 rounded-full transition-all duration-200 group-active:scale-90 mb-0.5 {($page.url.pathname.startsWith(base + '/map') || $page.url.pathname === base + '/') ? 'bg-blue-100 text-blue-700' : 'text-slate-600 group-hover:bg-slate-100'}">
+                    <i class="font-semibold fa-solid fa-map-location-dot text-[18px]"></i>
+                </div>
+                <span class="font-medium leading-tight transition-transform duration-200 group-active:scale-95 sm:font-semibold {($page.url.pathname.startsWith(base + '/map') || $page.url.pathname === base + '/') ? 'text-blue-800 font-bold sm:font-bold sm:text-ink' : ''}">{$_('menu.map')}</span>
             </a>
             <a href="{base}/list"
-                 class="font-semibold grid sm:w-auto w-1/3 cursor-pointer bg-white rounded-none sm:border-l sm:border-r border-slate-200 py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+                 class="group flex flex-col items-center justify-center sm:flex sm:w-auto w-1/3 cursor-pointer bg-white rounded-none sm:border-l sm:border-r border-slate-200 py-1.5 sm:py-3 px-2 sm:px-6 text-center text-[11px] sm:text-sm transition-all duration-200 active:scale-95 active:bg-slate-50 sm:active:scale-100 sm:hover:shadow-lg text-slate-600 sm:hover:text-white sm:hover:bg-ink {$page.url.pathname.startsWith(base + '/list') ? 'sm:bg-slate-200' : ''}"
                  type="button">
-                <i class="font-semibold sm:hidden! fa-solid fa-list-ul mb-2"></i>
-                {$_('menu.list')}
+                <div class="sm:hidden flex items-center justify-center w-16 h-8 rounded-full transition-all duration-200 group-active:scale-90 mb-0.5 {$page.url.pathname.startsWith(base + '/list') ? 'bg-blue-100 text-blue-700' : 'text-slate-600 group-hover:bg-slate-100'}">
+                    <i class="font-semibold fa-solid fa-list-ul text-[18px]"></i>
+                </div>
+                <span class="font-medium leading-tight transition-transform duration-200 group-active:scale-95 sm:font-semibold {$page.url.pathname.startsWith(base + '/list') ? 'text-blue-800 font-bold sm:font-bold sm:text-ink' : ''}">{$_('menu.list')}</span>
             </a>
             <a href="{base}/about"
-                 class="font-semibold grid sm:w-auto w-1/3 cursor-pointer bg-white rounded-none sm:rounded-full sm:rounded-l-none py-3 px-6 text-center text-sm transition-all hover:shadow-lg text-slate-600 hover:text-white hover:bg-ink active focus:font-bold active:font-bold"
+                 class="group flex flex-col items-center justify-center sm:flex sm:w-auto w-1/3 cursor-pointer bg-white rounded-none sm:rounded-full sm:rounded-l-none py-1.5 sm:py-3 px-2 sm:px-6 text-center text-[11px] sm:text-sm transition-all duration-200 active:scale-95 active:bg-slate-50 sm:active:scale-100 sm:hover:shadow-lg text-slate-600 sm:hover:text-white sm:hover:bg-ink {$page.url.pathname.startsWith(base + '/about') ? 'sm:bg-slate-200' : ''}"
                  type="button">
-                <i class="font-semibold sm:hidden! fa-solid fa-circle-info mb-2"></i>
-                {$_('menu.info')}
+                <div class="sm:hidden flex items-center justify-center w-16 h-8 rounded-full transition-all duration-200 group-active:scale-90 mb-0.5 {$page.url.pathname.startsWith(base + '/about') ? 'bg-blue-100 text-blue-700' : 'text-slate-600 group-hover:bg-slate-100'}">
+                    <i class="font-semibold fa-solid fa-circle-info text-[18px]"></i>
+                </div>
+                <span class="font-medium leading-tight transition-transform duration-200 group-active:scale-95 sm:font-semibold {$page.url.pathname.startsWith(base + '/about') ? 'text-blue-800 font-bold sm:font-bold sm:text-ink' : ''}">{$_('menu.info')}</span>
             </a>
         </div>
     </div>

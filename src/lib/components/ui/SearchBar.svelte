@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
+	import Logo from '$lib/components/ui/Logo.svelte';
 
 	/** @type {{actionBase?: string, searchTerm?: string, showClear?: boolean, onClear?: function, containerClass?: string}} */
 	let { actionBase = '/map', searchTerm = $bindable(''), showClear = false, onClear = () => {}, containerClass = "mx-4 sm:mx-8 sm:max-w-120" } = $props();
@@ -54,24 +55,27 @@
 </script>
 
 <form action="{actionBase}/{searchTerm}" class="relative">
-	<div class="flex shadow-md rounded-full bg-white relative z-[2010] {containerClass}">
+	<div class="flex items-stretch shadow-md rounded-full bg-white relative z-[2010] {containerClass} border-3 border-white focus-within:border-ink transition-colors overflow-hidden">
+		<div class="flex items-center justify-center pl-4 shrink-0 text-slate-800">
+			<Logo class="w-6 h-6" />
+		</div>
 		<input 
 			bind:value={searchTerm}
 			onfocus={() => isFocused = true}
 			onblur={() => setTimeout(() => isFocused = false, 200)}
 			onkeydown={handleKeydown}
-			class="block py-2.5 pl-5 pr-3 w-full z-20 text-base text-slate-800 bg-white rounded-l-full border-3 border-white focus:border-ink focus:outline-none"
+			class="block py-2.5 pl-3 pr-3 w-full z-20 text-base text-slate-800 bg-transparent outline-none focus:outline-none focus:ring-0 border-0"
 			placeholder={$_('page.list.search_placeholder')} 
 			autocomplete="off"
 		/>
 		<button type="submit"
-			class="top-0 w-12 p-2.5 bg-white text-sm font-medium border-3 border-white h-full hover:border-ink hover:bg-ink hover:text-white {showClear ? '' : 'rounded-r-full'}">
+			class="w-12 bg-white text-sm font-medium hover:bg-ink hover:text-white transition-colors shrink-0 flex items-center justify-center outline-none focus:outline-none">
 			<i class="fa-solid fa-magnifying-glass"></i>
 			<span class="sr-only">Search</span>
 		</button>
 		{#if showClear}
 			<button type="button" onclick={onClear}
-				class="top-0 w-12 p-2.5 bg-white text-sm font-medium border-3 border-white h-full hover:border-ink rounded-r-full hover:bg-ink hover:text-white">
+				class="w-12 bg-white text-sm font-medium hover:bg-ink hover:text-white transition-colors shrink-0 flex items-center justify-center outline-none focus:outline-none">
 				<i class="fa-solid fa-xmark"></i>
 				<span class="sr-only">Clear</span>
 			</button>
