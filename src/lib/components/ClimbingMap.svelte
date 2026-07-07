@@ -594,7 +594,7 @@
 	onmouseleave={() => (tileLayerMenuOpen = false)}
 >
 	<button
-		class="cursor-pointer bg-white w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md"
+		class="cursor-pointer bg-white w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md text-gray-600"
 		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
 		class:sm:rounded-b-none={tileLayerMenuOpen}
 		class:max-sm:rounded-t-none={tileLayerMenuOpen}><i class="fa-solid fa-layer-group text-lg"></i></button
@@ -606,19 +606,19 @@
 			out:slide={{ duration: 200 }}
 		>
 			<button
-				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-t-none max-sm:rounded-t-full"
+				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-t-none max-sm:rounded-t-full text-gray-600"
 				onclick={setTransportTileLayer}
 			>
 				<i class="fa-solid fa-bus-simple"></i>
 			</button>
 			<button
-				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200"
+				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 text-gray-600"
 				onclick={setSatelliteTileLayer}
 			>
 				<i class="fa-solid fa-satellite"></i>
 			</button>
 			<button
-				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-b-full max-sm:rounded-b-none"
+				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-b-full max-sm:rounded-b-none text-gray-600"
 				onclick={setTerrainTileLayer}
 			>
 				<i class="fa-solid fa-mountain"></i>

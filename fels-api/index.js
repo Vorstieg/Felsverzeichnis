@@ -62,6 +62,9 @@ app.use('/api/fs', express.raw({ type: '*/*', limit: '500mb' }), async (req, res
                 return res.json(result);
             } else {
                 // Serve the file
+                if (targetPath.toLowerCase().endsWith('.glb')) {
+                    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+                }
                 return res.sendFile(targetPath);
             }
         } catch (e) {
@@ -79,6 +82,31 @@ app.use('/api/fs', express.raw({ type: '*/*', limit: '500mb' }), async (req, res
                     await fs.promises.writeFile(targetPath, JSON.stringify(req.body, null, 2));
                 } else {
                     return res.status(400).send('No content provided');
+                }
+                
+                // Perform automated 3D model compression if a .glb file was uploaded
+                if (targetPath.toLowerCase().endsWith('.glb') && !targetPath.toLowerCase().endsWith('-low.glb')) {
+                    console.log(`[Felslager] Generating low-res 3D model for: ${targetPath}`);
+                    const { exec } = require('child_process');
+                    const util = require('util');
+                    const execPromise = util.promisify(exec);
+                    
+                    try {
+                        // We DO NOT optimize the main model because the user wants original 4K textures and geometry.
+                        // We ONLY generate a low-res variant for slow networks (-low.glb)
+                        const ext = path.extname(targetPath);
+                        const base = path.basename(targetPath, ext);
+                        const dir = path.dirname(targetPath);
+                        const lowResPath = path.join(dir, `${base}-low${ext}`);
+                        
+                        // Use resize command to shrink textures to max 512x512 for the low-res model, then optimize it
+                        await execPromise(`npx -y @gltf-transform/cli resize "${targetPath}" "${lowResPath}" --width 512 --height 512`);
+                        await execPromise(`npx -y @gltf-transform/cli optimize "${lowResPath}" "${lowResPath}" --texture-compress webp`);
+                        console.log(`[Felslager] Successfully generated low-res model: ${lowResPath}`);
+                    } catch (optError) {
+                        console.error('[Felslager] Failed to optimize GLB model:', optError);
+                        // We continue so we don't fail the whole upload if compression fails
+                    }
                 }
                 
                 return res.status(200).send('File saved successfully');

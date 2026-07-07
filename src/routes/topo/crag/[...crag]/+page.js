@@ -165,7 +165,7 @@ export const load = async ({ params, url, fetch }) => {
 			isSectorPath,
 			topo: pojo(topo),
 			gradeRoutes: pojo(gradeRoutes),
-			route: pojo(route),
+			route: pojo(route) || null,
 			has3D,
 			modelUrl,
 			lowResModelUrl,

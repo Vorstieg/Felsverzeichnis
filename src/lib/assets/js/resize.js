@@ -24,6 +24,11 @@ export function resize(element) {
 
 		minHeight = screenHeight * 0.14;
 		maxTop = screenHeight - minHeight;
+
+		// If it hasn't been explicitly dragged yet, keep the CSS variable in sync with window.innerHeight
+		if (isMobile() && (!element.style.height || element.style.height === '')) {
+			document.body.style.setProperty('--info-panel-height', `${targetHeights[1]}px`);
+		}
 	}
 
 	function calculateClosestHeight(currentHeight, direction) {
@@ -241,6 +246,11 @@ export function resize(element) {
 	}
 
 	calculateTargetHeights();
+	// Initialize the CSS variable so floating buttons start at the exact correct pixel height, not the CSS fallback
+	if (isMobile()) {
+		document.body.style.setProperty('--info-panel-height', `${targetHeights[1]}px`);
+	}
+
 	element.appendChild(top);
 	top.addEventListener('mousedown', onMousedown);
 	top.addEventListener('touchstart', onMousedown);

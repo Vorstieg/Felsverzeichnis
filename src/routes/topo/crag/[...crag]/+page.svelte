@@ -14,7 +14,7 @@
 	import TopoLegend from '$lib/components/topo/TopoLegend.svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page, navigating } from '$app/stores';
 	import { _ } from 'svelte-i18n';
 	import { locale } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -65,6 +65,18 @@
 
 	let isSlowNetwork = $state(false);
 	let forceHighRes = $state(false);
+	let displayModeMenuOpen = $state(false);
+
+	let isInfoPanelOpen = $state(true);
+	$effect(() => {
+		// Ensure panel re-opens whenever navigation occurs
+		$page.url;
+		isInfoPanelOpen = true;
+	});
+
+	function handleRouteClicked() {
+		isInfoPanelOpen = true;
+	}
 
 	$effect(() => {
 		if (modelLoaded) {
@@ -187,6 +199,7 @@
 
 		// 5. Start Animation
 		if (camera) {
+			isProgrammaticAnimationRunning = true;
 			animationState = {
 				startPos: camera.position.clone(),
 				endPos: targetPos,
@@ -200,12 +213,33 @@
 
 	let lastFocusedRouteId = $state(null);
 	let hoveredRouteId = $state(null);
+	let isProgrammaticAnimationRunning = $state(false);
 
 	$effect(() => {
-		if (data.route && modelLoaded && !isCameraMoving && data.route.id !== lastFocusedRouteId) {
-			lastFocusedRouteId = data.route.id;
+		if (activeRouteId && modelLoaded && !isCameraMoving && activeRouteId !== lastFocusedRouteId) {
+			lastFocusedRouteId = activeRouteId;
 			hoveredRouteId = null;
-			focusRoute(data.route);
+
+			let routeToFocus = data.route?.id === activeRouteId ? data.route : null;
+			if (!routeToFocus && data.topo && data.topo.routes) {
+				for (const r of data.topo.routes) {
+					if (r.id === activeRouteId) {
+						routeToFocus = r;
+						break;
+					}
+					if (r.pitches) {
+						const pitch = r.pitches.find((p) => p.id === activeRouteId);
+						if (pitch) {
+							routeToFocus = { ...pitch, orientation: pitch.orientation || r.orientation };
+							break;
+						}
+					}
+				}
+			}
+
+			if (routeToFocus) focusRoute(routeToFocus);
+		} else if (!activeRouteId && lastFocusedRouteId) {
+			lastFocusedRouteId = null;
 		}
 	});
 
@@ -217,8 +251,20 @@
 	});
 
 	$effect(() => {
-		if (isCameraMoving) {
+		if (isCameraMoving && animationState) {
 			animationState = null;
+			isProgrammaticAnimationRunning = false;
+		}
+	});
+
+	let renderChartsStage = $state(0);
+	$effect(() => {
+		if (!isProgrammaticAnimationRunning && data.route) {
+			renderChartsStage = 1;
+			setTimeout(() => { if (!isProgrammaticAnimationRunning) renderChartsStage = 2; }, 50);
+			setTimeout(() => { if (!isProgrammaticAnimationRunning) renderChartsStage = 3; }, 100);
+		} else {
+			renderChartsStage = 0;
 		}
 	});
 
@@ -228,6 +274,16 @@
 		});
 		return unsubscribe;
 	});
+
+	let pendingRouteId = $derived(
+		$navigating?.to?.url.pathname.startsWith(base + '/topo/crag/')
+			? $navigating.to.url.pathname.split('/').pop()
+			: null
+	);
+
+	let activeRouteId = $derived(pendingRouteId || data.route?.id);
+
+
 
 	let description = $derived(
 		$locale === 'de'
@@ -272,10 +328,26 @@
 		return Math.max(0, Math.min(5.0, 0.1 + (y / 20) * 5));
 	});
 
-	let visualRoutes = $derived.by(() => {
-		if (!data || !data.topo || !data.topo.routes) return [];
+	let visualRoutes = $state([]);
+	let lastTopoPath = '';
 
-		return data.topo.routes.flatMap((route) => {
+	$effect(() => {
+		const currentPath = data?.path;
+		const topoRoutes = data?.topo?.routes;
+
+		if (!topoRoutes) {
+			lastTopoPath = '';
+			visualRoutes = [];
+			return;
+		}
+
+		if (currentPath === lastTopoPath) {
+			// Cache hit: navigating between routes on the same crag
+			return;
+		}
+
+		lastTopoPath = currentPath;
+		visualRoutes = topoRoutes.flatMap((route) => {
 			if (route.type?.includes('multi-pitch') && route.pitches) {
 				return route.pitches.map((pitch, idx) => ({
 					...pitch,
@@ -403,6 +475,7 @@
 						camera.current.position.copy(animationState.endPos);
 						controls.target.copy(animationState.endTarget);
 						animationState = null;
+						isProgrammaticAnimationRunning = false;
 					} else {
 						const t = cubicOut(elapsed);
 						camera.current.position.lerpVectors(animationState.startPos, animationState.endPos, t);
@@ -507,13 +580,15 @@
 	}
 </script>
 
+<svelte:window onroute-clicked={handleRouteClicked} />
+
 <div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden">
-	{#if displayMode === '2d' && data.topo}
+	{#if displayMode === '2d' && has2D}
 		<Topo2DViewer
 			topo={data.topo}
-			routes={data.topo?.routes}
-			selectedRouteId={data.route?.id}
-			onRouteSelect={(route) => goto(`${base}/topo/crag/${data.path || ''}/${route.id}`)}
+			routes={visualRoutes}
+			selectedRouteId={activeRouteId}
+			onRouteSelect={(route) => goto(base + '/topo/crag/' + data.path + '/' + route.id)}
 			bind:hoveredRouteId
 		/>
 	{:else}
@@ -566,21 +641,7 @@
 				<T.ArrowHelper args={[sunDirectionVec3, sunPositionVec3, 2, 0xfdb813, 0.5, 0.25]} />
 			{/if}
 
-			<HTML center position={[0, 5, 0]}>
-				{#if !initialLoadComplete}
-					<div
-						class="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-3 transition-opacity duration-300"
-					>
-						<div
-							class="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"
-						></div>
-						<div class="text-sm font-medium text-gray-600 whitespace-nowrap">
-							{$_('topo.loading')}
-							{Math.round(progress * 100)}%
-						</div>
-					</div>
-				{/if}
-			</HTML>
+
 
 			<Model modelUrl={activeModelUrl} onload={() => (modelLoaded = true)} />
 			{#if data.lowResModelUrl && !isSlowNetwork && !forceHighRes && modelLoaded}
@@ -599,11 +660,11 @@
 						name={route.name}
 						grade={route.grade}
 						id={route.id}
-						color={data.route?.id === (route.parentId || route.id)
+						color={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)
 							? '#ff0000'
 							: getGradeColor(route.grade)}
-						width={data.route?.id === (route.parentId || route.id) ? 0.1 : 0.08}
-						isSelected={data.route?.id === (route.parentId || route.id)}
+						width={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId) ? 0.1 : 0.08}
+						isSelected={!!activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)}
 						{isCameraMoving}
 						isHoveredExternally={hoveredRouteId === (route.parentId || route.id)}
 					/>
@@ -652,100 +713,132 @@
 </div>
 
 <main class="z-[500] h-24">
-	<InfoPanel onShare={share}>
+	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)}>
 		{#snippet controls()}
-			{#if isDaylightSimulation && displayMode === '3d'}
-				<div
-					transition:slide={{ axis: 'x', duration: 300 }}
-					class="bg-white/90 backdrop-blur px-2 py-1 rounded-l-full rounded-r-none shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-auto h-8"
-				>
-					<input
-						type="date"
-						value={simulationDate}
-						oninput={(e) => (simulationDate = e.currentTarget.value)}
-						class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono"
-					/>
-					<div class="w-px h-4 bg-gray-300 mx-1"></div>
-					<span class="text-xs font-bold text-gray-500 w-8 text-right font-mono">
-						{Math.floor(simulationTime)}
-						:{Math.floor((simulationTime % 1) * 60)
-							.toString()
-							.padStart(2, '0')}
-					</span>
-					<input
-						type="range"
-						min="0"
-						max="24"
-						step="0.25"
-						value={simulationTime}
-						oninput={(e) => (simulationTime = parseFloat(e.currentTarget.value))}
-						class="w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-					/>
-				</div>
-			{/if}
-
-			{#if displayMode === '3d'}
-				<button
-					class="pointer-events-auto cursor-pointer w-8 h-8 pt-0.5 text-sm hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all {isDaylightSimulation
-						? 'rounded-r-full rounded-l-none'
-						: 'rounded-full'} {isDaylightSimulation
-						? 'bg-yellow-100 text-yellow-600 border-yellow-300'
-						: 'bg-white'}"
-					onclick={() => (isDaylightSimulation = !isDaylightSimulation)}
-					aria-label="Toggle daylight simulator"
-					title="Daylight Simulator"
-				>
-					<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
-				</button>
-			{/if}
-
 			{#if displayMode === '3d' && data.lowResModelUrl}
 				{#if progress < 1 && (forceHighRes || (!isSlowNetwork && modelLoaded))}
-					<div class="pointer-events-auto flex items-center h-8 px-3 ml-2 text-xs font-bold text-blue-600 bg-blue-50 rounded-full border border-blue-100 shadow-sm gap-2">
-						<div class="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-						HD {Math.round(progress * 100)}%
+					<div class="pointer-events-auto flex items-center justify-center relative sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 rounded-full border-1 border-gray-200 bg-white max-sm:shadow-md">
+						<div class="absolute sm:w-6 sm:h-6 max-sm:w-10 max-sm:h-10 border-2 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+						<span class="text-[10px] max-sm:text-[14px] font-bold text-blue-600 z-10">HD</span>
 					</div>
 				{:else if !forceHighRes && isSlowNetwork}
 					<button
-						class="pointer-events-auto cursor-pointer h-8 px-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-sm flex items-center gap-1 transition-all ml-2"
+						class="pointer-events-auto cursor-pointer flex items-center justify-center sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 sm:pt-0.5 text-sm max-sm:text-xl hover:text-white hover:bg-ink bg-white rounded-full border-1 text-center border-gray-200 transition-all max-sm:shadow-md"
 						onclick={() => (forceHighRes = true)}
 						title={$_('topo.load_high_res_title') || 'Load High-Res 3D Model'}
 					>
-						<i class="fa-solid fa-download"></i>
-						{$_('topo.load_high_res') || 'HD'}
+						<i class="fa-solid fa-download text-gray-600 hover:text-white"></i>
 					</button>
 				{/if}
 			{/if}
 
 			{#if has2D && has3D}
 				<div
-					class="flex bg-white/90 backdrop-blur rounded-full p-1 shadow-sm border border-gray-200 pointer-events-auto ml-2 h-8 items-center"
+					class="relative flex items-center justify-center pointer-events-auto w-8 h-8 max-sm:w-13 max-sm:h-13"
+					onmouseleave={() => (displayModeMenuOpen = false)}
 				>
 					<button
-						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode ===
-						'3d'
-							? 'bg-blue-600 text-white shadow-sm'
-							: 'text-gray-500 hover:text-gray-700'}"
-						onclick={() => (displayMode = '3d')}
+						class="cursor-pointer bg-white w-full h-full flex items-center justify-center hover:text-white hover:bg-ink rounded-full border border-gray-200 transition-all shadow-md text-gray-600 z-10"
+						class:sm:rounded-b-none={displayModeMenuOpen}
+						class:max-sm:rounded-t-none={displayModeMenuOpen}
+						onmouseenter={() => (displayModeMenuOpen = !displayModeMenuOpen)}
 					>
-						<i class="fa-solid fa-cube text-[8px]"></i>
-						3D
+						<i class="fa-solid fa-map text-sm max-sm:text-lg"></i>
 					</button>
+					{#if displayModeMenuOpen}
+						<div
+							class="absolute flex flex-col justify-center sm:top-full max-sm:bottom-full w-full left-0 z-0"
+							transition:slide={{ duration: 200, axis: 'y' }}
+						>
+							<button
+								class="cursor-pointer w-full h-8 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border border-gray-200 sm:border-t-0 max-sm:rounded-t-full font-bold text-gray-500 text-[12px] max-sm:text-[14px] {displayMode === '3d' ? 'bg-blue-50 text-blue-600' : ''}"
+								onclick={() => {
+									displayMode = '3d';
+									displayModeMenuOpen = false;
+								}}
+							>
+								3D
+							</button>
+							<button
+								class="cursor-pointer w-full h-8 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border border-gray-200 sm:border-t-0 max-sm:border-b-0 sm:rounded-b-full font-bold text-gray-500 text-[12px] max-sm:text-[14px] {displayMode === '2d' ? 'bg-blue-50 text-blue-600' : ''}"
+								onclick={() => {
+									displayMode = '2d';
+									displayModeMenuOpen = false;
+								}}
+							>
+								2D
+							</button>
+						</div>
+					{/if}
+				</div>
+			{/if}
+
+			{#if displayMode === '3d'}
+				<div class="flex flex-row items-center justify-end max-sm:w-full">
+					{#if isDaylightSimulation}
+						<div
+							transition:slide={{ axis: 'x', duration: 300 }}
+							class="bg-white/90 backdrop-blur max-sm:p-3 sm:px-2 sm:py-1 max-sm:rounded-full sm:rounded-l-full sm:rounded-r-none max-sm:shadow-lg sm:shadow-sm border border-gray-200 flex flex-row items-center pointer-events-auto sm:h-8 flex-1 max-sm:mr-2"
+						>
+							<input
+								type="date"
+								value={simulationDate}
+								oninput={(e) => (simulationDate = e.currentTarget.value)}
+								class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono text-center shrink-0"
+							/>
+							<div class="w-px h-6 bg-gray-300 mx-1 shrink-0"></div>
+							<div class="flex items-center gap-2 flex-1 min-w-0">
+								<span class="text-xs font-bold text-gray-500 w-10 text-right font-mono shrink-0">
+									{Math.floor(simulationTime)}
+									:{Math.floor((simulationTime % 1) * 60)
+										.toString()
+										.padStart(2, '0')}
+								</span>
+								<input
+									type="range"
+									min="0"
+									max="24"
+									step="0.25"
+									value={simulationTime}
+									oninput={(e) => (simulationTime = parseFloat(e.currentTarget.value))}
+									class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500 min-w-0"
+								/>
+							</div>
+						</div>
+					{/if}
+
 					<button
-						class="px-3 h-6 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 {displayMode ===
-						'2d'
-							? 'bg-blue-600 text-white shadow-sm'
-							: 'text-gray-500 hover:text-gray-700'}"
-						onclick={() => (displayMode = '2d')}
+						class="shrink-0 pointer-events-auto cursor-pointer sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 sm:pt-0.5 text-sm max-sm:text-xl hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all max-sm:shadow-md {isDaylightSimulation
+							? 'sm:rounded-r-full sm:rounded-l-none max-sm:rounded-full max-sm:bg-yellow-100 max-sm:border-yellow-300'
+							: 'rounded-full'} {isDaylightSimulation
+							? 'sm:bg-yellow-100 sm:text-yellow-600 sm:border-yellow-300 max-sm:text-yellow-600'
+							: 'bg-white text-gray-600'}"
+						onclick={() => (isDaylightSimulation = !isDaylightSimulation)}
+						aria-label="Toggle daylight simulator"
+						title="Daylight Simulator"
 					>
-						<i class="fa-solid fa-image text-[8px]"></i>
-						2D
+						<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
 					</button>
 				</div>
 			{/if}
 		{/snippet}
 
-		{#if data.route}
+		{#if $navigating && $navigating.to?.url.pathname.startsWith(base + '/topo/crag/')}
+			<div class="flex-1 overflow-y-auto w-full px-5 mb-4 mt-6 overflow-x-hidden min-h-0">
+				<div class="animate-pulse flex flex-col space-y-4 pt-4">
+					<div class="h-8 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
+					<div class="flex gap-2 mb-4">
+						<div class="h-8 bg-gray-200 rounded-lg w-24"></div>
+						<div class="h-8 bg-gray-200 rounded-lg w-24"></div>
+						<div class="h-8 bg-gray-200 rounded-lg w-20"></div>
+					</div>
+					<div class="h-4 bg-gray-200 rounded w-5/6"></div>
+					<div class="h-4 bg-gray-200 rounded w-3/4"></div>
+					<div class="h-4 bg-gray-200 rounded w-1/2"></div>
+					<div class="h-40 mt-6 bg-gray-200 rounded-2xl w-full"></div>
+				</div>
+			</div>
+		{:else if data.route}
 			<div
 				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
 			>
@@ -838,22 +931,31 @@
 						</div>
 					{/if}
 				</div>
-				<div class="mt-6 w-full">
-					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
-						{$_('topo.steepness_distribution')}
-					</h3>
-					<div class="mb-8">
-						<SteepnessDistribution metrics={routeMetrics} />
-					</div>
-					<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.steepness')}</h3>
-					<div class="h-48 w-full mb-8">
-						<RouteSteepnessChart route={data.route} on:metrics={handleMetrics} />
-					</div>
-
-					{#if sunInfo.chartData}
-						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.sun_course')}</h3>
-						<div class="h-32 w-full">
-							<SunChart data={sunInfo.chartData} />
+				<div class="mt-6 w-full min-h-[400px]">
+					{#if !isProgrammaticAnimationRunning && renderChartsStage >= 1}
+						<div in:slide={{ duration: 200 }}>
+							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
+								{$_('topo.steepness_distribution')}
+							</h3>
+							<div class="mb-8">
+								<SteepnessDistribution metrics={routeMetrics} />
+							</div>
+						</div>
+					{/if}
+					{#if !isProgrammaticAnimationRunning && renderChartsStage >= 2}
+						<div in:slide={{ duration: 200 }}>
+							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.steepness')}</h3>
+							<div class="h-48 w-full mb-8">
+								<RouteSteepnessChart route={data.route} on:metrics={handleMetrics} />
+							</div>
+						</div>
+					{/if}
+					{#if !isProgrammaticAnimationRunning && renderChartsStage >= 3 && sunInfo.chartData}
+						<div in:slide={{ duration: 200 }}>
+							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.sun_course')}</h3>
+							<div class="h-32 w-full">
+								<SunChart data={sunInfo.chartData} />
+							</div>
 						</div>
 					{/if}
 				</div>
@@ -1069,7 +1171,7 @@
 								<tbody class="bg-white divide-y divide-gray-200">
 									{#each data.topo.routes as route}
 										<tr
-											class="hover:bg-blue-50 cursor-pointer transition-colors"
+											class="{activeRouteId === route.id ? 'bg-blue-50' : 'hover:bg-blue-50'} cursor-pointer transition-colors"
 											onmouseenter={() => (hoveredRouteId = route.id)}
 											onmouseleave={() => (hoveredRouteId = null)}
 											onclick={() => {
@@ -1077,12 +1179,16 @@
 												goto(base + '/topo/crag/' + data.path + '/' + route.id);
 											}}
 										>
-											<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+											<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
 												{route.name}
+												{#if pendingRouteId === route.id}
+													<i class="fa-solid fa-circle-notch fa-spin text-blue-500 ml-2"></i>
+												{/if}
 											</td>
 											<td class="px-6 py-4 whitespace-nowrap text-sm">
 												<span
-													class="px-2 py-1 rounded-md bg-gray-100 font-bold text-gray-700 text-xs border border-gray-300"
+													class="px-2 py-1 rounded-md font-bold text-xs bg-gray-100 text-gray-700 shadow-sm"
+													style="border-left: 5px solid {getGradeColor(route.grade)};"
 												>
 													{route.grade}
 												</span>

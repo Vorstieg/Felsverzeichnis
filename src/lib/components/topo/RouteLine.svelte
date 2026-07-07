@@ -99,8 +99,10 @@
 	<T.Mesh
 		onpointerenter={onPointerEnter}
 		onpointerleave={onPointerLeave}
-		onclick={() => {
+		onclick={(e) => {
+				e?.stopPropagation();
 				goto(link);
+				if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('route-clicked'));
   }}>
 		{#if pathCurve}
 			<T is={TubeGeometry} args={[
@@ -120,9 +122,10 @@
 					 style:border-left="5px solid {color}"
 					 onpointerenter={onPointerEnter}
 					 onpointerleave={onPointerLeave}
-					 onclick={(e) => {
-						e.stopPropagation();
-						goto(link);
+		onclick={(e) => {
+				e?.stopPropagation();
+				goto(link);
+				if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('route-clicked'));
   }}>
 				{#if isHovered || isSelected || isClose}
 					{name} - {grade}
