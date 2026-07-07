@@ -547,39 +547,33 @@
 							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
 								{$_('ui.sectors')} ({sectors.length})
 							</h3>
-							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
+							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white mt-2">
 								<table class="min-w-full divide-y divide-gray-200 !m-0">
 									<thead class="bg-gray-50">
 										<tr>
-											<th
-												scope="col"
-												class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-											>
+											<th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
 												{$_('topo.table.name')}
 											</th>
-											<th
-												scope="col"
-												class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-											>
+											<th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
 												{$_('topo.routes')}
 											</th>
-											<th
-												scope="col"
-												class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-											>
+											<th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
 												{$_('ui.tags')}
+											</th>
+											<th scope="col" class="px-3 sm:px-6 py-3 relative">
+												<span class="sr-only">Go</span>
 											</th>
 										</tr>
 									</thead>
 									<tbody class="bg-white divide-y divide-gray-200">
 										{#each sectors as sector}
 											<tr
-												class="hover:bg-blue-50 cursor-pointer transition-colors {activeSectorId === sector.id ? 'bg-blue-50' : ''}"
+												class="group hover:bg-gray-50 cursor-pointer transition-colors {activeSectorId === sector.id ? 'bg-blue-50/50' : ''}"
 												onclick={(event) => openSector(event, sector)}
 												title={getSectorDescription(sector) || sector.name}
 											>
-												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-													<span>{sector.name}</span>
+												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+													{sector.name}
 												</td>
 												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">
 													{#if getSectorRouteCount(sector) > 0}
@@ -587,7 +581,7 @@
 															<div class="relative w-6 h-6 rounded-full shrink-0 flex items-center justify-center shadow-inner" style="background: {getConicGradient(getSectorGradeDistribution(sector))}">
 																<div class="absolute inset-0 m-auto w-3.5 h-3.5 bg-white rounded-full shadow-sm"></div>
 															</div>
-															<span class="font-bold text-gray-700 text-xs">{getSectorRouteCount(sector)}</span>
+															<span class="font-bold text-slate-700 text-xs">{getSectorRouteCount(sector)}</span>
 														</div>
 													{:else}
 														<span class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-[10px] border border-slate-200">
@@ -596,20 +590,24 @@
 													{/if}
 												</td>
 												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">
-													{#if getSectorTypes(sector).length > 0 || getSectorDirection(sector)}
-														<div class="flex items-center gap-2 flex-wrap">
-															{#each getSectorTypes(sector) as type}
-																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {getTypeColorClass(type.id)}">
+													<div class="flex items-center gap-1.5 flex-wrap max-w-[150px] sm:max-w-none">
+														{#if getSectorDirection(sector)}
+															<div class="flex items-center gap-1 text-[9px] sm:text-[10px] font-semibold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 uppercase tracking-wide">
+																<i class="fa-regular fa-compass"></i>
+																<span>{getSectorDirection(sector)}</span>
+															</div>
+														{/if}
+														{#if getSectorTypes(sector).length > 0}
+															{#each getSectorTypes(sector).slice(0, 2) as type}
+																<span class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate {getTypeColorClass(type.id)}">
 																	{type.name}
 																</span>
 															{/each}
-															{#if getSectorDirection(sector)}
-																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
-																	<i class="fa-solid fa-compass text-slate-400"></i> {getSectorDirection(sector)}
-																</span>
-															{/if}
-														</div>
-													{/if}
+														{/if}
+													</div>
+												</td>
+												<td class="pr-3 sm:pr-6 py-3 sm:py-4 whitespace-nowrap text-right">
+													<i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-blue-500 transition-colors text-xs sm:text-sm"></i>
 												</td>
 											</tr>
 										{/each}
