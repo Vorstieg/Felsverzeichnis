@@ -72,13 +72,16 @@
 	let sectorPointFeatures = [];
 	let poiFeatures = [];
 	let poiRoutes = [];
+	let topoRouteFeatures = [];
 	let nextMarkerTarget = null;
 	let lastCameraTargetKey = null;
 
 	// Module-level cache to persist POIs across navigations
 	const poiCache = new Map();
+	const topoTrackCache = new Map();
 
 	const sectorDetailZoom = 16.5;
+	const topoTrackDetailZoom = 11;
 	const poiDetailZoom = 14;
 
 	$effect(() => {
@@ -157,28 +160,35 @@
 			await drawLayers();
 			map.on('styledata', async () => drawLayers());
 			checkAndLoadVisiblePois();
+			checkAndLoadVisibleTopoTracks();
 		});
 		map.on('style.load', () => slowRasterTileDecay(map));
-		map.on('zoom', updateVisiblePlaces);
-		map.on('moveend', checkAndLoadVisiblePois);
+		map.on('zoom', () => {
+			updateVisiblePlaces();
+			checkAndLoadVisibleTopoTracks();
+		});
+		map.on('moveend', () => {
+			checkAndLoadVisiblePois();
+			checkAndLoadVisibleTopoTracks();
+		});
 
-		map.on('mouseenter', 'places', function () {
+		map.on('mouseenter', 'places', function() {
 			if (map.getZoom() >= 12.0) {
 				map.getCanvas().style.cursor = 'pointer';
 			}
 		});
 
-		map.on('mouseleave', 'places', function () {
+		map.on('mouseleave', 'places', function() {
 			map.getCanvas().style.cursor = 'default';
 		});
 
-		map.on('mouseenter', 'places-dots', function () {
+		map.on('mouseenter', 'places-dots', function() {
 			if (map.getZoom() < 12.0) {
 				map.getCanvas().style.cursor = 'pointer';
 			}
 		});
 
-		map.on('mouseleave', 'places-dots', function () {
+		map.on('mouseleave', 'places-dots', function() {
 			map.getCanvas().style.cursor = 'default';
 		});
 
@@ -237,21 +247,22 @@
 		sectorPointFeatures = [];
 		poiFeatures = [];
 		poiRoutes = [];
-		
+		topoRouteFeatures = [];
+
 		locations.forEach((location) => {
 			const processedLocation = JSON.parse(JSON.stringify(location));
 			if (['parking-space', 'bus', 'train'].includes(processedLocation.properties?.type)) {
 				poiFeatures.push(processedLocation);
 				return;
 			}
-			
+
 			if (Array.isArray(processedLocation.properties.type)) {
 				processedLocation.properties.type = processedLocation.properties.type[0];
 			}
 			const sectors = processedLocation.properties.sectors || [];
 			processedLocation.properties.hasSectors = sectors.length > 0;
 			cragFeatures.push(processedLocation);
-			
+
 			const path = processedLocation.properties.path;
 			if (path && !poiCache.has(path)) {
 				poiCache.set(path, {
@@ -265,7 +276,7 @@
 				if (!processedLocation.properties.transit && cached.transit) processedLocation.properties.transit = cached.transit;
 				if (!processedLocation.properties.transitTrack && cached.transitTrack) processedLocation.properties.transitTrack = cached.transitTrack;
 			}
-			
+
 			if (processedLocation.properties.parking) {
 				poiFeatures.push(processedLocation.properties.parking);
 			}
@@ -274,6 +285,13 @@
 			}
 			if (processedLocation.properties.transitTrack) {
 				poiRoutes.push(processedLocation.properties.transitTrack);
+			}
+
+			if (path && topoTrackCache.has(path)) {
+				const cached = topoTrackCache.get(path);
+				if (Array.isArray(cached?.tracks) && cached.tracks.length > 0) {
+					topoRouteFeatures.push(...cached.tracks);
+				}
 			}
 
 			sectors.forEach((sector) => {
@@ -326,6 +344,7 @@
 		if (!places) return;
 
 		const showSectorDetail = (map?.getZoom() || 0) >= sectorDetailZoom;
+		const showTopoTrackDetail = (map?.getZoom() || 0) >= topoTrackDetailZoom;
 		const showPoiDetail = (map?.getZoom() || 0) >= poiDetailZoom || detailsShown;
 
 		const visibleCrags = showSectorDetail
@@ -339,10 +358,11 @@
 		];
 
 		map?.getSource('places')?.setData(places);
-		
+
 		if (routes) {
 			routes.features = [
 				...tracks,
+				...(tracks.length === 0 && showTopoTrackDetail ? topoRouteFeatures : []),
 				...(showPoiDetail ? poiRoutes : [])
 			];
 			map?.getSource('routes')?.setData(routes);
@@ -382,24 +402,69 @@
 			return geometry.coordinates?.flatMap((polygon) => polygon[0]);
 		return geometry.coordinates;
 	}
-	
+
+	function isLineGeometry(geometry) {
+		return geometry?.type === 'LineString' || geometry?.type === 'MultiLineString';
+	}
+
+	function normalizeLineGeometry(candidate) {
+		if (isLineGeometry(candidate)) return candidate;
+		if (candidate?.type === 'Feature' && isLineGeometry(candidate.geometry)) {
+			return candidate.geometry;
+		}
+		return null;
+	}
+
+	function extractRouteTrackFeatures(routeEntries = [], context = {}) {
+		return routeEntries.flatMap((route) => {
+			const pathAssets = Array.isArray(route?.assets?.paths) ? route.assets.paths : [];
+			if (pathAssets.length === 0) return [];
+
+			return pathAssets
+				.map((pathAsset, index) => {
+					const geometry = normalizeLineGeometry(pathAsset?.path || pathAsset);
+					if (!geometry) return null;
+
+					return {
+						type: 'Feature',
+						geometry,
+						properties: {
+							name: pathAsset.label || route.name || route.id || 'Route',
+							routeId: route.id || null,
+							routeName: route.name || null,
+							routeType: route.type || null,
+							geometryMode: route.geometryMode || null,
+							pathRole: pathAsset.role || null,
+							pathIndex: index,
+							sectorId: context.sectorId || null,
+							sectorName: context.sectorName || null,
+							cragPath: context.cragPath || null
+						}
+					};
+				})
+				.filter(Boolean);
+		});
+	}
+
 	const loadedPoisForCrags = new Set();
+	const loadedTopoTracksForCrags = new Set();
 
 	async function checkAndLoadVisiblePois() {
 		if (!map) return;
 		const showPoiDetail = (map.getZoom() || 0) >= poiDetailZoom || detailsShown;
 		if (!showPoiDetail) return;
-		
+
 		const bounds = map.getBounds();
 		const visibleCrags = cragFeatures.filter(feature => {
 			if (!feature.properties || !feature.properties.path) return false;
 			const path = feature.properties.path;
 			if (loadedPoisForCrags.has(path) || (poiCache.has(path) && poiCache.get(path).fetched)) return false;
-			
-			// Only load for actual crags
+
+			// Only load for actual crags (including alpine tours and via ferratas)
 			const type = feature.properties.type;
-			if (type !== 'sports-climbing' && type !== 'bouldering' && type !== 'trad' && type !== 'multi-pitch') return false;
-			
+			const supportedCragTypes = ['sports-climbing', 'bouldering', 'trad', 'multi-pitch', 'alpine-tour', 'via-ferrata'];
+			if (!supportedCragTypes.includes(type)) return false;
+
 			let coord;
 			if (feature.geometry?.type === 'Point') {
 				coord = feature.geometry.coordinates;
@@ -410,7 +475,7 @@
 			} else {
 				return false;
 			}
-			
+
 			return bounds.contains(coord);
 		});
 
@@ -435,7 +500,8 @@
 					cached.parking = parking;
 					added = true;
 				}
-			} catch (e) {}
+			} catch (e) {
+			}
 
 			try {
 				const transitRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit.json`);
@@ -446,7 +512,8 @@
 					cached.transit = transit;
 					added = true;
 				}
-			} catch (e) {}
+			} catch (e) {
+			}
 
 			try {
 				const trackRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit-track.json`);
@@ -457,10 +524,93 @@
 					cached.transitTrack = track;
 					added = true;
 				}
-			} catch (e) {}
-			
+			} catch (e) {
+			}
+
 			cached.fetched = true;
 			poiCache.set(cragPath, cached);
+		}));
+
+		if (added) {
+			updateVisiblePlaces();
+		}
+	}
+
+	async function checkAndLoadVisibleTopoTracks() {
+		if (!map) return;
+		if (tracks.length > 0) return;
+		const showTopoTrackDetail = (map.getZoom() || 0) >= topoTrackDetailZoom;
+		if (!showTopoTrackDetail) return;
+
+		const bounds = map.getBounds();
+		const visibleCrags = cragFeatures.filter((feature) => {
+			if (!feature.properties?.path) return false;
+			const path = feature.properties.path;
+			if (
+				loadedTopoTracksForCrags.has(path) ||
+				(topoTrackCache.has(path) && topoTrackCache.get(path).fetched)
+			) {
+				return false;
+			}
+
+			const type = feature.properties.type;
+			const supportedCragTypes = ['sports-climbing', 'bouldering', 'trad', 'multi-pitch', 'alpine-tour', 'via-ferrata'];
+			if (!supportedCragTypes.includes(type)) return false;
+
+			const coord = getSectorCoordinates(feature.geometry);
+			return coord ? bounds.contains(coord) : false;
+		});
+
+		if (visibleCrags.length === 0) return;
+
+		for (const crag of visibleCrags) {
+			loadedTopoTracksForCrags.add(crag.properties.path);
+		}
+
+		let added = false;
+		await Promise.all(visibleCrags.map(async (crag) => {
+			const cragPath = crag.properties.path;
+			const cragSlug = cragPath.split('/').at(-1);
+			const cached = topoTrackCache.get(cragPath) || { tracks: [] };
+			const loadedTracks = [];
+
+			try {
+				const cragTopoRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-topo.json`);
+				if (cragTopoRes.ok) {
+					const cragTopo = await cragTopoRes.json();
+					loadedTracks.push(...extractRouteTrackFeatures(cragTopo?.routes || [], { cragPath }));
+				}
+			} catch (e) {
+			}
+
+			const sectors = Array.isArray(crag.properties?.sectors) ? crag.properties.sectors : [];
+			await Promise.all(sectors.map(async (sector) => {
+				if (!sector?.id) return;
+				try {
+					const sectorTopoRes = await fetch(
+						`${fsApiUrl}/${cragPath}/${sector.id}/${sector.id}-topo.json`
+					);
+					if (!sectorTopoRes.ok) return;
+					const sectorTopo = await sectorTopoRes.json();
+					loadedTracks.push(
+						...extractRouteTrackFeatures(sectorTopo?.routes || [], {
+							cragPath,
+							sectorId: sector.id,
+							sectorName: sector.name
+						})
+					);
+				} catch (e) {
+				}
+			}));
+
+			if (loadedTracks.length > 0) {
+				cached.tracks = loadedTracks;
+				topoRouteFeatures.push(...loadedTracks);
+				added = true;
+			}
+
+			cached.fetched = true;
+			topoTrackCache.set(cragPath, cached);
 		}));
 
 		if (added) {
@@ -472,6 +622,8 @@
 		await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
 		await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
 		await addMapImage('bouldering', base + '/icons/bouldering.png');
+		await addMapImage('alpine-tour', '/icons/alpine-tour.png');
+		await addMapImage('via-ferrata', '/icons/via-ferrata.png');
 		await addMapImage('train', base + '/icons/train.png');
 		await addMapImage('bus', base + '/icons/bus.png');
 		await addMapImage('parking-space', base + '/icons/parking.png');
@@ -516,6 +668,10 @@
 							'#f97316',
 							'trad',
 							'#eab308',
+							'alpine-tour',
+							'#8b5cf6',
+							'via-ferrata',
+							'#eab308',
 							'bus',
 							'#6366f1',
 							'train',
@@ -554,6 +710,10 @@
 							'#f97316',
 							'trad',
 							'#eab308',
+							'alpine-tour',
+							'#8b5cf6',
+							'via-ferrata',
+							'#ec4899',
 							'bus',
 							'#6366f1',
 							'train',
@@ -587,7 +747,8 @@
 	}
 </script>
 
-<div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement} class:details-shown={detailsShown}></div>
+<div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement}
+     class:details-shown={detailsShown}></div>
 <div
 	class="fixed sm:left-15 sm:right-auto right-4 sm:top-37 z-[1000] flex sm:flex-col flex-col-reverse items-center style-selector-btn"
 	style={detailsShown ? `--dynamic-bottom: calc(var(--info-panel-height, 50vh) + 84px);` : ''}
@@ -628,67 +789,49 @@
 </div>
 
 <style>
-	@import 'leaflet/dist/leaflet.css';
-	@import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-	@import 'tailwindcss';
+    @import 'leaflet/dist/leaflet.css';
+    @import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+    @import 'tailwindcss';
 
-	:global(.maplibregl-ctrl-top-right) {
-		@apply fixed left-15 top-20 right-auto z-[1000] !m-0;
-	}
+    .style-selector-btn {
+        @media (width <= 40rem) {
+            bottom: var(--dynamic-bottom, 9.25rem);
+            transition: var(--info-panel-transition, bottom 0.2s ease-out);
+        }
+    }
 
-	:global(.maplibregl-ctrl-top-right) {
-		@media (width <= 40rem) {
-			@apply left-auto right-4 top-auto;
-			bottom: 5rem;
-			transition: var(--info-panel-transition, bottom 0.2s ease-out);
-		}
-	}
+    :global(.maplibregl-ctrl-group) {
+        @apply cursor-pointer bg-white rounded-full w-12 h-12 border-1 border-gray-200 transition-all flex items-center justify-center !m-0;
+    }
 
-	:global(.details-shown .maplibregl-ctrl-top-right) {
-		@media (width <= 40rem) {
-			bottom: calc(var(--info-panel-height, 50vh) + 16px) !important;
-		}
-	}
+    :global(.maplibregl-ctrl-group) {
+        @media (width <= 40rem) {
+            @apply w-13 h-13;
+        }
+    }
 
-	.style-selector-btn {
-		@media (width <= 40rem) {
-			bottom: var(--dynamic-bottom, 9.25rem);
-			transition: var(--info-panel-transition, bottom 0.2s ease-out);
-		}
-	}
+    :global(.maplibregl-ctrl-group button) {
+        @apply w-full h-full rounded-full;
+    }
 
-	:global(.maplibregl-ctrl-group) {
-		@apply cursor-pointer bg-white rounded-full w-12 h-12 border-1 border-gray-200 transition-all flex items-center justify-center !m-0;
-	}
+    :global(.maplibregl-ctrl-group:not(:empty)) {
+        @apply shadow-md;
+    }
 
-	:global(.maplibregl-ctrl-group) {
-		@media (width <= 40rem) {
-			@apply w-13 h-13;
-		}
-	}
+    :global(.maplibregl-ctrl-bottom-right) {
+        @apply bottom-2 right-2;
+    }
 
-	:global(.maplibregl-ctrl-group button) {
-		@apply w-full h-full rounded-full;
-	}
+    :global(.maplibregl-ctrl-bottom-right) {
+        @media (width <= 40rem) {
+            @apply left-2 right-auto;
+            bottom: 4.5rem;
+        }
+    }
 
-	:global(.maplibregl-ctrl-group:not(:empty)) {
-		@apply shadow-md;
-	}
-
-	:global(.maplibregl-ctrl-bottom-right) {
-		@apply bottom-2 right-2;
-	}
-
-	:global(.maplibregl-ctrl-bottom-right) {
-		@media (width <= 40rem) {
-			@apply left-2 right-auto;
-			bottom: 4.5rem;
-		}
-	}
-
-	:global(.maplibregl-ctrl-top-right) {
-		@media (width > 40rem) {
-			top: 5.75rem;
-		}
-	}
+    :global(.maplibregl-ctrl-top-right) {
+        @media (width > 40rem) {
+            top: 5.75rem;
+        }
+    }
 </style>

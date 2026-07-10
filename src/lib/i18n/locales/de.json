@@ -3,7 +3,6 @@
 		"map": "Karte",
 		"list": "Liste",
 		"info": "Info",
-		"creator": "Creator",
 		"creator": "Creator"
 	},
 	"site": {
@@ -34,7 +33,20 @@
 		"sports-climbing": "Sportklettern",
 		"bouldering": "Bouldern",
 		"multi-pitch": "Mehrseillängen",
-		"trad": "Traditionell"
+		"trad": "Traditionell",
+		"alpine-tour": "Hochtour",
+		"via-ferrata": "Klettersteig"
+	},
+	"geometry_modes": {
+		"topo": "Topo",
+		"track": "Track",
+		"hybrid": "Hybrid"
+	},
+	"gpx_roles": {
+		"main": "Hauptstrecke",
+		"approach": "Zustieg",
+		"descent": "Abstieg",
+		"variant": "Variante"
 	},
 	"rock_types": {
 		"granite": "Granit",
@@ -67,6 +79,8 @@
 		"grade": "Grad",
 		"required_draws": "Anzahl an benötigten Exen",
 		"climbing_type": "Kletterart",
+		"geometry_mode": "Geometrie",
+		"gpx_tracks": "GPX Tracks",
 		"fixpoints": {
 			"bolt": "Bohrhaken",
 			"belay": "Stand",
@@ -161,7 +175,27 @@
 		"sports-climbing": "Sportklettern",
 		"bouldering": "Bouldern",
 		"multi-pitch": "Mehrseillängen",
-		"trad": "Traditionell"
+		"trad": "Traditionell",
+		"alpine-tour": "Hochtour",
+		"via-ferrata": "Klettersteig",
+		"Hochtour": "Hochtour",
+		"Klettersteig": "Klettersteig",
+		"Gletscherwanderung": "Gletscherwanderung",
+		"Schneefeld": "Schneefeld",
+		"Gratwanderung": "Gratwanderung",
+		"Abstieg": "Abstieg",
+		"Zustieg": "Zustieg",
+		"Gipfelsturm": "Gipfelsturm",
+		"Seen": "Seen",
+		"Unterkunft": "Unterkunft",
+		"Almhütte": "Almhütte",
+		"Biwak": "Biwak",
+		"Einstieg": "Einstieg",
+		"Ausstieg": "Ausstieg",
+		"Brücke": "Brücke",
+		"Leiter": "Leiter",
+		"Drahtseil": "Drahtseil",
+		"Wandflucht": "Wandflucht"
 	},
 	"ui": {
 		"remove": "Entfernen",
@@ -237,6 +271,8 @@
 		"back_to_map": "Zurück zur Karte",
 		"interactive_view": "Interaktive Ansicht",
 		"schematic_view": "Schematische Ansicht",
+		"track_view": "Track-Ansicht",
+		"gpx_tracks": "GPX Tracks",
 		"select_tool_hint": "Wähle ein Werkzeug aus, um mit der Bearbeitung zu beginnen",
 		"generate_2d": "2D Topo generieren",
 		"generating": "Generiere...",

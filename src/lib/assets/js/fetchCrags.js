@@ -6,6 +6,33 @@ let fetchPromise = null;
 let cacheTime = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+function normalizeEntryPath(path = '') {
+	return path.replace(/^entries\//, '');
+}
+
+export class crag {
+	constructor(name, path) {
+		this.name = name;
+		this.path = path;
+	}
+
+	getMainPath(){
+		return `${this.name} ${this.path}`;
+	}
+
+	getTransitPath() {
+		return `${this.getMainPath()}-transit.json`
+	}
+
+	getParkingPath(){
+		return `${this.getMainPath()}-parking.json`
+	}
+
+	getTopoPath(){
+		return `${this.getMainPath()}-topo.json`
+	}
+}
+
 const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}) => {
 	const API_URL = fsApiUrl;
 
@@ -70,7 +97,7 @@ const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}
 								const data = await res.json();
 
 								const cragPath = file.path.split('/').slice(0, -1).join('/');
-								data.properties.path = cragPath;
+								data.properties.path = normalizeEntryPath(cragPath);
 
 								// Check for sectors declared in metadata or backed by direct files in the crag directory
 								const sectorIds = new Set(
@@ -152,9 +179,9 @@ const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}
 													},
 													hasTopo: Boolean(
 														topoFiles.length ||
-															sectorData.assets?.topos?.length ||
-															sectorData.topos?.length ||
-															sectorData.topo?.link
+														sectorData.assets?.topos?.length ||
+														sectorData.topos?.length ||
+														sectorData.topo?.link
 													)
 												});
 											}

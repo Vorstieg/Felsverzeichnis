@@ -1,11 +1,11 @@
 <script lang="ts">
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
-	import { Canvas, useTask, useThrelte, T } from '@threlte/core';
-	import { HTML, OrbitControls, useProgress, interactivity } from '@threlte/extras';
+	import { Canvas, T, useTask, useThrelte } from '@threlte/core';
+	import { interactivity, OrbitControls, useProgress } from '@threlte/extras';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-	import { Vector3, WebGLRenderer, TOUCH, Box3, Sphere } from 'three';
+	import { Box3, Sphere, TOUCH, Vector3, WebGLRenderer } from 'three';
 	import { cubicOut } from 'svelte/easing';
 	import Model from '$lib/components/topo/Model.svelte';
 	import RouteLine from '$lib/components/topo/RouteLine.svelte';
@@ -14,9 +14,8 @@
 	import TopoLegend from '$lib/components/topo/TopoLegend.svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { page, navigating } from '$app/stores';
-	import { _ } from 'svelte-i18n';
-	import { locale } from 'svelte-i18n';
+	import { navigating, page } from '$app/stores';
+	import { _, locale } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
@@ -28,6 +27,7 @@
 	} from '$lib/assets/js/sun-calculations';
 	import SunChart from '$lib/components/charts/SunChart.svelte';
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
+	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
 	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
 	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
@@ -94,17 +94,17 @@
 	});
 
 	let activeModelUrl = $derived(
-		data.lowResModelUrl && !forceHighRes 
-			? data.lowResModelUrl 
+		data.lowResModelUrl && !forceHighRes
+			? data.lowResModelUrl
 			: data.modelUrl
 	);
 
 	let has3D = $derived(data.has3D);
 	let has2D = $derived(
 		!!data.topo?.image2D ||
-			data.topo?.routes?.some((r) => r.points2D?.length > 0) ||
-			data.topo?.outlines?.length > 0 ||
-			data.topo?.fixPoints?.some((fp) => fp.position2D)
+		data.topo?.routes?.some((r) => r.points2D?.length > 0) ||
+		data.topo?.outlines?.length > 0 ||
+		data.topo?.fixPoints?.some((fp) => fp.position2D)
 	);
 	let displayMode = $state('3d');
 	let isTopoLegendOpen = $state(false);
@@ -112,8 +112,8 @@
 		Array.from(
 			new Set(
 				(data.route?.fixPoints
-					? data.topo?.fixPoints?.filter((fp) => data.route.fixPoints?.includes(fp.id))
-					: data.topo?.fixPoints
+						? data.topo?.fixPoints?.filter((fp) => data.route.fixPoints?.includes(fp.id))
+						: data.topo?.fixPoints
 				)?.map((fp) => fp.type) || []
 			)
 		)
@@ -261,8 +261,12 @@
 	$effect(() => {
 		if (!isProgrammaticAnimationRunning && data.route) {
 			renderChartsStage = 1;
-			setTimeout(() => { if (!isProgrammaticAnimationRunning) renderChartsStage = 2; }, 50);
-			setTimeout(() => { if (!isProgrammaticAnimationRunning) renderChartsStage = 3; }, 100);
+			setTimeout(() => {
+				if (!isProgrammaticAnimationRunning) renderChartsStage = 2;
+			}, 50);
+			setTimeout(() => {
+				if (!isProgrammaticAnimationRunning) renderChartsStage = 3;
+			}, 100);
 		} else {
 			renderChartsStage = 0;
 		}
@@ -282,7 +286,6 @@
 	);
 
 	let activeRouteId = $derived(pendingRouteId || data.route?.id);
-
 
 
 	let description = $derived(
@@ -380,6 +383,7 @@
 		};
 		return map[type] || type;
 	}
+
 	$effect(() => {
 		if (data.topo) {
 			sunInfo = calculateSunInfo(data.topo, data.route);
@@ -524,42 +528,42 @@
 			else if (g.startsWith('7')) hard++;
 			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
 		});
-		
+
 		const total = easy + medium + hard + veryHard;
 		if (total === 0) return [];
-		
+
 		return [
-			{ count: easy, percent: (easy/total)*100, colorClass: 'bg-green-500', label: '< 6a' },
-			{ count: medium, percent: (medium/total)*100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
-			{ count: hard, percent: (hard/total)*100, colorClass: 'bg-red-500', label: '7a - 7c+' },
-			{ count: veryHard, percent: (veryHard/total)*100, colorClass: 'bg-purple-600', label: '> 8a' }
+			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-500', label: '< 6a' },
+			{ count: medium, percent: (medium / total) * 100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
+			{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-red-500', label: '7a - 7c+' },
+			{ count: veryHard, percent: (veryHard / total) * 100, colorClass: 'bg-purple-600', label: '> 8a' }
 		].filter(b => b.count > 0);
 	}
 
 	function getSectorDirection(sector: any) {
 		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
-		const mockTopo = { 
+		const mockTopo = {
 			wallAzimuth: sector.wallAzimuth || sector.topo?.wallAzimuth || sector.properties?.wallAzimuth || routes[0]?.sectorWallAzimuth,
-			routes 
+			routes
 		};
 		const dir = calculateWallDirection(mockTopo, null);
 		return dir !== 'Unknown' ? $_('directions.' + dir) : null;
 	}
-	
+
 	function getSectorTypes(sector: any) {
 		const routes = data.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
 		let t = routes[0]?.sectorTags;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.type;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.properties?.type;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = data.cragType;
-		
+
 		let arr: string[] = [];
 		if (Array.isArray(t)) {
 			arr = t;
 		} else if (typeof t === 'string' && t.trim()) {
 			arr = t.includes(',') ? t.split(',').map(x => x.trim()) : [t];
 		}
-		
+
 		return arr.map(x => {
 			const translated = $_('tags.' + x);
 			return {
@@ -569,15 +573,7 @@
 		});
 	}
 
-	function getTypeColorClass(typeId: string) {
-		switch(typeId) {
-			case 'sports-climbing': return 'bg-blue-100 text-blue-700 border-blue-200';
-			case 'bouldering': return 'bg-orange-100 text-orange-700 border-orange-200';
-			case 'multi-pitch': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-			case 'trad': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-			default: return 'bg-slate-100 text-slate-600 border-slate-200';
-		}
-	}
+
 </script>
 
 <svelte:window onroute-clicked={handleRouteClicked} />
@@ -642,16 +638,15 @@
 			{/if}
 
 
-
 			<Model modelUrl={activeModelUrl} onload={() => (modelLoaded = true)} />
 			{#if data.lowResModelUrl && !isSlowNetwork && !forceHighRes && modelLoaded}
-				<Model 
-					modelUrl={data.modelUrl} 
-					visible={false} 
-					onload={() => { forceHighRes = true; }} 
+				<Model
+					modelUrl={data.modelUrl}
+					visible={false}
+					onload={() => { forceHighRes = true; }}
 				/>
 			{/if}
-			
+
 			{#if visualRoutes && initialLoadComplete}
 				{#each visualRoutes as route (route.id)}
 					<RouteLine
@@ -713,12 +708,15 @@
 </div>
 
 <main class="z-[500] h-24">
-	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)} hideCloseOnDesktop={true}>
+	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)}
+	           hideCloseOnDesktop={true}>
 		{#snippet controls()}
 			{#if displayMode === '3d' && data.lowResModelUrl}
 				{#if progress < 1 && (forceHighRes || (!isSlowNetwork && modelLoaded))}
-					<div class="pointer-events-auto flex items-center justify-center relative sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 rounded-full border-1 border-gray-200 bg-white max-sm:shadow-md">
-						<div class="absolute sm:w-6 sm:h-6 max-sm:w-10 max-sm:h-10 border-2 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+					<div
+						class="pointer-events-auto flex items-center justify-center relative sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 rounded-full border-1 border-gray-200 bg-white max-sm:shadow-md">
+						<div
+							class="absolute sm:w-6 sm:h-6 max-sm:w-10 max-sm:h-10 border-2 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
 						<span class="text-[10px] max-sm:text-[14px] font-bold text-blue-600 z-10">HD</span>
 					</div>
 				{:else if !forceHighRes && isSlowNetwork}
@@ -791,8 +789,8 @@
 								<span class="text-xs font-bold text-gray-500 w-10 text-right font-mono shrink-0">
 									{Math.floor(simulationTime)}
 									:{Math.floor((simulationTime % 1) * 60)
-										.toString()
-										.padStart(2, '0')}
+									.toString()
+									.padStart(2, '0')}
 								</span>
 								<input
 									type="range"
@@ -855,12 +853,12 @@
 						<div class="mt-1 flex items-center gap-2 sm:px-2">
 							<span
 								class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100"
-								>{$_('ui.sector')}: {currentSectorName}</span
+							>{$_('ui.sector')}: {currentSectorName}</span
 							>
 							<a
 								href="{base}/map/crag/{data.path}"
 								class="text-xs font-semibold text-slate-500 no-underline hover:text-blue-700"
-								>{$_('ui.open_map')}</a
+							>{$_('ui.open_map')}</a
 							>
 						</div>
 					{/if}
@@ -972,7 +970,8 @@
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
 				<div class="min-w-0">
-					<h1 class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.sectorId ? `${data.cragName} - ${currentSectorName}` : data.cragName}</h1>
+					<h1
+						class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.sectorId ? `${data.cragName} - ${currentSectorName}` : data.cragName}</h1>
 				</div>
 			</div>
 
@@ -1065,74 +1064,78 @@
 							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
 								<table class="min-w-full divide-y divide-gray-200 !m-0">
 									<thead class="bg-gray-50">
-										<tr>
-											<th
-												scope="col"
-												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-											>
-												{$_('topo.table.name')}
-											</th>
-											<th
-												scope="col"
-												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-											>
-												{$_('topo.routes')}
-											</th>
-											<th
-												scope="col"
-												class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-											>
-												{$_('ui.tags')}
-											</th>
-										</tr>
+									<tr>
+										<th
+											scope="col"
+											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+										>
+											{$_('topo.table.name')}
+										</th>
+										<th
+											scope="col"
+											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+										>
+											{$_('topo.routes')}
+										</th>
+										<th
+											scope="col"
+											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+										>
+											{$_('ui.tags')}
+										</th>
+									</tr>
 									</thead>
 									<tbody class="bg-white divide-y divide-gray-200">
-										{#each availableSectors as sector}
-											<tr
-												class="hover:bg-blue-50 cursor-pointer transition-colors"
-												onclick={() => goto(`${base}/topo/crag/${data.baseCragPath || data.path}/${sector.id}`)}
-											>
-												<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-													<span>{sector.name}</span>
-												</td>
-												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-													{#if getSectorRouteCount(sector) > 0}
-														<div class="flex items-center gap-3">
+									{#each availableSectors as sector}
+										<tr
+											class="hover:bg-blue-50 cursor-pointer transition-colors"
+											onclick={() => goto(`${base}/topo/crag/${data.baseCragPath || data.path}/${sector.id}`)}
+										>
+											<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+												<span>{sector.name}</span>
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{#if getSectorRouteCount(sector) > 0}
+													<div class="flex items-center gap-3">
 															<span
 																class="px-2 py-1 rounded-md bg-gray-100 font-bold text-gray-700 text-xs border border-gray-300"
 															>
 																{getSectorRouteCount(sector)}
 															</span>
-															<div class="flex h-2 w-16 bg-gray-200 rounded-full overflow-hidden shrink-0">
-																{#each getSectorGradeDistribution(sector) as bucket}
-																	<div class="h-full {bucket.colorClass}" style="width: {bucket.percent}%" title="{bucket.label}: {bucket.count}"></div>
-																{/each}
-															</div>
+														<div class="flex h-2 w-16 bg-gray-200 rounded-full overflow-hidden shrink-0">
+															{#each getSectorGradeDistribution(sector) as bucket}
+																<div class="h-full {bucket.colorClass}" style="width: {bucket.percent}%"
+																     title="{bucket.label}: {bucket.count}"></div>
+															{/each}
 														</div>
-													{:else}
-														<span class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-xs border border-slate-200">
+													</div>
+												{:else}
+														<span
+															class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-xs border border-slate-200">
 															{$_('topo.no_topo')}
 														</span>
-													{/if}
-												</td>
-												<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-													{#if getSectorTypes(sector).length > 0 || getSectorDirection(sector)}
-														<div class="flex items-center gap-2 flex-wrap">
-															{#each getSectorTypes(sector) as type}
-																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {getTypeColorClass(type.id)}">
+												{/if}
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{#if getSectorTypes(sector).length > 0 || getSectorDirection(sector)}
+													<div class="flex items-center gap-2 flex-wrap">
+														{#each getSectorTypes(sector) as type}
+																<span
+																	class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {getTypeColorClass(type.id)}">
 																	{type.name}
 																</span>
-															{/each}
-															{#if getSectorDirection(sector)}
-																<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
+														{/each}
+														{#if getSectorDirection(sector)}
+																<span
+																	class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
 																	<i class="fa-solid fa-compass text-slate-400"></i> {getSectorDirection(sector)}
 																</span>
-															{/if}
-														</div>
-													{/if}
-												</td>
-											</tr>
-										{/each}
+														{/if}
+													</div>
+												{/if}
+											</td>
+										</tr>
+									{/each}
 									</tbody>
 								</table>
 							</div>
@@ -1147,57 +1150,57 @@
 						<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
 							<table class="min-w-full divide-y divide-gray-200 !m-0">
 								<thead class="bg-gray-50">
-									<tr>
-										<th
-											scope="col"
-											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-										>
-											{$_('topo.table.name')}
-										</th>
-										<th
-											scope="col"
-											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-										>
-											{$_('topo.table.grade')}
-										</th>
-										<th
-											scope="col"
-											class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-										>
-											{$_('topo.table.length')}
-										</th>
-									</tr>
+								<tr>
+									<th
+										scope="col"
+										class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+									>
+										{$_('topo.table.name')}
+									</th>
+									<th
+										scope="col"
+										class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+									>
+										{$_('topo.table.grade')}
+									</th>
+									<th
+										scope="col"
+										class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
+									>
+										{$_('topo.table.length')}
+									</th>
+								</tr>
 								</thead>
 								<tbody class="bg-white divide-y divide-gray-200">
-									{#each data.topo.routes as route}
-										<tr
-											class="{activeRouteId === route.id ? 'bg-blue-50' : 'hover:bg-blue-50'} cursor-pointer transition-colors"
-											onmouseenter={() => (hoveredRouteId = route.id)}
-											onmouseleave={() => (hoveredRouteId = null)}
-											onclick={() => {
+								{#each data.topo.routes as route}
+									<tr
+										class="{activeRouteId === route.id ? 'bg-blue-50' : 'hover:bg-blue-50'} cursor-pointer transition-colors"
+										onmouseenter={() => (hoveredRouteId = route.id)}
+										onmouseleave={() => (hoveredRouteId = null)}
+										onclick={() => {
 												hoveredRouteId = null;
 												goto(base + '/topo/crag/' + data.path + '/' + route.id);
 											}}
-										>
-											<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
-												{route.name}
-												{#if pendingRouteId === route.id}
-													<i class="fa-solid fa-circle-notch fa-spin text-blue-500 ml-2"></i>
-												{/if}
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap text-sm">
+									>
+										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
+											{route.name}
+											{#if pendingRouteId === route.id}
+												<i class="fa-solid fa-circle-notch fa-spin text-blue-500 ml-2"></i>
+											{/if}
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm">
 												<span
 													class="px-2 py-1 rounded-md font-bold text-xs bg-gray-100 text-gray-700 shadow-sm"
 													style="border-left: 5px solid {getGradeColor(route.grade)};"
 												>
 													{route.grade}
 												</span>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-												{route.length}m
-											</td>
-										</tr>
-									{/each}
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+											{route.length}m
+										</td>
+									</tr>
+								{/each}
 								</tbody>
 							</table>
 						</div>
@@ -1227,32 +1230,28 @@
 />
 
 <style>
-	:global(.route-label) {
-		background-color: rgba(255, 255, 255, 0.9);
-		color: black;
-		padding: 4px 8px;
-		border-radius: 5px;
-		font-size: 11px;
-		font-weight: bold;
-		font-family: sans-serif;
-		white-space: nowrap;
-		text-align: center;
-		cursor: pointer;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-	}
+    :global(.route-label) {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: black;
+        padding: 4px 8px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: bold;
+        font-family: sans-serif;
+        white-space: nowrap;
+        text-align: center;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
 
-	@media (min-width: 768px) {
-		.topo-container {
-			-webkit-mask-image: linear-gradient(to right, black 98%, transparent 100%);
-			mask-image: linear-gradient(to right, black 98%, transparent 100%);
-		}
-	}
+    @media (min-width: 768px) {
+        .topo-container {
+            -webkit-mask-image: linear-gradient(to right, black 98%, transparent 100%);
+            mask-image: linear-gradient(to right, black 98%, transparent 100%);
+        }
+    }
 
-	.transition-transform {
-		transition: transform 0.3s ease-in-out;
-	}
-
-	.rotate-180 {
-		transform: rotate(180deg);
-	}
+    .transition-transform {
+        transition: transform 0.3s ease-in-out;
+    }
 </style>
