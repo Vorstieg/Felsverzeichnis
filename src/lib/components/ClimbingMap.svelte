@@ -135,7 +135,7 @@
 			center: center,
 			pitch: 0,
 			hash: true,
-			style: base + '/transport.json',
+			style: base + '/terrain.json',
 			maxZoom: 18,
 			maxPitch: 75
 		});

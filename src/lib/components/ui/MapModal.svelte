@@ -32,7 +32,7 @@
 	onMount(async () => {
 		let style;
 		try {
-			const response = await fetch(base + '/satellite.json');
+			const response = await fetch(base + '/terrain.json');
 			style = await response.json();
 			if (style.sources?.places?.data) style.sources.places.data = { type: 'FeatureCollection', features: [] };
 			if (style.sources?.routes?.data) style.sources.routes.data = { type: 'FeatureCollection', features: [] };
