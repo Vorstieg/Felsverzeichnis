@@ -830,6 +830,24 @@
     }
 
     :global(.maplibregl-ctrl-top-right) {
+        @apply fixed left-15 top-20 right-auto z-[1000] !m-0;
+    }
+
+    :global(.maplibregl-ctrl-top-right) {
+        @media (width <= 40rem) {
+            @apply left-auto right-4 top-auto;
+            bottom: 5rem;
+            transition: var(--info-panel-transition, bottom 0.2s ease-out);
+        }
+    }
+
+    :global(.details-shown .maplibregl-ctrl-top-right) {
+        @media (width <= 40rem) {
+            bottom: calc(var(--info-panel-height, 50vh) + 16px) !important;
+        }
+    }
+
+    :global(.maplibregl-ctrl-top-right) {
         @media (width > 40rem) {
             top: 5.75rem;
         }
