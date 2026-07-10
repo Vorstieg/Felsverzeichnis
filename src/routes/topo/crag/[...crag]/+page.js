@@ -106,12 +106,12 @@ export const load = async ({ params, url, fetch }) => {
 					}
 					return [];
 				});
-				
+
 				const results = await Promise.all(sectorPromises);
 				for (const result of results) {
 					sectorRoutes.push(...result);
 				}
-				
+
 				if (sectorRoutes.length > 0) {
 					gradeRoutes = sectorRoutes;
 				}

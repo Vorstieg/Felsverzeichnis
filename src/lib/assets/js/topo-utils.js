@@ -25,7 +25,25 @@ export const availableRouteTags = [
 	'Weite Haken',
 	'Abgespeckt',
 	'Klassiker',
-	'Boulder-Start'
+	'Boulder-Start',
+	'Hochtour',
+	'Klettersteig',
+	'Gletscherwanderung',
+	'Schneefeld',
+	'Gratwanderung',
+	'Abstieg',
+	'Zustieg',
+	'Gipfelsturm',
+	'Seen',
+	'Unterkunft',
+	'Almhütte',
+	'Biwak',
+	'Einstieg',
+	'Ausstieg',
+	'Brücke',
+	'Leiter',
+	'Drahtseil',
+	'Wandflucht'
 ];
 
 export function convertRouteType(route, newType) {
@@ -145,33 +163,103 @@ export const topoSymbols = [
 		height: 16
 	},
 
-    // Features (Large)
-    { id: 'band', name: 'Band', icon: '/icons/topo-symbols/band.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'bivouac', name: 'Bivouac', icon: '/icons/topo-symbols/bivouac.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'cave', name: 'Cave', icon: '/icons/topo-symbols/cave.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'chimney', name: 'Chimney', icon: '/icons/topo-symbols/chimney.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'chockstone', name: 'Chockstone', icon: '/icons/topo-symbols/chockstone.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'corner', name: 'Corner', icon: '/icons/topo-symbols/corner.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'cornice', name: 'Cornice', icon: '/icons/topo-symbols/cornice.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'crack', name: 'Crack', icon: '/icons/topo-symbols/crack.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'crux', name: 'Crux', icon: '/icons/topo-symbols/crux.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'dwarf-pine', name: 'Dwarf Pine', icon: '/icons/topo-symbols/dwarf-pine.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'fixed-cable', name: 'Fixed Cable', icon: '/icons/topo-symbols/fixed-cable.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'grass', name: 'Grass', icon: '/icons/topo-symbols/grass.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'gully', name: 'Gully', icon: '/icons/topo-symbols/gully.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'hidden-route', name: 'Hidden Route', icon: '/icons/topo-symbols/hidden-route.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'leaf-tree', name: 'Leaf Tree', icon: '/icons/topo-symbols/leaf-tree.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'ledge', name: 'Ledge', icon: '/icons/topo-symbols/ledge.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'needle-tree', name: 'Needle Tree', icon: '/icons/topo-symbols/needle-tree.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'overhang', name: 'Overhang', icon: '/icons/topo-symbols/overhang.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'ramp', name: 'Ramp', icon: '/icons/topo-symbols/ramp.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'roof', name: 'Roof', icon: '/icons/topo-symbols/roof.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'rubble', name: 'Rubble', icon: '/icons/topo-symbols/rubble.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'shoulder', name: 'Shoulder', icon: '/icons/topo-symbols/shoulder.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'slab', name: 'Slab', icon: '/icons/topo-symbols/slab.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'snow', name: 'Snow', icon: '/icons/topo-symbols/snow.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'tree', name: 'Tree', icon: '/icons/topo-symbols/tree.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'variant', name: 'Variant', icon: '/icons/topo-symbols/variant.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'visible-route', name: 'Visible Route', icon: '/icons/topo-symbols/visible-route.svg', type: 'feature', width: 32, height: 32 },
-    { id: 'water-streak', name: 'Water Streak', icon: '/icons/topo-symbols/water-streak.svg', type: 'feature', width: 32, height: 32 }
+	// Features (Large)
+	{ id: 'band', name: 'Band', icon: '/icons/topo-symbols/band.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'bivouac', name: 'Bivouac', icon: '/icons/topo-symbols/bivouac.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'cave', name: 'Cave', icon: '/icons/topo-symbols/cave.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'chimney', name: 'Chimney', icon: '/icons/topo-symbols/chimney.svg', type: 'feature', width: 32, height: 32 },
+	{
+		id: 'chockstone',
+		name: 'Chockstone',
+		icon: '/icons/topo-symbols/chockstone.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{ id: 'corner', name: 'Corner', icon: '/icons/topo-symbols/corner.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'cornice', name: 'Cornice', icon: '/icons/topo-symbols/cornice.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'crack', name: 'Crack', icon: '/icons/topo-symbols/crack.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'crux', name: 'Crux', icon: '/icons/topo-symbols/crux.svg', type: 'feature', width: 32, height: 32 },
+	{
+		id: 'dwarf-pine',
+		name: 'Dwarf Pine',
+		icon: '/icons/topo-symbols/dwarf-pine.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{
+		id: 'fixed-cable',
+		name: 'Fixed Cable',
+		icon: '/icons/topo-symbols/fixed-cable.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{ id: 'grass', name: 'Grass', icon: '/icons/topo-symbols/grass.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'gully', name: 'Gully', icon: '/icons/topo-symbols/gully.svg', type: 'feature', width: 32, height: 32 },
+	{
+		id: 'hidden-route',
+		name: 'Hidden Route',
+		icon: '/icons/topo-symbols/hidden-route.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{
+		id: 'leaf-tree',
+		name: 'Leaf Tree',
+		icon: '/icons/topo-symbols/leaf-tree.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{ id: 'ledge', name: 'Ledge', icon: '/icons/topo-symbols/ledge.svg', type: 'feature', width: 32, height: 32 },
+	{
+		id: 'needle-tree',
+		name: 'Needle Tree',
+		icon: '/icons/topo-symbols/needle-tree.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{
+		id: 'overhang',
+		name: 'Overhang',
+		icon: '/icons/topo-symbols/overhang.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{ id: 'ramp', name: 'Ramp', icon: '/icons/topo-symbols/ramp.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'roof', name: 'Roof', icon: '/icons/topo-symbols/roof.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'rubble', name: 'Rubble', icon: '/icons/topo-symbols/rubble.svg', type: 'feature', width: 32, height: 32 },
+	{
+		id: 'shoulder',
+		name: 'Shoulder',
+		icon: '/icons/topo-symbols/shoulder.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{ id: 'slab', name: 'Slab', icon: '/icons/topo-symbols/slab.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'snow', name: 'Snow', icon: '/icons/topo-symbols/snow.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'tree', name: 'Tree', icon: '/icons/topo-symbols/tree.svg', type: 'feature', width: 32, height: 32 },
+	{ id: 'variant', name: 'Variant', icon: '/icons/topo-symbols/variant.svg', type: 'feature', width: 32, height: 32 },
+	{
+		id: 'visible-route',
+		name: 'Visible Route',
+		icon: '/icons/topo-symbols/visible-route.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	},
+	{
+		id: 'water-streak',
+		name: 'Water Streak',
+		icon: '/icons/topo-symbols/water-streak.svg',
+		type: 'feature',
+		width: 32,
+		height: 32
+	}
 ];

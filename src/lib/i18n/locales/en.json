@@ -32,7 +32,20 @@
 		"sports-climbing": "Sports Climbing",
 		"bouldering": "Bouldering",
 		"multi-pitch": "Multi-pitch",
-		"trad": "Trad"
+		"trad": "Trad",
+		"alpine-tour": "Alpine Tour",
+		"via-ferrata": "Via Ferrata"
+	},
+	"geometry_modes": {
+		"topo": "Topo",
+		"track": "Track",
+		"hybrid": "Hybrid"
+	},
+	"gpx_roles": {
+		"main": "Main route",
+		"approach": "Approach",
+		"descent": "Descent",
+		"variant": "Variant"
 	},
 	"rock_types": {
 		"granite": "Granite",
@@ -155,7 +168,27 @@
 		"Weite Haken": "Runout",
 		"Abgespeckt": "Polished",
 		"Klassiker": "Classic",
-		"Boulder-Start": "Boulder Start"
+		"Boulder-Start": "Boulder Start",
+		"alpine-tour": "Alpine Tour",
+		"via-ferrata": "Via Ferrata",
+		"Hochtour": "High Alpine Tour",
+		"Klettersteig": "Via Ferrata",
+		"Gletscherwanderung": "Glacier Hike",
+		"Schneefeld": "Snowfield",
+		"Gratwanderung": "Ridge Traverse",
+		"Abstieg": "Descent",
+		"Zustieg": "Approach",
+		"Gipfelsturm": "Summit Push",
+		"Seen": "Lakes",
+		"Unterkunft": "Accommodation",
+		"Almhütte": "Alpine Hut",
+		"Biwak": "Bivouac",
+		"Einstieg": "Entry",
+		"Ausstieg": "Exit",
+		"Brücke": "Bridge",
+		"Leiter": "Ladder",
+		"Drahtseil": "Steel Cable",
+		"Wandflucht": "Wall Traverse"
 	},
 	"ui": {
 		"remove": "Remove",
@@ -231,6 +264,8 @@
 		"back_to_map": "Back to map",
 		"interactive_view": "Interactive View",
 		"schematic_view": "Schematic View",
+		"track_view": "Track View",
+		"gpx_tracks": "GPX Tracks",
 		"select_tool_hint": "Select a tool to start editing",
 		"generate_2d": "Generate 2D Topo",
 		"generating": "Generating...",

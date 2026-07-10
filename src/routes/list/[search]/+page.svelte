@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
+	import { getTypeDotClass } from '$lib/assets/js/route-types.js';
 
 	/** @type {{data: any}} */
 	let { data } = $props();
@@ -19,16 +20,6 @@
 	function resetSearch() {
 		searchTerm = '';
 		goto(`${base}/list`);
-	}
-
-	function getTypeColor(typeId) {
-		switch(typeId) {
-			case 'sports-climbing': return 'bg-blue-500';
-			case 'bouldering': return 'bg-orange-500';
-			case 'multi-pitch': return 'bg-emerald-500';
-			case 'trad': return 'bg-yellow-500';
-			default: return 'bg-slate-400';
-		}
 	}
 </script>
 
@@ -47,7 +38,7 @@
 	{#each types as type}
 		<a href="{base}/list/{type}"
 			 class="cursor-pointer {search === type ? 'bg-ink text-white' : 'bg-white text-slate-800'} font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
-			 <span class="w-2.5 h-2.5 rounded-full mr-2 {getTypeColor(type)}"></span>
+			 <span class="w-2.5 h-2.5 rounded-full mr-2 {getTypeDotClass(type)}"></span>
 			 {$_('types.' + type)}
 		</a>
 	{/each}

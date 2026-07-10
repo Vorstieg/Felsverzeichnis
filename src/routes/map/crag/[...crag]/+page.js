@@ -6,9 +6,6 @@ export async function load({ params, url, parent, fetch }) {
 		const parentData = await parent();
 		const crags = parentData.locations || [];
 
-		let transit, transitTrack, parking;
-		let has3DTopo = false;
-
 		const API_URL = fsApiUrl;
 		const fetchJson = async (path) => {
 			try {
@@ -54,6 +51,44 @@ export async function load({ params, url, parent, fetch }) {
 
 			return [sums[0] / usableCoordinates.length, sums[1] / usableCoordinates.length];
 		};
+		const isLineGeometry = (geometry) =>
+			geometry?.type === 'LineString' || geometry?.type === 'MultiLineString';
+		const normalizeLineGeometry = (candidate) => {
+			if (isLineGeometry(candidate)) return candidate;
+			if (candidate?.type === 'Feature' && isLineGeometry(candidate.geometry)) {
+				return candidate.geometry;
+			}
+			return null;
+		};
+		const extractRouteTrackFeatures = (routes = [], context = {}) =>
+			routes.flatMap((route) => {
+				const pathAssets = Array.isArray(route?.assets?.paths) ? route.assets.paths : [];
+				if (pathAssets.length === 0) return [];
+
+				return pathAssets
+					.map((pathAsset, index) => {
+						const geometry = normalizeLineGeometry(pathAsset?.path || pathAsset);
+						if (!geometry) return null;
+
+						return {
+							type: 'Feature',
+							geometry,
+							properties: {
+								name: pathAsset.label || route.name || route.id || 'Route',
+								routeId: route.id || null,
+								routeName: route.name || null,
+								routeType: route.type || null,
+								geometryMode: route.geometryMode || null,
+								pathRole: pathAsset.role || null,
+								pathIndex: index,
+								sectorId: context.sectorId || null,
+								sectorName: context.sectorName || null,
+								cragPath: context.cragPath || null
+							}
+						};
+					})
+					.filter(Boolean);
+			});
 		const aggregateSectorRoutes = async (cragPath, sectors = []) => {
 			const routes = [];
 			for (const sector of sectors) {
@@ -71,6 +106,22 @@ export async function load({ params, url, parent, fetch }) {
 				);
 			}
 			return routes;
+		};
+		const aggregateSectorTrackFeatures = async (cragPath, sectors = []) => {
+			const tracks = [];
+			for (const sector of sectors) {
+				if (!sector?.id) continue;
+				const sectorTopo = await fetchJson(`${cragPath}/${sector.id}/${sector.id}-topo.json`);
+				if (!Array.isArray(sectorTopo?.routes)) continue;
+				tracks.push(
+					...extractRouteTrackFeatures(sectorTopo.routes, {
+						cragPath,
+						sectorId: sector.id,
+						sectorName: sector.name
+					})
+				);
+			}
+			return tracks;
 		};
 
 		const matchingCrag = crags
@@ -97,7 +148,7 @@ export async function load({ params, url, parent, fetch }) {
 						.split('/')
 						.filter(Boolean)
 				: [];
-		const isSectorPath = Boolean(
+		let isSectorPath = Boolean(
 			relativeParts[0] &&
 				matchingCrag?.properties?.sectors?.some((sector) => sector.id === relativeParts[0])
 		);
@@ -139,6 +190,23 @@ export async function load({ params, url, parent, fetch }) {
 		}
 
 		const cragForUi = crag;
+		let tracks = [];
+		if (isSectorPath) {
+			const sectorTopo = await fetchJson(`${basePath}/${sectorId}/${sectorId}-topo.json`);
+			tracks = extractRouteTrackFeatures(sectorTopo?.routes || [], {
+				cragPath: basePath,
+				sectorId,
+				sectorName: sectorData?.name
+			});
+		} else {
+			const cragTopo = await fetchJson(`${params.crag}/${cragName}-topo.json`);
+			tracks = [
+				...extractRouteTrackFeatures(cragTopo?.routes || [], {
+					cragPath: params.crag
+				}),
+				...(await aggregateSectorTrackFeatures(basePath, cragForUi.properties?.sectors || []))
+			];
+		}
 
 		const streamDetails = async () => {
 			let images = [];
@@ -219,7 +287,7 @@ export async function load({ params, url, parent, fetch }) {
 			crag: cragForUi,
 			zoom: 16,
 			locations: [cragForUi],
-			tracks: [],
+			tracks,
 			center:
 				getGeometryCenter(isSectorPath ? sectorData?.geometry : cragForUi.geometry) ||
 				cragForUi.geometry.coordinates,

@@ -2,13 +2,13 @@
 	import { base } from '$app/paths';
 	import { snapToBiggestHeight } from '$lib/assets/js/resize.js';
 	import { afterNavigate, goto } from '$app/navigation';
-	import { page, navigating } from '$app/stores';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
 	import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
 	import { _, locale } from 'svelte-i18n';
 	import { securityRatings } from '$lib/config.js';
+	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
 
 	let fullscreenImage = $state();
 	let sunInfo = $state({ hours: 'N/A' });
@@ -44,7 +44,7 @@
 		const stream = data.streamed?.details;
 		if (stream) {
 			details = null;
-			stream.then(res => {
+			stream.then((res) => {
 				if (data.streamed?.details === stream) {
 					details = res;
 				}
@@ -52,11 +52,12 @@
 		}
 	});
 
+	let gpxEntry = $derived(data.gpxEntry || details?.gpxEntry || details?.gpxTracks?.length > 0);
 	let has2D = $derived(
 		!!details?.topoJson?.image2D ||
-			details?.topoJson?.routes?.some((r) => r.points2D?.length > 0) ||
-			details?.topoJson?.outlines?.length > 0 ||
-			details?.topoJson?.fixPoints?.some((fp) => fp.position2D)
+		details?.topoJson?.routes?.some((r) => r.points2D?.length > 0) ||
+		details?.topoJson?.outlines?.length > 0 ||
+		details?.topoJson?.fixPoints?.some((fp) => fp.position2D)
 	);
 
 	$effect(() => {
@@ -83,7 +84,7 @@
 	let topoJson = $derived(details?.topoJson);
 	let transit = $derived(details?.transit);
 	let parking = $derived(details?.parking);
-	let has3DTopo = $derived(details?.has3DTopo);
+	let has3DTopo = $derived(details?.has3DTopo && !gpxEntry);
 	let tags = $derived(data.tags);
 	let security = $derived(data.security);
 	let equipment = $derived(data.equipment);
@@ -124,9 +125,9 @@
 	}
 
 	function getSectorRouteCount(sector) {
-		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
 		if (routes.length > 0) return routes.length;
-		
+
 		return (
 			sector.routesCount ||
 			sector.routeCount ||
@@ -137,27 +138,40 @@
 	}
 
 	function getSectorGradeDistribution(sector) {
-		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
 		if (routes.length === 0) return [];
 
-		let easy = 0, medium = 0, hard = 0, veryHard = 0;
-		routes.forEach(r => {
+		let easy = 0,
+			medium = 0,
+			hard = 0,
+			veryHard = 0;
+		routes.forEach((r) => {
 			const g = r.grade || '';
 			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
 			else if (g.startsWith('6')) medium++;
 			else if (g.startsWith('7')) hard++;
 			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
 		});
-		
+
 		const total = easy + medium + hard + veryHard;
 		if (total === 0) return [];
-		
+
 		return [
-			{ count: easy, percent: (easy/total)*100, colorClass: 'bg-green-500', label: '< 6a' },
-			{ count: medium, percent: (medium/total)*100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
-			{ count: hard, percent: (hard/total)*100, colorClass: 'bg-red-500', label: '7a - 7c+' },
-			{ count: veryHard, percent: (veryHard/total)*100, colorClass: 'bg-purple-600', label: '> 8a' }
-		].filter(b => b.count > 0);
+			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-500', label: '< 6a' },
+			{
+				count: medium,
+				percent: (medium / total) * 100,
+				colorClass: 'bg-yellow-400',
+				label: '6a - 6c+'
+			},
+			{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-red-500', label: '7a - 7c+' },
+			{
+				count: veryHard,
+				percent: (veryHard / total) * 100,
+				colorClass: 'bg-purple-600',
+				label: '> 8a'
+			}
+		].filter((b) => b.count > 0);
 	}
 
 	function getConicGradient(buckets) {
@@ -179,46 +193,40 @@
 	}
 
 	function getSectorDirection(sector) {
-		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
-		const mockTopo = { 
-			wallAzimuth: sector.wallAzimuth || sector.topo?.wallAzimuth || sector.properties?.wallAzimuth || routes[0]?.sectorWallAzimuth,
-			routes 
+		const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
+		const mockTopo = {
+			wallAzimuth:
+				sector.wallAzimuth ||
+				sector.topo?.wallAzimuth ||
+				sector.properties?.wallAzimuth ||
+				routes[0]?.sectorWallAzimuth,
+			routes
 		};
 		const dir = calculateWallDirection(mockTopo, null);
 		return dir !== 'Unknown' ? $_('directions.' + dir) : null;
 	}
-	
+
 	function getSectorTypes(sector) {
-		const routes = details?.gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
+		const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
 		let t = routes[0]?.sectorTags;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.type;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = sector.properties?.type;
 		if (!t || (Array.isArray(t) && t.length === 0)) t = data.crag?.properties?.type || data.type;
-		
+
 		let arr = [];
 		if (Array.isArray(t)) {
 			arr = t;
 		} else if (typeof t === 'string' && t.trim()) {
-			arr = t.includes(',') ? t.split(',').map(x => x.trim()) : [t];
+			arr = t.includes(',') ? t.split(',').map((x) => x.trim()) : [t];
 		}
-		
-		return arr.map(x => {
+
+		return arr.map((x) => {
 			const translated = $_('tags.' + x);
 			return {
 				id: x,
 				name: translated === 'tags.' + x ? x : translated
 			};
 		});
-	}
-
-	function getTypeColorClass(typeId) {
-		switch(typeId) {
-			case 'sports-climbing': return 'bg-blue-100 text-blue-700 border-blue-200';
-			case 'bouldering': return 'bg-orange-100 text-orange-700 border-orange-200';
-			case 'multi-pitch': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-			case 'trad': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-			default: return 'bg-slate-100 text-slate-600 border-slate-200';
-		}
 	}
 
 	function getGeometryCenter(geometry) {
@@ -264,13 +272,13 @@
 </script>
 
 {#if fullscreenImage}
-	<div class="absolute top-0 bottom-0 left-0 right-0 z-[30000] bg-black opacity-70"></div>
+	<div class="absolute top-0 right-0 bottom-0 left-0 z-[30000] bg-black opacity-70"></div>
 	<div
 		onclick={() => (fullscreenImage = undefined)}
-		class="absolute top-0 bottom-0 left-0 right-0 z-[30000] flex justify-center items-center"
+		class="absolute top-0 right-0 bottom-0 left-0 z-[30000] flex items-center justify-center"
 	>
 		<img
-			class="self-center max-h-full max-w-full object-contain"
+			class="max-h-full max-w-full self-center object-contain"
 			src={fullscreenImage}
 			alt="Fullscreen Crag"
 		/>
@@ -278,346 +286,383 @@
 {/if}
 
 <div
-	class="fixed h-fit overflow-visible sm:w-auto sm:left-26 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
-	<SearchBar actionBase="/map" bind:searchTerm />
+	class="fixed top-2 right-0 left-0 z-[1000] h-fit overflow-visible py-2 sm:top-21 sm:left-26 sm:w-auto"
+>
+	<SearchBar actionBase="/map" bind:searchTerm={searchTerm} />
 </div>
 
 <main class="z-[500] h-24">
 	<InfoPanel onShare={share}>
 		<div
-			class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
+			class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start"
 		>
 			{#if activeSectorId}
 				<a
 					href="{base}/map/crag/{data.basePath || path}"
-					class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+					class="mr-3 rounded-full p-2 transition-colors hover:bg-gray-100"
 					aria-label={$_('ui.back')}
 				>
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
 			{/if}
-			<h1 class="text-2xl font-bold my-0 text-slate-800 sm:px-2">{displayTitle}</h1>
+			<h1 class="my-0 text-2xl font-bold text-slate-800 sm:px-2">{displayTitle}</h1>
 		</div>
-		<div class="flex-1 overflow-y-auto w-full px-5 mb-4 overflow-x-hidden min-h-0">
+		<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-5">
 			{#if !details}
-				<div class="animate-pulse flex flex-col space-y-4 pt-4">
-					<div class="h-40 bg-gray-200 rounded-2xl w-full"></div>
-					<div class="h-4 bg-gray-200 rounded w-5/6"></div>
-					<div class="h-4 bg-gray-200 rounded w-3/4"></div>
-					<div class="h-4 bg-gray-200 rounded w-1/2"></div>
-					<div class="h-10 mt-4 bg-gray-200 rounded-full w-full"></div>
-					<div class="h-10 bg-gray-200 rounded-full w-full"></div>
+				<div class="flex animate-pulse flex-col space-y-4 pt-4">
+					<div class="h-40 w-full rounded-2xl bg-gray-200"></div>
+					<div class="h-4 w-5/6 rounded bg-gray-200"></div>
+					<div class="h-4 w-3/4 rounded bg-gray-200"></div>
+					<div class="h-4 w-1/2 rounded bg-gray-200"></div>
+					<div class="mt-4 h-10 w-full rounded-full bg-gray-200"></div>
+					<div class="h-10 w-full rounded-full bg-gray-200"></div>
 				</div>
 			{:else}
 				{#if images?.length === 1}
-				<img
-					onclick={() => (fullscreenImage = images[0])}
-					class="w-full h-71 object-cover rounded-2xl cursor-pointer"
-					src={images[0]}
-					alt="Crag"
-				/>
-			{:else if images?.length >= 1}
-				<div class="flex flex-col flex-wrap content-start h-73 overflow-x-auto no-scrollbar">
-					{#each images as image, i}
-						{#if i === 0}
-							<img
-								onclick={() => (fullscreenImage = image)}
-								class="w-60 h-71 mr-1.5 mb-1.5 rounded-2xl object-cover cursor-pointer"
-								src={image}
-								alt="Crag"
-							/>
-						{:else}
-							<img
-								onclick={() => (fullscreenImage = image)}
-								class="w-34.5 h-34.5 mr-1.5 mb-1.5 rounded-2xl object-cover cursor-pointer"
-								src={image}
-								alt="Crag"
-							/>
-						{/if}
-					{/each}
-				</div>
-			{/if}
-			<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mt-5 mb-6">
-				{#if Array.isArray(type)}
-					{#each type as t}
-						<a
-							href="{base}/map/{t}/"
-							class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors"
-						>
-							{$_('types.' + t)}
-						</a>
-					{/each}
-				{:else}
-					<a
-						href="{base}/map/{type}/"
-						class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100 inline-flex items-center justify-center no-underline hover:bg-blue-100 transition-colors"
-					>
-						{$_('types.' + type)}
-					</a>
-				{/if}
-				{#if tags && tags.length > 0}
-					{#each tags as tag}
-						<span
-							class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100"
-						>
-							{$_('tags.' + tag)}
-						</span>
-					{/each}
-				{/if}
-				{#if security && securityRatings.has(security)}
-					<div class="flex items-center ml-2 mt-1" title="Absicherung">
-						<span class="inline-block">
-							{#each Array(securityRatings.get(security)).fill(0) as _, i}
-								<i class="fa-solid fa-star text-yellow-400" title="Absicherung"></i>
-							{/each}
-							{#each Array(4 - securityRatings.get(security)).fill(0) as _, i}
-								<i class="fa-regular fa-star text-gray-300" title="Absicherung"></i>
-							{/each}
-						</span>
-					</div>
-				{/if}
-				{#if topoJson}
-					<div
-						class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200"
-					>
-						<i class="fa-solid fa-compass text-gray-500"></i>
-						<span>{displayWallDirection}</span>
-					</div>
-					<div
-						class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100"
-					>
-						<i class="fa-solid fa-clock text-yellow-600"></i>
-						<span>{displaySunHours}</span>
-					</div>
-				{/if}
-			</div>
-
-			{#if equipment}
-				<div class="mt-3 mb-6 px-1">
-					<h3 class="text-sm font-bold text-slate-700 mb-2">Ausrüstung:</h3>
-					<ul class="list-none p-0 flex flex-wrap gap-x-6 gap-y-2">
-						{#each equipment as item}
-							<li class="text-sm text-slate-600 flex items-center">
-								{#if equipmentIcons[item.name] && equipmentIcons[item.name].startsWith(base)}
-									<img
-										src={equipmentIcons[item.name]}
-										alt={item.name}
-										class="w-5 h-5 mr-2 object-contain"
-									/>
-								{:else}
-									<i
-										class="{equipmentIcons[item.name] ||
-											'fa-solid fa-circle'} w-5 text-center mr-2 text-slate-500"
-									></i>
-								{/if}
-								<span>
-									{#if item.amount}{item.amount}x
-									{/if}
-									{item.name}
-									{#if item.sizes}
-										({item.sizes}){/if}
-								</span>
-							</li>
+					<img
+						onclick={() => (fullscreenImage = images[0])}
+						class="h-71 w-full cursor-pointer rounded-2xl object-cover"
+						src={images[0]}
+						alt="Crag"
+					/>
+				{:else if images?.length >= 1}
+					<div class="no-scrollbar flex h-73 flex-col flex-wrap content-start overflow-x-auto">
+						{#each images as image, i}
+							{#if i === 0}
+								<img
+									onclick={() => (fullscreenImage = image)}
+									class="mr-1.5 mb-1.5 h-71 w-60 cursor-pointer rounded-2xl object-cover"
+									src={image}
+									alt="Crag"
+								/>
+							{:else}
+								<img
+									onclick={() => (fullscreenImage = image)}
+									class="mr-1.5 mb-1.5 h-34.5 w-34.5 cursor-pointer rounded-2xl object-cover"
+									src={image}
+									alt="Crag"
+								/>
+							{/if}
 						{/each}
-					</ul>
-				</div>
-			{/if}
-
-			<div class="flex items-center mt-6 mb-6">
-				<div class="prose text-slate-800 w-full">
-					<div class="mb-3 w-full">
-						{#if has3DTopo || has2D}
-							<div class="grid {has3DTopo && has2D ? 'grid-cols-2' : 'grid-cols-1'} gap-3 mb-4">
-								{#if has3DTopo}
-									<a
-										href="{base}/topo/crag/{topoPath}"
-										onclick={() => navigatingTo = '3d'}
-										class="relative group w-full h-24 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 no-underline bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-300 hover:-translate-y-1 hover:scale-[1.02] flex flex-col items-center justify-center overflow-hidden hover:ring-8 hover:ring-blue-500/5"
-									>
-										<div class="flex flex-row items-center gap-2 sm:gap-3 z-10 px-2">
-											<div
-												class="w-10 h-10 shrink-0 rounded-full bg-slate-100 shadow-inner flex items-center justify-center group-hover:bg-blue-50 group-hover:scale-110 transition-all duration-300"
-											>
-												{#if navigatingTo === '3d'}
-													<i class="fa-solid fa-spinner fa-spin text-xl text-blue-600"></i>
-												{:else}
-													<i class="fa-solid fa-cube text-xl text-blue-600"></i>
-												{/if}
-											</div>
-											<div class="flex flex-col">
-												<span
-													class="font-bold text-base sm:text-lg text-slate-800 leading-tight group-hover:text-blue-700 transition-colors"
-													>{$_('ui.topo_3d')}</span
-												>
-												<span class="text-xs sm:text-sm text-slate-500 font-medium"
-													>{$_('ui.interactive_view')}</span
-												>
-											</div>
-										</div>
-									</a>
-								{/if}
-								{#if has2D}
-									<a
-										href="{base}/topo/crag/{topoPath}?mode=2d"
-										onclick={() => navigatingTo = '2d'}
-										class="relative group w-full h-24 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 no-underline bg-white hover:bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:-translate-y-1 hover:scale-[1.02] flex flex-col items-center justify-center overflow-hidden hover:ring-8 hover:ring-emerald-500/5"
-									>
-										<div class="flex flex-row items-center gap-2 sm:gap-3 z-10 px-2">
-											<div
-												class="w-10 h-10 shrink-0 rounded-full bg-slate-100 shadow-inner flex items-center justify-center group-hover:bg-emerald-50 group-hover:scale-110 transition-all duration-300"
-											>
-												{#if navigatingTo === '2d'}
-													<i class="fa-solid fa-spinner fa-spin text-xl text-emerald-600"></i>
-												{:else}
-													<i class="fa-solid fa-image text-xl text-emerald-600"></i>
-												{/if}
-											</div>
-											<div class="flex flex-col">
-												<span
-													class="font-bold text-base sm:text-lg text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors"
-													>{$_('ui.topo_2d')}</span
-												>
-												<span class="text-xs sm:text-sm text-slate-500 font-medium"
-													>{$_('ui.schematic_view')}</span
-												>
-											</div>
-										</div>
-									</a>
-								{/if}
-							</div>
-						{/if}
-
-						{#if topo && topo.link && topo.link.trim() !== ''}
+					</div>
+				{/if}
+				<div class="mt-5 mb-6 flex flex-wrap gap-3 text-sm font-medium text-gray-700">
+					{#if Array.isArray(type)}
+						{#each type as t}
 							<a
-								href={topo.link}
-								target="_blank"
-								class="border-1 border-gray-200 h-10 mb-2 mr-2 text-slate-600 hover:text-white hover:bg-ink inline-flex items-center justify-center p-1 px-3 text-base font-medium rounded-full no-underline"
+								href="{base}/map/{t}/"
+								class="inline-flex items-center justify-center rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 no-underline transition-colors hover:bg-blue-100"
 							>
-								<i class="fa-solid fa-route mr-2"></i>
-								<span class="w-full">{$_('ui.topo')} (Ext)</span>
+								{$_('types.' + t)}
 							</a>
-						{/if}
-						{#if transit}
-							<div class="inline-flex mb-2 mr-2">
-								<span
-									class="border-1 border-gray-200 h-10 text-slate-600 inline-flex items-center justify-center p-1 px-3 text-base font-medium rounded-l-full no-underline"
-									><i class="fa-solid fa-train"></i>
-								</span>
+						{/each}
+					{:else}
+						<a
+							href="{base}/map/{type}/"
+							class="inline-flex items-center justify-center rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 no-underline transition-colors hover:bg-blue-100"
+						>
+							{$_('types.' + type)}
+						</a>
+					{/if}
+					{#if tags && tags.length > 0}
+						{#each tags as tag}
+							<span
+								class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700"
+							>
+								{$_('tags.' + tag)}
+							</span>
+						{/each}
+					{/if}
+					{#if security && securityRatings.has(security)}
+						<div class="mt-1 ml-2 flex items-center" title="Absicherung">
+							<span class="inline-block">
+								{#each Array(securityRatings.get(security)).fill(0) as _, i}
+									<i class="fa-solid fa-star text-yellow-400" title="Absicherung"></i>
+								{/each}
+								{#each Array(4 - securityRatings.get(security)).fill(0) as _, i}
+									<i class="fa-regular fa-star text-gray-300" title="Absicherung"></i>
+								{/each}
+							</span>
+						</div>
+					{/if}
+					{#if topoJson}
+						<div
+							class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5"
+						>
+							<i class="fa-solid fa-compass text-gray-500"></i>
+							<span>{displayWallDirection}</span>
+						</div>
+						<div
+							class="flex items-center gap-2 rounded-lg border border-yellow-100 bg-yellow-50 px-3 py-1.5"
+						>
+							<i class="fa-solid fa-clock text-yellow-600"></i>
+							<span>{displaySunHours}</span>
+						</div>
+					{/if}
+				</div>
+
+				{#if equipment}
+					<div class="mt-3 mb-6 px-1">
+						<h3 class="mb-2 text-sm font-bold text-slate-700">Ausrüstung:</h3>
+						<ul class="flex list-none flex-wrap gap-x-6 gap-y-2 p-0">
+							{#each equipment as item}
+								<li class="flex items-center text-sm text-slate-600">
+									{#if equipmentIcons[item.name] && equipmentIcons[item.name].startsWith(base)}
+										<img
+											src={equipmentIcons[item.name]}
+											alt={item.name}
+											class="mr-2 h-5 w-5 object-contain"
+										/>
+									{:else}
+										<i
+											class="{equipmentIcons[item.name] ||
+											'fa-solid fa-circle'} mr-2 w-5 text-center text-slate-500"
+										></i>
+									{/if}
+									<span>
+										{#if item.amount}{item.amount}x
+										{/if}
+										{item.name}
+										{#if item.sizes}
+											({item.sizes}){/if}
+									</span>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+
+				<div class="mt-6 mb-6 flex items-center">
+					<div class="prose w-full text-slate-800">
+						<div class="mb-3 w-full">
+							{#if has3DTopo || has2D}
+								<div class="grid {has3DTopo && has2D ? 'grid-cols-2' : 'grid-cols-1'} mb-4 gap-3">
+									{#if has3DTopo}
+										<a
+											href="{base}/topo/crag/{topoPath}"
+											onclick={() => navigatingTo = '3d'}
+											class="group relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-300 hover:bg-slate-50 hover:shadow-xl hover:ring-8 hover:ring-blue-500/5"
+										>
+											<div class="z-10 flex flex-row items-center gap-2 px-2 sm:gap-3">
+												<div
+													class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-50"
+												>
+													{#if navigatingTo === '3d'}
+														<i class="fa-solid fa-spinner fa-spin text-xl text-blue-600"></i>
+													{:else}
+														<i class="fa-solid fa-cube text-xl text-blue-600"></i>
+													{/if}
+												</div>
+												<div class="flex flex-col">
+													<span
+														class="text-base leading-tight font-bold text-slate-800 transition-colors group-hover:text-blue-700 sm:text-lg"
+													>{$_('ui.topo_3d')}</span
+													>
+													<span class="text-xs font-medium text-slate-500 sm:text-sm"
+													>{$_('ui.interactive_view')}</span
+													>
+												</div>
+											</div>
+										</a>
+									{/if}
+									{#if has2D}
+										<a
+											href="{base}/topo/crag/{topoPath}?mode=2d"
+											onclick={() => navigatingTo = '2d'}
+											class="group relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-emerald-300 hover:bg-slate-50 hover:shadow-xl hover:ring-8 hover:ring-emerald-500/5"
+										>
+											<div class="z-10 flex flex-row items-center gap-2 px-2 sm:gap-3">
+												<div
+													class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:bg-emerald-50"
+												>
+													{#if navigatingTo === '2d'}
+														<i class="fa-solid fa-spinner fa-spin text-xl text-emerald-600"></i>
+													{:else}
+														<i class="fa-solid fa-image text-xl text-emerald-600"></i>
+													{/if}
+												</div>
+												<div class="flex flex-col">
+													<span
+														class="text-base leading-tight font-bold text-slate-800 transition-colors group-hover:text-emerald-700 sm:text-lg"
+													>{$_('ui.topo_2d')}</span
+													>
+													<span class="text-xs font-medium text-slate-500 sm:text-sm"
+													>{$_('ui.schematic_view')}</span
+													>
+												</div>
+											</div>
+										</a>
+									{/if}
+								</div>
+							{/if}
+
+							{#if topo && topo.link && topo.link.trim() !== ''}
 								<a
-									href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
+									href={topo.link}
 									target="_blank"
-									class="border-1 border-gray-200 h-10 text-slate-600 hover:text-white hover:bg-ink inline-flex items-center justify-center p-1 px-3 text-base font-medium no-underline"
+									class="hover:bg-ink mr-2 mb-2 inline-flex h-10 items-center justify-center rounded-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
 								>
-									{$_('ui.google_maps')}
+									<i class="fa-solid fa-route mr-2"></i>
+									<span class="w-full">{$_('ui.topo')} (Ext)</span>
 								</a>
-								<a
-									href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(
+							{/if}
+							{#if transit}
+								<div class="mr-2 mb-2 inline-flex">
+									<span
+										class="inline-flex h-10 items-center justify-center rounded-l-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline"
+									><i class="fa-solid fa-train"></i>
+									</span>
+									<a
+										href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
+										target="_blank"
+										class="hover:bg-ink inline-flex h-10 items-center justify-center border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
+									>
+										{$_('ui.google_maps')}
+									</a>
+									<a
+										href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(
 										transit[0] * 1000000
 									)}%40Y%3D{Math.trunc(
 										transit[1] * 1000000
 									)}&timeSel=1&returnTimeSel=1&journeyProducts=7167&start=1&#!P%7CTP!H%7C952087"
+										target="_blank"
+										class="hover:bg-ink inline-flex h-10 items-center justify-center rounded-r-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
+									>
+										{$_('ui.scotty')}
+									</a>
+								</div>
+							{/if}
+							{#if parking}
+								<a
+									href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
 									target="_blank"
-									class="border-1 border-gray-200 h-10 text-slate-600 hover:text-white hover:bg-ink inline-flex items-center justify-center p-1 px-3 text-base font-medium no-underline rounded-r-full"
+									class="hover:bg-ink mr-2 mb-2 inline-flex h-10 items-center justify-center rounded-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
 								>
-									{$_('ui.scotty')}
+									<i class="fa-solid fa-car mr-2"></i>
+									<span class="w-full">{$_('ui.google_maps')}</span>
 								</a>
+							{/if}
+						</div>
+						<span>{description}</span>
+
+						{#if data.gradeRoutes?.length}
+							<div class="not-prose mt-5 mb-5 h-40 w-full">
+								<GradeChart routes={data.gradeRoutes} />
 							</div>
 						{/if}
-						{#if parking}
-							<a
-								href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
-								target="_blank"
-								class="border-1 border-gray-200 h-10 mb-2 mr-2 text-slate-600 hover:text-white hover:bg-ink inline-flex items-center justify-center p-1 px-3 text-base font-medium rounded-full no-underline"
-							>
-								<i class="fa-solid fa-car mr-2"></i>
-								<span class="w-full">{$_('ui.google_maps')}</span>
-							</a>
-						{/if}
-					</div>
-					<span>{description}</span>
 
-					{#if data.gradeRoutes?.length}
-						<div class="h-40 w-full mt-5 mb-5 not-prose">
-							<GradeChart routes={data.gradeRoutes} />
-						</div>
-					{/if}
-
-					{#if sectors.length > 0 && !activeSectorId}
-						<div class="w-full mt-8 mb-5">
-							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
-								{$_('ui.sectors')} ({sectors.length})
-							</h3>
-							<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white mt-2">
-								<table class="min-w-full divide-y divide-gray-200 !m-0">
-									<thead class="bg-gray-50">
+						{#if sectors.length > 0 && !activeSectorId}
+							<div class="mt-8 mb-5 w-full">
+								<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
+									{$_('ui.sectors')} ({sectors.length})
+								</h3>
+								<div
+									class="mt-2 overflow-x-auto border border-gray-200 bg-white shadow-sm sm:rounded-xl"
+								>
+									<table class="!m-0 min-w-full divide-y divide-gray-200">
+										<thead class="bg-gray-50">
 										<tr>
-											<th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+											<th
+												scope="col"
+												class="px-3 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase sm:px-6"
+											>
 												{$_('topo.table.name')}
 											</th>
-											<th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+											<th
+												scope="col"
+												class="px-3 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase sm:px-6"
+											>
 												{$_('topo.routes')}
 											</th>
-											<th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+											<th
+												scope="col"
+												class="px-3 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase sm:px-6"
+											>
 												{$_('ui.tags')}
 											</th>
-											<th scope="col" class="px-3 sm:px-6 py-3 relative">
+											<th scope="col" class="relative px-3 py-3 sm:px-6">
 												<span class="sr-only">Go</span>
 											</th>
 										</tr>
-									</thead>
-									<tbody class="bg-white divide-y divide-gray-200">
+										</thead>
+										<tbody class="divide-y divide-gray-200 bg-white">
 										{#each sectors as sector}
 											<tr
-												class="group hover:bg-gray-50 cursor-pointer transition-colors {activeSectorId === sector.id ? 'bg-blue-50/50' : ''}"
+												class="group cursor-pointer transition-colors hover:bg-gray-50 {activeSectorId === sector.id ? 'bg-blue-50/50' : ''}"
 												onclick={(event) => openSector(event, sector)}
 												title={getSectorDescription(sector) || sector.name}
 											>
-												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors align-middle">
+												<td
+													class="px-3 py-3 align-middle text-sm font-bold whitespace-nowrap text-gray-900 transition-colors group-hover:text-blue-700 sm:px-6 sm:py-4"
+												>
 													{sector.name}
 												</td>
-												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500 align-middle">
+												<td
+													class="px-3 py-3 align-middle text-sm whitespace-nowrap text-gray-500 sm:px-6 sm:py-4"
+												>
 													{#if getSectorRouteCount(sector) > 0}
 														<div class="flex items-center gap-2">
-															<div class="relative w-6 h-6 rounded-full shrink-0 flex items-center justify-center shadow-inner" style="background: {getConicGradient(getSectorGradeDistribution(sector))}">
-																<div class="absolute inset-0 m-auto w-3.5 h-3.5 bg-white rounded-full shadow-sm"></div>
+															<div
+																class="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full shadow-inner"
+																style="background: {getConicGradient(getSectorGradeDistribution(sector))}"
+															>
+																<div
+																	class="absolute inset-0 m-auto h-3.5 w-3.5 rounded-full bg-white shadow-sm"
+																></div>
 															</div>
-															<span class="font-bold text-slate-700 text-xs">{getSectorRouteCount(sector)}</span>
+															<span class="text-xs font-bold text-slate-700"
+															>{getSectorRouteCount(sector)}</span
+															>
 														</div>
 													{:else}
-														<span class="px-2 py-1 rounded-md bg-slate-50 text-slate-500 font-bold text-[10px] border border-slate-200">
-															{$_('topo.no_topo')}
-														</span>
+															<span
+																class="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold text-slate-500"
+															>
+																{$_('topo.no_topo')}
+															</span>
 													{/if}
 												</td>
-												<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500 align-middle">
-													<div class="flex items-center gap-1.5 flex-wrap max-w-[150px] sm:max-w-none">
+												<td
+													class="px-3 py-3 align-middle text-sm whitespace-nowrap text-gray-500 sm:px-6 sm:py-4"
+												>
+													<div
+														class="flex max-w-[150px] flex-wrap items-center gap-1.5 sm:max-w-none"
+													>
 														{#if getSectorDirection(sector)}
-															<div class="flex items-center gap-1 text-[9px] sm:text-[10px] font-semibold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 uppercase tracking-wide">
+															<div
+																class="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-slate-500 uppercase sm:text-[10px]"
+															>
 																<i class="fa-regular fa-compass"></i>
 																<span>{getSectorDirection(sector)}</span>
 															</div>
 														{/if}
 														{#if getSectorTypes(sector).length > 0}
 															{#each getSectorTypes(sector).slice(0, 2) as type}
-																<span class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate {getTypeColorClass(type.id)}">
-																	{type.name}
-																</span>
+																	<span
+																		class="truncate rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase sm:text-[10px] {getTypeColorClass(type.id)}"
+																	>
+																		{type.name}
+																	</span>
 															{/each}
 														{/if}
 													</div>
 												</td>
-												<td class="pr-3 sm:pr-6 py-3 sm:py-4 whitespace-nowrap text-right align-middle">
-													<i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-blue-500 transition-colors text-xs sm:text-sm"></i>
+												<td
+													class="py-3 pr-3 text-right align-middle whitespace-nowrap sm:py-4 sm:pr-6"
+												>
+													<i
+														class="fa-solid fa-chevron-right text-xs text-slate-300 transition-colors group-hover:text-blue-500 sm:text-sm"
+													></i>
 												</td>
 											</tr>
 										{/each}
-									</tbody>
-								</table>
+										</tbody>
+									</table>
+								</div>
 							</div>
-						</div>
-					{/if}
+						{/if}
+					</div>
 				</div>
-			</div>
 			{/if}
 		</div>
 	</InfoPanel>
