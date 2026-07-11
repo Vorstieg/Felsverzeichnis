@@ -6073,7 +6073,7 @@
 					"get",
 					"type"
 				],
-				"icon-size": 0.8,
+				"icon-size": 0.55,
 				"icon-allow-overlap": true,
 				"text-optional": true,
 				"text-field": [

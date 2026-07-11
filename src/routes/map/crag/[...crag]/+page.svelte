@@ -80,6 +80,7 @@
 	});
 	let path = $derived(data.path);
 	let topoPath = $derived(data.topoPath || data.path);
+	let breadcrumbParts = $derived((data.basePath || path || '').split('/').filter(Boolean));
 	let topo = $derived(data.topo);
 	let topoJson = $derived(details?.topoJson);
 	let transit = $derived(details?.transit);
@@ -293,9 +294,7 @@
 
 <main class="z-[500] h-24">
 	<InfoPanel onShare={share}>
-		<div
-			class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start"
-		>
+		<div class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start">
 			{#if activeSectorId}
 				<a
 					href="{base}/map/crag/{data.basePath || path}"
@@ -305,7 +304,20 @@
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
 			{/if}
-			<h1 class="my-0 text-2xl font-bold text-slate-800 sm:px-2">{displayTitle}</h1>
+			<div class="flex flex-col sm:px-2">
+				<div class="relative z-20 flex flex-wrap items-center text-[10px] sm:text-xs mb-0.5 font-medium tracking-wide">
+					{#each breadcrumbParts as part, i}
+						{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
+						<a href="{base}/list/{encodeURIComponent(subpath)}" class="text-slate-500 hover:text-slate-700 hover:underline transition-colors px-0.5 -mx-0.5 rounded focus:outline-none focus:ring-2 focus:ring-slate-400">
+							{part}
+						</a>
+						{#if i < breadcrumbParts.length - 1}
+							<i class="fa-solid fa-chevron-right text-[8px] mx-1.5 text-slate-300"></i>
+						{/if}
+					{/each}
+				</div>
+				<h1 class="my-0 text-2xl font-bold text-slate-800">{displayTitle}</h1>
+			</div>
 		</div>
 		<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-5">
 			{#if !details}
@@ -496,52 +508,53 @@
 								</div>
 							{/if}
 
-							{#if topo && topo.link && topo.link.trim() !== ''}
-								<a
-									href={topo.link}
-									target="_blank"
-									class="hover:bg-ink mr-2 mb-2 inline-flex h-10 items-center justify-center rounded-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
-								>
-									<i class="fa-solid fa-route mr-2"></i>
-									<span class="w-full">{$_('ui.topo')} (Ext)</span>
-								</a>
-							{/if}
-							{#if transit}
-								<div class="mr-2 mb-2 inline-flex">
-									<span
-										class="inline-flex h-10 items-center justify-center rounded-l-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline"
-									><i class="fa-solid fa-train"></i>
-									</span>
+							<div class="flex flex-wrap items-center gap-3 mb-6 mt-2">
+								{#if topo && topo.link && topo.link.trim() !== ''}
 									<a
-										href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
+										href={topo.link}
 										target="_blank"
-										class="hover:bg-ink inline-flex h-10 items-center justify-center border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
+										class="group inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-900 hover:shadow-md"
 									>
-										{$_('ui.google_maps')}
+										<i class="fa-solid fa-route text-slate-400 transition-colors group-hover:text-blue-500"></i>
+										<span>{$_('ui.topo')} (Ext)</span>
 									</a>
+								{/if}
+								{#if transit}
+									<div class="inline-flex items-center rounded-xl bg-white shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:-translate-y-0.5 hover:shadow-md">
+										<span class="flex items-center rounded-l-xl border-r border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-500">
+											<i class="fa-solid fa-train"></i>
+										</span>
+										<a
+											href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
+											target="_blank"
+											class="border-r border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-blue-600"
+										>
+											{$_('ui.google_maps')}
+										</a>
+										<a
+											href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(
+											transit[0] * 1000000
+										)}%40Y%3D{Math.trunc(
+											transit[1] * 1000000
+										)}&timeSel=1&returnTimeSel=1&journeyProducts=7167&start=1&#!P%7CTP!H%7C952087"
+											target="_blank"
+											class="rounded-r-xl px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-red-600"
+										>
+											{$_('ui.scotty')}
+										</a>
+									</div>
+								{/if}
+								{#if parking}
 									<a
-										href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(
-										transit[0] * 1000000
-									)}%40Y%3D{Math.trunc(
-										transit[1] * 1000000
-									)}&timeSel=1&returnTimeSel=1&journeyProducts=7167&start=1&#!P%7CTP!H%7C952087"
+										href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
 										target="_blank"
-										class="hover:bg-ink inline-flex h-10 items-center justify-center rounded-r-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
+										class="group inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-900 hover:shadow-md"
 									>
-										{$_('ui.scotty')}
+										<i class="fa-solid fa-car text-slate-400 transition-colors group-hover:text-emerald-600"></i>
+										<span>{$_('ui.google_maps')}</span>
 									</a>
-								</div>
-							{/if}
-							{#if parking}
-								<a
-									href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
-									target="_blank"
-									class="hover:bg-ink mr-2 mb-2 inline-flex h-10 items-center justify-center rounded-full border-1 border-gray-200 p-1 px-3 text-base font-medium text-slate-600 no-underline hover:text-white"
-								>
-									<i class="fa-solid fa-car mr-2"></i>
-									<span class="w-full">{$_('ui.google_maps')}</span>
-								</a>
-							{/if}
+								{/if}
+							</div>
 						</div>
 						<span>{description}</span>
 
