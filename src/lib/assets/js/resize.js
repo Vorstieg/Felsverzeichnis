@@ -249,11 +249,14 @@ export function resize(element) {
 	// Initialize the CSS variable so floating buttons start at the exact correct pixel height, not the CSS fallback
 	if (isMobile()) {
 		document.body.style.setProperty('--info-panel-height', `${targetHeights[1]}px`);
+		document.body.style.overscrollBehaviorY = 'none';
 	}
 
 	element.appendChild(top);
 	top.addEventListener('mousedown', onMousedown);
 	top.addEventListener('touchstart', onMousedown);
+	top.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+	top.style.touchAction = 'none';
 
 	window.addEventListener('mousemove', onMove, { passive: false });
 	window.addEventListener('touchmove', onMove, { passive: false });
@@ -299,6 +302,7 @@ export function resize(element) {
 				element.removeChild(top);
 			}
 			document.body.style.removeProperty('--info-panel-height');
+			document.body.style.removeProperty('overscroll-behavior-y');
 		}
 	};
 }

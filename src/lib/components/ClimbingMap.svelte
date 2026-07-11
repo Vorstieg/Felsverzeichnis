@@ -94,6 +94,8 @@
 		focusMarker(cameraTarget.center, cameraTarget.zoom);
 	});
 
+	let currentZoomState = '';
+
 	function updateMarkerVisibility() {
 		if (!map || !map.getLayer('places') || !map.getLayer('places-dots')) return;
 
@@ -101,14 +103,32 @@
 			map.setLayerZoomRange('places', 0, 24);
 			map.setPaintProperty('places', 'icon-opacity', 1);
 			map.setPaintProperty('places', 'text-opacity', 1);
+			map.setPaintProperty('places', 'text-halo-blur', 0);
 			map.setPaintProperty('places-dots', 'circle-opacity', 0);
 			map.setPaintProperty('places-dots', 'circle-stroke-opacity', 0);
+			map.setPaintProperty('places-dots', 'circle-radius', 15);
+			currentZoomState = 'close';
 		} else {
+			map.getCanvas().style.cursor = '';
 			map.setLayerZoomRange('places', 11.5, 24);
-			map.setPaintProperty('places', 'icon-opacity', ['step', ['zoom'], 0.0, 12.0, 1.0]);
-			map.setPaintProperty('places', 'text-opacity', ['step', ['zoom'], 0.0, 12.0, 1.0]);
-			map.setPaintProperty('places-dots', 'circle-opacity', ['step', ['zoom'], 1.0, 12.0, 0.0]);
-			map.setPaintProperty('places-dots', 'circle-stroke-opacity', ['step', ['zoom'], 1.0, 12.0, 0.0]);
+			const z = map.getZoom();
+			if (z >= 13.5 && currentZoomState !== 'close') {
+				currentZoomState = 'close';
+				map.setPaintProperty('places', 'icon-opacity', 1);
+				map.setPaintProperty('places', 'text-opacity', 1);
+				map.setPaintProperty('places', 'text-halo-blur', 0);
+				map.setPaintProperty('places-dots', 'circle-opacity', 0);
+				map.setPaintProperty('places-dots', 'circle-stroke-opacity', 0);
+				map.setPaintProperty('places-dots', 'circle-radius', 15);
+			} else if (z < 13.5 && currentZoomState !== 'far') {
+				currentZoomState = 'far';
+				map.setPaintProperty('places', 'icon-opacity', 0);
+				map.setPaintProperty('places', 'text-opacity', 0);
+				map.setPaintProperty('places', 'text-halo-blur', 15);
+				map.setPaintProperty('places-dots', 'circle-opacity', 1);
+				map.setPaintProperty('places-dots', 'circle-stroke-opacity', 1);
+				map.setPaintProperty('places-dots', 'circle-radius', ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5]);
+			}
 		}
 	}
 
@@ -158,7 +178,8 @@
 
 		map.on('load', async () => {
 			await drawLayers();
-			map.on('styledata', async () => drawLayers());
+			map.on('style.load', async () => drawLayers());
+			map.on('zoom', updateMarkerVisibility);
 			checkAndLoadVisiblePois();
 			checkAndLoadVisibleTopoTracks();
 		});
@@ -495,8 +516,10 @@
 				const parkingRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-parking.json`);
 				if (parkingRes.ok) {
 					const parking = await parkingRes.json();
-					crag.properties.parking = parking;
-					poiFeatures.push(parking);
+					if (parking && parking.properties && parking.geometry) {
+						crag.properties.parking = parking;
+						poiFeatures.push(parking);
+					}
 					cached.parking = parking;
 					added = true;
 				}
@@ -507,8 +530,10 @@
 				const transitRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit.json`);
 				if (transitRes.ok) {
 					const transit = await transitRes.json();
-					crag.properties.transit = transit;
-					poiFeatures.push(transit);
+					if (transit && transit.properties && transit.geometry) {
+						crag.properties.transit = transit;
+						poiFeatures.push(transit);
+					}
 					cached.transit = transit;
 					added = true;
 				}
@@ -519,8 +544,10 @@
 				const trackRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit-track.json`);
 				if (trackRes.ok) {
 					const track = await trackRes.json();
-					crag.properties.transitTrack = track;
-					poiRoutes.push(track);
+					if (track && track.properties && track.geometry) {
+						crag.properties.transitTrack = track;
+						poiRoutes.push(track);
+					}
 					cached.transitTrack = track;
 					added = true;
 				}
@@ -619,6 +646,7 @@
 	}
 
 	async function drawLayers() {
+		if (!map || !map.isStyleLoaded()) return;
 		await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
 		await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
 		await addMapImage('bouldering', base + '/icons/bouldering.png');
@@ -629,16 +657,26 @@
 		await addMapImage('parking-space', base + '/icons/parking.png');
 		addSectorShapeLayers();
 		updateVisiblePlaces();
-		map.getSource('places').setData(places);
-		map.getSource('routes').setData(routes);
-		map.getSource('sector-shapes').setData(sectorShapes);
+		
+		if (map.getSource('places')) map.getSource('places').setData(places);
+		if (map.getSource('routes')) map.getSource('routes').setData(routes);
+		if (map.getSource('sector-shapes')) map.getSource('sector-shapes').setData(sectorShapes);
 
+		currentZoomState = ''; // Force re-evaluation on style change
 		updateMarkerVisibility();
 	}
 
 	async function addMapImage(name, url) {
-		if (map.hasImage(name)) return;
-		map.addImage(name, (await map.loadImage(url)).data);
+		try {
+			const img = await map.loadImage(url);
+			if (map.hasImage(name)) {
+				map.updateImage(name, img.data);
+			} else {
+				map.addImage(name, img.data);
+			}
+		} catch (e) {
+			console.error('Failed to load image', name, e);
+		}
 	}
 
 	function addSectorShapeLayers() {

@@ -12,17 +12,23 @@
 			"maxzoom": 22
 		},
 		"globalTerrainSource": {
-      "type": "raster-dem",
-      "url": "https://tiles.mapterhorn.com/tilejson.json"
+			"type": "raster-dem",
+			"url": "https://tiles.mapterhorn.com/tilejson.json"
 		},
 		"places": {
 			"type": "geojson",
 			"cluster": false,
-			"data": { "type": "FeatureCollection", "features": [] }
+			"data": {
+				"type": "FeatureCollection",
+				"features": []
+			}
 		},
 		"routes": {
 			"type": "geojson",
-			"data": { "type": "FeatureCollection", "features": [] }
+			"data": {
+				"type": "FeatureCollection",
+				"features": []
+			}
 		}
 	},
 	"layers": [
@@ -41,7 +47,8 @@
 			},
 			"paint": {
 				"line-color": "#fff",
-				"line-width": 7
+				"line-width": 7,
+				"line-opacity": 1
 			}
 		},
 		{
@@ -54,7 +61,8 @@
 			},
 			"paint": {
 				"line-color": "#12538b",
-				"line-width": 5
+				"line-width": 5,
+				"line-opacity": 1
 			}
 		},
 		{
@@ -63,14 +71,25 @@
 			"source": "places",
 			"minzoom": 11.5,
 			"layout": {
-				"icon-image": ["get", "type"],
+				"icon-image": [
+					"get",
+					"type"
+				],
 				"icon-size": 0.8,
 				"icon-allow-overlap": true,
 				"text-optional": true,
-				"text-field": ["get", "name"],
-				"text-offset": [0, 1.8],
+				"text-field": [
+					"get",
+					"name"
+				],
+				"text-offset": [
+					0,
+					1.8
+				],
 				"text-anchor": "top",
-				"text-font": ["Noto Sans Bold"],
+				"text-font": [
+					"Noto Sans Bold"
+				],
 				"text-size": 14,
 				"visibility": "visible",
 				"text-max-width": 8
@@ -80,19 +99,44 @@
 				"text-halo-blur": 0,
 				"text-halo-color": "rgba(255,255,255,1)",
 				"text-halo-width": 3,
-				"icon-opacity": ["step", ["zoom"], 0.0, 12.0, 1.0],
-				"text-opacity": ["step", ["zoom"], 0.0, 12.0, 1.0]
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					13.5,
+					1
+				],
+				"icon-opacity-transition": {
+					"duration": 400
+				},
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					13.5,
+					1
+				],
+				"text-opacity-transition": {
+					"duration": 400
+				}
 			}
 		},
 		{
 			"id": "places-dots",
 			"type": "circle",
 			"source": "places",
-			"maxzoom": 12.5,
+			"maxzoom": 14,
 			"paint": {
 				"circle-color": [
 					"match",
-					["get", "type"],
+					[
+						"get",
+						"type"
+					],
 					"sports-climbing",
 					"#3b82f6",
 					"multi-pitch",
@@ -113,11 +157,48 @@
 					"#6b7280",
 					"#3b82f6"
 				],
-				"circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 3.5, 12, 6],
-				"circle-stroke-width": 1.5,
+				"circle-radius": [
+					"interpolate",
+					[
+						"linear"
+					],
+					[
+						"zoom"
+					],
+					4,
+					2.5,
+					12,
+					4.5
+				],
+				"circle-radius-transition": {
+					"duration": 400
+				},
+				"circle-stroke-width": 0,
 				"circle-stroke-color": "#ffffff",
-				"circle-opacity": ["step", ["zoom"], 1.0, 12.0, 0.0],
-				"circle-stroke-opacity": ["step", ["zoom"], 1.0, 12.0, 0.0]
+				"circle-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					1,
+					13.5,
+					0
+				],
+				"circle-opacity-transition": {
+					"duration": 400
+				},
+				"circle-stroke-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					1,
+					13.5,
+					0
+				],
+				"circle-stroke-opacity-transition": {
+					"duration": 400
+				}
 			}
 		}
 	],

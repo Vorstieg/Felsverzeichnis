@@ -13,11 +13,17 @@
 		"places": {
 			"type": "geojson",
 			"cluster": false,
-			"data": { "type": "FeatureCollection", "features": [] }
+			"data": {
+				"type": "FeatureCollection",
+				"features": []
+			}
 		},
 		"routes": {
 			"type": "geojson",
-			"data": { "type": "FeatureCollection", "features": [] }
+			"data": {
+				"type": "FeatureCollection",
+				"features": []
+			}
 		}
 	},
 	"layers": [
@@ -40,7 +46,11 @@
 				"fill-color": "hsl(0,0%,100%)",
 				"fill-opacity": 0.9
 			},
-			"filter": ["==", "subclass", "glacier"]
+			"filter": [
+				"==",
+				"subclass",
+				"glacier"
+			]
 		},
 		{
 			"id": "Forest",
@@ -55,7 +65,12 @@
 				"fill-color": "hsl(140, 60%, 75%)",
 				"fill-opacity": 0.7
 			},
-			"filter": ["in", "class", "forest", "tree"]
+			"filter": [
+				"in",
+				"class",
+				"forest",
+				"tree"
+			]
 		},
 		{
 			"id": "Wood",
@@ -71,12 +86,22 @@
 				"fill-color": "hsl(140, 60%, 75%)",
 				"fill-opacity": {
 					"stops": [
-						[7, 0.7],
-						[12, 1]
+						[
+							7,
+							0.7
+						],
+						[
+							12,
+							1
+						]
 					]
 				}
 			},
-			"filter": ["==", "class", "wood"]
+			"filter": [
+				"==",
+				"class",
+				"wood"
+			]
 		},
 		{
 			"id": "Grass",
@@ -92,12 +117,22 @@
 				"fill-color": "hsl(135, 70%, 85%)",
 				"fill-opacity": {
 					"stops": [
-						[7, 0.7],
-						[12, 1]
+						[
+							7,
+							0.7
+						],
+						[
+							12,
+							1
+						]
 					]
 				}
 			},
-			"filter": ["==", "class", "grass"]
+			"filter": [
+				"==",
+				"class",
+				"grass"
+			]
 		},
 		{
 			"id": "Sand",
@@ -113,12 +148,22 @@
 				"fill-color": "hsl(45, 20%, 90%)",
 				"fill-opacity": {
 					"stops": [
-						[7, 0.7],
-						[12, 1]
+						[
+							7,
+							0.7
+						],
+						[
+							12,
+							1
+						]
 					]
 				}
 			},
-			"filter": ["==", "class", "sand"]
+			"filter": [
+				"==",
+				"class",
+				"sand"
+			]
 		},
 		{
 			"id": "Residential",
@@ -132,13 +177,28 @@
 				"fill-color": {
 					"base": 1,
 					"stops": [
-						[4, "hsl(0, 0%, 97%)"],
-						[12, "hsl(0, 0%, 97%)"],
-						[16, "hsla(0, 0%, 97%, 0)"]
+						[
+							4,
+							"hsl(0, 0%, 97%)"
+						],
+						[
+							12,
+							"hsl(0, 0%, 97%)"
+						],
+						[
+							16,
+							"hsla(0, 0%, 97%, 0)"
+						]
 					]
 				}
 			},
-			"filter": ["in", "class", "neighbourhood", "residential", "suburb"]
+			"filter": [
+				"in",
+				"class",
+				"neighbourhood",
+				"residential",
+				"suburb"
+			]
 		},
 		{
 			"id": "Other",
@@ -186,7 +246,11 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(100, 20%, 88%)"
 			},
-			"filter": ["==", "class", "quarry"]
+			"filter": [
+				"==",
+				"class",
+				"quarry"
+			]
 		},
 		{
 			"id": "Commercial",
@@ -200,7 +264,11 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(100, 20%, 92%)"
 			},
-			"filter": ["==", "class", "commercial"]
+			"filter": [
+				"==",
+				"class",
+				"commercial"
+			]
 		},
 		{
 			"id": "Industrial",
@@ -214,7 +282,12 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(100, 20%, 90%)"
 			},
-			"filter": ["in", "class", "garages", "industrial"]
+			"filter": [
+				"in",
+				"class",
+				"garages",
+				"industrial"
+			]
 		},
 		{
 			"id": "Cemetery",
@@ -228,7 +301,11 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(120, 45%, 88%)"
 			},
-			"filter": ["==", "class", "cemetery"]
+			"filter": [
+				"==",
+				"class",
+				"cemetery"
+			]
 		},
 		{
 			"id": "Stadium",
@@ -242,7 +319,13 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(120, 45%, 86%)"
 			},
-			"filter": ["in", "class", "stadium", "pitch", "track"]
+			"filter": [
+				"in",
+				"class",
+				"stadium",
+				"pitch",
+				"track"
+			]
 		},
 		{
 			"id": "Hospital",
@@ -256,7 +339,11 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(0, 50%, 96%)"
 			},
-			"filter": ["==", "class", "hospital"]
+			"filter": [
+				"==",
+				"class",
+				"hospital"
+			]
 		},
 		{
 			"id": "School",
@@ -270,7 +357,14 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(100, 25%, 90%)"
 			},
-			"filter": ["in", "class", "college", "kindergarten", "school", "university"]
+			"filter": [
+				"in",
+				"class",
+				"college",
+				"kindergarten",
+				"school",
+				"university"
+			]
 		},
 		{
 			"id": "Rail",
@@ -284,7 +378,11 @@
 				"fill-antialias": false,
 				"fill-color": "hsl(0, 0%, 90%)"
 			},
-			"filter": ["==", "class", "railway"]
+			"filter": [
+				"==",
+				"class",
+				"railway"
+			]
 		},
 		{
 			"id": "River tunnel",
@@ -298,16 +396,29 @@
 			},
 			"paint": {
 				"line-color": "hsl(190, 70%, 65%)",
-				"line-dasharray": [2, 4],
+				"line-dasharray": [
+					2,
+					4
+				],
 				"line-width": {
 					"base": 1.3,
 					"stops": [
-						[12, 0.5],
-						[20, 6]
+						[
+							12,
+							0.5
+						],
+						[
+							20,
+							6
+						]
 					]
 				}
 			},
-			"filter": ["==", "brunnel", "tunnel"]
+			"filter": [
+				"==",
+				"brunnel",
+				"tunnel"
+			]
 		},
 		{
 			"id": "River",
@@ -323,13 +434,23 @@
 				"line-width": {
 					"base": 1.2,
 					"stops": [
-						[10, 0.8],
-						[20, 6]
+						[
+							10,
+							0.8
+						],
+						[
+							20,
+							6
+						]
 					]
 				}
 			},
 			"metadata": {},
-			"filter": ["!=", "brunnel", "tunnel"]
+			"filter": [
+				"!=",
+				"brunnel",
+				"tunnel"
+			]
 		},
 		{
 			"id": "Water offset",
@@ -347,12 +468,28 @@
 				"fill-translate": {
 					"base": 1,
 					"stops": [
-						[1, [1.5, 1.5]],
-						[9, [0.5, 0.5]]
+						[
+							1,
+							[
+								1.5,
+								1.5
+							]
+						],
+						[
+							9,
+							[
+								0.5,
+								0.5
+							]
+						]
 					]
 				}
 			},
-			"filter": ["==", "$type", "Polygon"]
+			"filter": [
+				"==",
+				"$type",
+				"Polygon"
+			]
 		},
 		{
 			"id": "Water intermittent",
@@ -368,7 +505,11 @@
 				"fill-opacity": 0.7
 			},
 			"metadata": {},
-			"filter": ["==", "intermittent", 1]
+			"filter": [
+				"==",
+				"intermittent",
+				1
+			]
 		},
 		{
 			"id": "Water",
@@ -384,7 +525,11 @@
 				"fill-opacity": 1
 			},
 			"metadata": {},
-			"filter": ["!=", "intermittent", 1]
+			"filter": [
+				"!=",
+				"intermittent",
+				1
+			]
 		},
 		{
 			"id": "Ferry",
@@ -398,16 +543,41 @@
 			},
 			"paint": {
 				"line-color": "hsl(199,34%,57%)",
-				"line-dasharray": [2, 2],
-				"line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 9, 1],
+				"line-dasharray": [
+					2,
+					2
+				],
+				"line-opacity": [
+					"interpolate",
+					[
+						"linear"
+					],
+					[
+						"zoom"
+					],
+					5,
+					0,
+					9,
+					1
+				],
 				"line-width": {
 					"stops": [
-						[10, 0.5],
-						[14, 1.1]
+						[
+							10,
+							0.5
+						],
+						[
+							14,
+							1.1
+						]
 					]
 				}
 			},
-			"filter": ["in", "class", "ferry"]
+			"filter": [
+				"in",
+				"class",
+				"ferry"
+			]
 		},
 		{
 			"id": "Building",
@@ -419,8 +589,14 @@
 				"fill-color": {
 					"base": 1,
 					"stops": [
-						[15.5, "hsl(0, 0%, 94%)"],
-						[16, "hsl(0, 0%, 90%)"]
+						[
+							15.5,
+							"hsl(0, 0%, 94%)"
+						],
+						[
+							16,
+							"hsl(0, 0%, 90%)"
+						]
 					]
 				}
 			}
@@ -438,16 +614,34 @@
 				"fill-opacity": {
 					"base": 1,
 					"stops": [
-						[13, 0],
-						[16, 1]
+						[
+							13,
+							0
+						],
+						[
+							16,
+							1
+						]
 					]
 				},
 				"fill-outline-color": "hsl(0, 0%, 88%)",
 				"fill-translate": {
 					"base": 1,
 					"stops": [
-						[14, [0, 0]],
-						[16, [-2, -2]]
+						[
+							14,
+							[
+								0,
+								0
+							]
+						],
+						[
+							16,
+							[
+								-2,
+								-2
+							]
+						]
 					]
 				}
 			}
@@ -466,16 +660,31 @@
 			"paint": {
 				"line-color": [
 					"match",
-					["get", "class"],
-					["motorway", "trunk", "primary"],
+					[
+						"get",
+						"class"
+					],
+					[
+						"motorway",
+						"trunk",
+						"primary"
+					],
 					"hsl(210, 20%, 60%)",
 					"hsl(210, 10%, 80%)"
 				],
-				"line-dasharray": [0.5, 0.25],
+				"line-dasharray": [
+					0.5,
+					0.25
+				],
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					6,
 					0,
 					7,
@@ -483,70 +692,167 @@
 					10,
 					[
 						"match",
-						["get", "class"],
-						["motorway"],
-						["match", ["get", "ramp"], 1, 0, 2.5],
-						["trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							0,
+							2.5
+						],
+						[
+							"trunk",
+							"primary"
+						],
 						2,
 						0
 					],
 					12,
 					[
 						"match",
-						["get", "class"],
-						["motorway"],
-						["match", ["get", "ramp"], 1, 2, 6],
-						["trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							2,
+							6
+						],
+						[
+							"trunk",
+							"primary"
+						],
 						3,
-						["secondary", "tertiary"],
+						[
+							"secondary",
+							"tertiary"
+						],
 						2,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						1,
 						0.5
 					],
 					14,
 					[
 						"match",
-						["get", "class"],
-						["motorway"],
-						["match", ["get", "ramp"], 1, 5, 8],
-						["trunk"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							5,
+							8
+						],
+						[
+							"trunk"
+						],
 						4,
-						["primary"],
+						[
+							"primary"
+						],
 						6,
-						["secondary"],
+						[
+							"secondary"
+						],
 						6,
-						["tertiary"],
+						[
+							"tertiary"
+						],
 						4,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						3,
 						3
 					],
 					16,
 					[
 						"match",
-						["get", "class"],
-						["motorway", "trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway",
+							"trunk",
+							"primary"
+						],
 						10,
-						["secondary"],
+						[
+							"secondary"
+						],
 						8,
-						["tertiary"],
+						[
+							"tertiary"
+						],
 						8,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						4,
 						4
 					],
 					20,
 					[
 						"match",
-						["get", "class"],
-						["motorway", "trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway",
+							"trunk",
+							"primary"
+						],
 						26,
-						["secondary"],
+						[
+							"secondary"
+						],
 						26,
-						["tertiary"],
+						[
+							"tertiary"
+						],
 						26,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						18,
 						18
 					]
@@ -555,7 +861,11 @@
 			"metadata": {},
 			"filter": [
 				"all",
-				["==", "brunnel", "tunnel"],
+				[
+					"==",
+					"brunnel",
+					"tunnel"
+				],
 				[
 					"!in",
 					"class",
@@ -587,17 +897,41 @@
 			},
 			"paint": {
 				"line-color": "hsl(210, 10%, 80%)",
-				"line-dasharray": [2, 1],
+				"line-dasharray": [
+					2,
+					1
+				],
 				"line-width": {
 					"base": 1.4,
 					"stops": [
-						[14, 0.4],
-						[15, 0.75],
-						[20, 2]
+						[
+							14,
+							0.4
+						],
+						[
+							15,
+							0.75
+						],
+						[
+							20,
+							2
+						]
 					]
 				}
 			},
-			"filter": ["all", ["==", "brunnel", "tunnel"], ["==", "class", "rail"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"==",
+					"class",
+					"rail"
+				]
+			]
 		},
 		{
 			"id": "Tunnel",
@@ -613,99 +947,227 @@
 			"paint": {
 				"line-color": [
 					"match",
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
 					"motorway",
 					"hsl(210, 30%, 85%)",
-					["trunk", "primary"],
+					[
+						"trunk",
+						"primary"
+					],
 					"hsl(210, 20%, 90%)",
 					"hsl(0, 0%, 100%)"
 				],
 				"line-opacity": 1,
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					5,
 					0,
 					6,
 					[
 						"match",
-						["get", "class"],
-						["motorway"],
-						["match", ["get", "brunnel"], ["bridge"], 0, 1],
-						["trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"brunnel"
+							],
+							[
+								"bridge"
+							],
+							0,
+							1
+						],
+						[
+							"trunk",
+							"primary"
+						],
 						0,
 						0
 					],
 					10,
 					[
 						"match",
-						["get", "class"],
-						["motorway"],
-						["match", ["get", "ramp"], 1, 0, 2.5],
-						["trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							0,
+							2.5
+						],
+						[
+							"trunk",
+							"primary"
+						],
 						1.5,
 						1
 					],
 					12,
 					[
 						"match",
-						["get", "class"],
-						["motorway"],
-						["match", ["get", "ramp"], 1, 1, 4],
-						["trunk"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							1,
+							4
+						],
+						[
+							"trunk"
+						],
 						2.5,
-						["primary"],
+						[
+							"primary"
+						],
 						2.5,
-						["secondary", "tertiary"],
+						[
+							"secondary",
+							"tertiary"
+						],
 						1.5,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						1,
 						1
 					],
 					14,
 					[
 						"match",
-						["get", "class"],
-						["motorway"],
-						["match", ["get", "ramp"], 1, 5, 6],
-						["trunk"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							5,
+							6
+						],
+						[
+							"trunk"
+						],
 						3,
-						["primary"],
+						[
+							"primary"
+						],
 						5,
-						["secondary"],
+						[
+							"secondary"
+						],
 						4,
-						["tertiary"],
+						[
+							"tertiary"
+						],
 						3,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						2,
 						2
 					],
 					16,
 					[
 						"match",
-						["get", "class"],
-						["motorway", "trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway",
+							"trunk",
+							"primary"
+						],
 						8,
-						["secondary"],
+						[
+							"secondary"
+						],
 						7,
-						["tertiary"],
+						[
+							"tertiary"
+						],
 						6,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						4,
 						4
 					],
 					20,
 					[
 						"match",
-						["get", "class"],
-						["motorway", "trunk", "primary"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway",
+							"trunk",
+							"primary"
+						],
 						24,
-						["secondary"],
+						[
+							"secondary"
+						],
 						24,
-						["tertiary"],
+						[
+							"tertiary"
+						],
 						24,
-						["minor", "service", "track"],
+						[
+							"minor",
+							"service",
+							"track"
+						],
 						16,
 						16
 					]
@@ -714,7 +1176,11 @@
 			"metadata": {},
 			"filter": [
 				"all",
-				["==", "brunnel", "tunnel"],
+				[
+					"==",
+					"brunnel",
+					"tunnel"
+				],
 				[
 					"!in",
 					"class",
@@ -748,13 +1214,51 @@
 				"line-color": "hsl(210, 10%, 95%)",
 				"line-dasharray": {
 					"stops": [
-						[14, [1, 0.75]],
-						[18, [1, 0.5]]
+						[
+							14,
+							[
+								1,
+								0.75
+							]
+						],
+						[
+							18,
+							[
+								1,
+								0.5
+							]
+						]
 					]
 				},
-				"line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.8, 16, 1, 20, 3.4]
+				"line-width": [
+					"interpolate",
+					[
+						"linear"
+					],
+					[
+						"zoom"
+					],
+					14,
+					0.8,
+					16,
+					1,
+					20,
+					3.4
+				]
 			},
-			"filter": ["all", ["==", "brunnel", "tunnel"], ["==", "class", "path"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"==",
+					"class",
+					"path"
+				]
+			]
 		},
 		{
 			"id": "Runway",
@@ -769,7 +1273,11 @@
 				"fill-color": "hsl(210, 10%, 85%)",
 				"fill-opacity": 1
 			},
-			"filter": ["in", "class", "runway"]
+			"filter": [
+				"in",
+				"class",
+				"runway"
+			]
 		},
 		{
 			"id": "Aeroway",
@@ -786,16 +1294,47 @@
 				"line-color": "hsl(210, 10%, 85%)",
 				"line-width": [
 					"interpolate",
-					["linear", 1],
-					["zoom"],
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
 					11,
-					["match", ["get", "class"], ["runway"], 3, 0.5],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"runway"
+						],
+						3,
+						0.5
+					],
 					20,
-					["match", ["get", "class"], ["runway"], 16, 6]
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"runway"
+						],
+						16,
+						6
+					]
 				]
 			},
 			"metadata": {},
-			"filter": ["==", "$type", "LineString"]
+			"filter": [
+				"==",
+				"$type",
+				"LineString"
+			]
 		},
 		{
 			"id": "Helipad",
@@ -811,7 +1350,11 @@
 				"fill-opacity": 1
 			},
 			"metadata": {},
-			"filter": ["in", "class", "helipad"]
+			"filter": [
+				"in",
+				"class",
+				"helipad"
+			]
 		},
 		{
 			"id": "Pier",
@@ -826,7 +1369,19 @@
 				"fill-color": "hsl(210, 10%, 95%)"
 			},
 			"metadata": {},
-			"filter": ["all", ["==", "$type", "Polygon"], ["==", "class", "pier"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"$type",
+					"Polygon"
+				],
+				[
+					"==",
+					"class",
+					"pier"
+				]
+			]
 		},
 		{
 			"id": "Pier road",
@@ -843,13 +1398,31 @@
 				"line-width": {
 					"base": 1.2,
 					"stops": [
-						[15, 1],
-						[17, 4]
+						[
+							15,
+							1
+						],
+						[
+							17,
+							4
+						]
 					]
 				}
 			},
 			"metadata": {},
-			"filter": ["all", ["==", "$type", "LineString"], ["in", "class", "pier"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"in",
+					"class",
+					"pier"
+				]
+			]
 		},
 		{
 			"id": "Bridge",
@@ -864,7 +1437,19 @@
 				"fill-color": "hsl(210, 10%, 95%)",
 				"fill-opacity": 0.5
 			},
-			"filter": ["all", ["==", "$type", "Polygon"], ["in", "brunnel", "bridge"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"$type",
+					"Polygon"
+				],
+				[
+					"in",
+					"brunnel",
+					"bridge"
+				]
+			]
 		},
 		{
 			"id": "Road under construction",
@@ -880,7 +1465,10 @@
 			"paint": {
 				"line-color": [
 					"match",
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
 					"motorway_construction",
 					"hsl(210, 30%, 85%)",
 					[
@@ -892,91 +1480,228 @@
 					"hsl(210, 20%, 90%)",
 					"hsl(0,0%,100%)"
 				],
-				"line-dasharray": [1, 1],
-				"line-opacity": ["case", ["==", ["get", "brunnel"], "tunnel"], 0.7, 1],
+				"line-dasharray": [
+					1,
+					1
+				],
+				"line-opacity": [
+					"case",
+					[
+						"==",
+						[
+							"get",
+							"brunnel"
+						],
+						"tunnel"
+					],
+					0.7,
+					1
+				],
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					5,
 					[
 						"match",
-						["get", "class"],
-						["motorway_construction"],
-						["match", ["get", "brunnel"], ["bridge"], 0, 0.5],
-						["trunk_construction", "primary_construction"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway_construction"
+						],
+						[
+							"match",
+							[
+								"get",
+								"brunnel"
+							],
+							[
+								"bridge"
+							],
+							0,
+							0.5
+						],
+						[
+							"trunk_construction",
+							"primary_construction"
+						],
 						0,
 						0
 					],
 					10,
 					[
 						"match",
-						["get", "class"],
-						["motorway_construction"],
-						["match", ["get", "ramp"], 1, 0, 2.5],
-						["trunk_construction", "primary_construction"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway_construction"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							0,
+							2.5
+						],
+						[
+							"trunk_construction",
+							"primary_construction"
+						],
 						1.5,
 						1
 					],
 					12,
 					[
 						"match",
-						["get", "class"],
-						["motorway_construction"],
-						["match", ["get", "ramp"], 1, 1, 4],
-						["trunk_construction"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway_construction"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							1,
+							4
+						],
+						[
+							"trunk_construction"
+						],
 						2.5,
-						["primary_construction"],
+						[
+							"primary_construction"
+						],
 						2.5,
-						["secondary_construction", "tertiary_construction"],
+						[
+							"secondary_construction",
+							"tertiary_construction"
+						],
 						1.5,
-						["minor_construction", "service_construction", "track_construction"],
+						[
+							"minor_construction",
+							"service_construction",
+							"track_construction"
+						],
 						1,
 						1
 					],
 					14,
 					[
 						"match",
-						["get", "class"],
-						["motorway_construction"],
-						["match", ["get", "ramp"], 1, 5, 6],
-						["trunk_construction"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway_construction"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							5,
+							6
+						],
+						[
+							"trunk_construction"
+						],
 						3,
-						["primary_construction"],
+						[
+							"primary_construction"
+						],
 						5,
-						["secondary_construction"],
+						[
+							"secondary_construction"
+						],
 						4,
-						["tertiary_construction"],
+						[
+							"tertiary_construction"
+						],
 						3,
-						["minor_construction", "service_construction", "track_construction"],
+						[
+							"minor_construction",
+							"service_construction",
+							"track_construction"
+						],
 						2,
 						2
 					],
 					16,
 					[
 						"match",
-						["get", "class"],
-						["motorway_construction", "trunk_construction", "primary_construction"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway_construction",
+							"trunk_construction",
+							"primary_construction"
+						],
 						8,
-						["secondary_construction"],
+						[
+							"secondary_construction"
+						],
 						7,
-						["tertiary_construction"],
+						[
+							"tertiary_construction"
+						],
 						6,
-						["minor_construction", "service_construction", "track_construction"],
+						[
+							"minor_construction",
+							"service_construction",
+							"track_construction"
+						],
 						4,
 						4
 					],
 					20,
 					[
 						"match",
-						["get", "class"],
-						["motorway_construction", "trunk_construction", "primary_construction"],
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway_construction",
+							"trunk_construction",
+							"primary_construction"
+						],
 						24,
-						["secondary_construction"],
+						[
+							"secondary_construction"
+						],
 						24,
-						["tertiary_construction"],
+						[
+							"tertiary_construction"
+						],
 						24,
-						["minor_construction", "service_construction", "track_construction"],
+						[
+							"minor_construction",
+							"service_construction",
+							"track_construction"
+						],
 						16,
 						16
 					]
@@ -1014,8 +1739,13 @@
 				"line-opacity": 1,
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					6,
 					0,
 					7,
@@ -1035,7 +1765,11 @@
 			"metadata": {},
 			"filter": [
 				"all",
-				["!in", "brunnel", "tunnel"],
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
 				[
 					"in",
 					"class",
@@ -1066,8 +1800,13 @@
 				"line-opacity": 1,
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					6,
 					0,
 					7,
@@ -1087,8 +1826,19 @@
 			"metadata": {},
 			"filter": [
 				"all",
-				["!in", "brunnel", "tunnel"],
-				["in", "class", "primary", "secondary", "tertiary", "trunk"]
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"in",
+					"class",
+					"primary",
+					"secondary",
+					"tertiary",
+					"trunk"
+				]
 			]
 		},
 		{
@@ -1107,26 +1857,129 @@
 				"line-opacity": 1,
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					6,
 					0,
 					7,
 					0.3,
 					10,
-					["match", ["get", "class"], ["motorway"], ["match", ["get", "ramp"], 1, 0, 1.7], 0.7],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							0,
+							1.7
+						],
+						0.7
+					],
 					12,
-					["match", ["get", "class"], ["motorway"], ["match", ["get", "ramp"], 1, 1.4, 4.2], 0.7],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							1.4,
+							4.2
+						],
+						0.7
+					],
 					14,
-					["match", ["get", "class"], ["motorway"], ["match", ["get", "ramp"], 1, 3.5, 5.6], 1.4],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							3.5,
+							5.6
+						],
+						1.4
+					],
 					16,
-					["match", ["get", "class"], ["motorway"], 7, 2.8],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						7,
+						2.8
+					],
 					20,
-					["match", ["get", "class"], ["motorway"], 18, 11]
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						18,
+						11
+					]
 				]
 			},
 			"metadata": {},
-			"filter": ["all", ["!in", "brunnel", "tunnel"], ["==", "class", "motorway"], ["!has", "ramp"]]
+			"filter": [
+				"all",
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"==",
+					"class",
+					"motorway"
+				],
+				[
+					"!has",
+					"ramp"
+				]
+			]
 		},
 		{
 			"id": "Minor road",
@@ -1142,15 +1995,23 @@
 			"paint": {
 				"line-color": [
 					"match",
-					["get", "brunnel"],
+					[
+						"get",
+						"brunnel"
+					],
 					"tunnel",
 					"hsla(0, 0%, 100%, 0.15)",
 					"hsl(0, 0%, 100%)"
 				],
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					10,
 					0.7,
 					12,
@@ -1166,7 +2027,11 @@
 			"metadata": {},
 			"filter": [
 				"all",
-				["!in", "brunnel", "tunnel"],
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
 				[
 					"in",
 					"class",
@@ -1196,8 +2061,13 @@
 				"line-color": "hsl(210, 25%, 80%)",
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					5,
 					0.35,
 					6,
@@ -1217,8 +2087,19 @@
 			"metadata": {},
 			"filter": [
 				"all",
-				["!in", "brunnel", "tunnel"],
-				["in", "class", "primary", "secondary", "tertiary", "trunk"]
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"in",
+					"class",
+					"primary",
+					"secondary",
+					"tertiary",
+					"trunk"
+				]
 			]
 		},
 		{
@@ -1237,26 +2118,125 @@
 				"line-opacity": 1,
 				"line-width": [
 					"interpolate",
-					["linear", 2],
-					["zoom"],
+					[
+						"linear",
+						2
+					],
+					[
+						"zoom"
+					],
 					5,
 					0.35,
 					6,
 					0.7,
 					10,
-					["match", ["get", "class"], ["motorway"], ["match", ["get", "ramp"], 1, 0, 1.7], 0.7],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							0,
+							1.7
+						],
+						0.7
+					],
 					12,
-					["match", ["get", "class"], ["motorway"], ["match", ["get", "ramp"], 1, 0.7, 2.8], 0.7],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							0.7,
+							2.8
+						],
+						0.7
+					],
 					14,
-					["match", ["get", "class"], ["motorway"], ["match", ["get", "ramp"], 1, 3.5, 4.2], 1.4],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						[
+							"match",
+							[
+								"get",
+								"ramp"
+							],
+							1,
+							3.5,
+							4.2
+						],
+						1.4
+					],
 					16,
-					["match", ["get", "class"], ["motorway"], 5.6, 2.8],
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						5.6,
+						2.8
+					],
 					20,
-					["match", ["get", "class"], ["motorway"], 16, 11]
+					[
+						"match",
+						[
+							"get",
+							"class"
+						],
+						[
+							"motorway"
+						],
+						16,
+						11
+					]
 				]
 			},
 			"metadata": {},
-			"filter": ["all", ["!in", "brunnel", "tunnel"], ["==", "class", "motorway"]]
+			"filter": [
+				"all",
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"==",
+					"class",
+					"motorway"
+				]
+			]
 		},
 		{
 			"id": "Bridge path outline",
@@ -1271,12 +2251,30 @@
 				"line-width": {
 					"base": 1.2,
 					"stops": [
-						[15, 1.2],
-						[20, 18]
+						[
+							15,
+							1.2
+						],
+						[
+							20,
+							18
+						]
 					]
 				}
 			},
-			"filter": ["all", ["==", "brunnel", "bridge"], ["==", "class", "path"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"brunnel",
+					"bridge"
+				],
+				[
+					"==",
+					"class",
+					"path"
+				]
+			]
 		},
 		{
 			"id": "Path minor",
@@ -1290,13 +2288,51 @@
 				"line-color": "hsl(0, 0%, 88%)",
 				"line-dasharray": {
 					"stops": [
-						[14, [1, 0.75]],
-						[18, [1, 0.5]]
+						[
+							14,
+							[
+								1,
+								0.75
+							]
+						],
+						[
+							18,
+							[
+								1,
+								0.5
+							]
+						]
 					]
 				},
-				"line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.8, 16, 1, 20, 3.4]
+				"line-width": [
+					"interpolate",
+					[
+						"linear"
+					],
+					[
+						"zoom"
+					],
+					14,
+					0.8,
+					16,
+					1,
+					20,
+					3.4
+				]
 			},
-			"filter": ["all", ["!in", "brunnel", "tunnel"], ["==", "class", "path_pedestrian"]]
+			"filter": [
+				"all",
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"==",
+					"class",
+					"path_pedestrian"
+				]
+			]
 		},
 		{
 			"id": "Path",
@@ -1310,13 +2346,51 @@
 				"line-color": "hsl(0, 0%, 88%)",
 				"line-dasharray": {
 					"stops": [
-						[14, [1, 0.75]],
-						[18, [1, 0.5]]
+						[
+							14,
+							[
+								1,
+								0.75
+							]
+						],
+						[
+							18,
+							[
+								1,
+								0.5
+							]
+						]
 					]
 				},
-				"line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.8, 16, 1, 20, 3.4]
+				"line-width": [
+					"interpolate",
+					[
+						"linear"
+					],
+					[
+						"zoom"
+					],
+					14,
+					0.8,
+					16,
+					1,
+					20,
+					3.4
+				]
 			},
-			"filter": ["all", ["!in", "brunnel", "tunnel"], ["==", "class", "path"]]
+			"filter": [
+				"all",
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				],
+				[
+					"==",
+					"class",
+					"path"
+				]
+			]
 		},
 		{
 			"id": "Transit",
@@ -1331,16 +2405,34 @@
 				"line-width": {
 					"base": 1.4,
 					"stops": [
-						[14, 0.4],
-						[20, 1]
+						[
+							14,
+							0.4
+						],
+						[
+							20,
+							1
+						]
 					]
 				}
 			},
 			"filter": [
 				"all",
-				["==", "$type", "LineString"],
-				["==", "class", "transit"],
-				["!in", "brunnel", "tunnel"]
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"==",
+					"class",
+					"transit"
+				],
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				]
 			]
 		},
 		{
@@ -1353,21 +2445,45 @@
 			},
 			"paint": {
 				"line-color": "hsl(0, 0%, 80%)",
-				"line-dasharray": [0.2, 8],
+				"line-dasharray": [
+					0.2,
+					8
+				],
 				"line-width": {
 					"base": 1.4,
 					"stops": [
-						[14.5, 0],
-						[15, 2],
-						[20, 6]
+						[
+							14.5,
+							0
+						],
+						[
+							15,
+							2
+						],
+						[
+							20,
+							6
+						]
 					]
 				}
 			},
 			"filter": [
 				"all",
-				["==", "$type", "LineString"],
-				["==", "class", "transit"],
-				["!in", "brunnel", "tunnel"]
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"==",
+					"class",
+					"transit"
+				],
+				[
+					"!in",
+					"brunnel",
+					"tunnel"
+				]
 			]
 		},
 		{
@@ -1380,17 +2496,47 @@
 			},
 			"paint": {
 				"line-color": "hsl(0, 0%, 80%)",
-				"line-opacity": ["match", ["get", "service"], "yard", 0.5, 1],
+				"line-opacity": [
+					"match",
+					[
+						"get",
+						"service"
+					],
+					"yard",
+					0.5,
+					1
+				],
 				"line-width": {
 					"base": 1.4,
 					"stops": [
-						[14, 0.4],
-						[15, 0.75],
-						[20, 2]
+						[
+							14,
+							0.4
+						],
+						[
+							15,
+							0.75
+						],
+						[
+							20,
+							2
+						]
 					]
 				}
 			},
-			"filter": ["all", ["==", "$type", "LineString"], ["==", "class", "rail"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"==",
+					"class",
+					"rail"
+				]
+			]
 		},
 		{
 			"id": "Railway hatching",
@@ -1402,18 +2548,51 @@
 			},
 			"paint": {
 				"line-color": "hsl(0, 0%, 80%)",
-				"line-dasharray": [0.2, 8],
-				"line-opacity": ["match", ["get", "service"], "yard", 0.5, 1],
+				"line-dasharray": [
+					0.2,
+					8
+				],
+				"line-opacity": [
+					"match",
+					[
+						"get",
+						"service"
+					],
+					"yard",
+					0.5,
+					1
+				],
 				"line-width": {
 					"base": 1.4,
 					"stops": [
-						[14.5, 0],
-						[15, 3],
-						[20, 8]
+						[
+							14.5,
+							0
+						],
+						[
+							15,
+							3
+						],
+						[
+							20,
+							8
+						]
 					]
 				}
 			},
-			"filter": ["all", ["==", "$type", "LineString"], ["==", "class", "rail"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"==",
+					"class",
+					"rail"
+				]
+			]
 		},
 		{
 			"id": "Cablecar",
@@ -1431,12 +2610,22 @@
 				"line-width": {
 					"base": 1,
 					"stops": [
-						[11, 1],
-						[19, 2.5]
+						[
+							11,
+							1
+						],
+						[
+							19,
+							2.5
+						]
 					]
 				}
 			},
-			"filter": ["==", "class", "aerialway"]
+			"filter": [
+				"==",
+				"class",
+				"aerialway"
+			]
 		},
 		{
 			"id": "Cablecar dash",
@@ -1450,17 +2639,30 @@
 			},
 			"paint": {
 				"line-color": "hsl(0, 0%, 70%)",
-				"line-dasharray": [2, 3],
+				"line-dasharray": [
+					2,
+					3
+				],
 				"line-opacity": 1,
 				"line-width": {
 					"base": 1,
 					"stops": [
-						[11, 2.5],
-						[19, 5]
+						[
+							11,
+							2.5
+						],
+						[
+							19,
+							5
+						]
 					]
 				}
 			},
-			"filter": ["==", "class", "aerialway"]
+			"filter": [
+				"==",
+				"class",
+				"aerialway"
+			]
 		},
 		{
 			"id": "Other border",
@@ -1474,18 +2676,54 @@
 			},
 			"paint": {
 				"line-color": "hsl(248, 8%, 64%)",
-				"line-dasharray": [3, 1, 1, 1],
+				"line-dasharray": [
+					3,
+					1,
+					1,
+					1
+				],
 				"line-width": {
 					"base": 1.4,
 					"stops": [
-						[4, 0.4],
-						[5, 1],
-						[12, 1.2],
-						[16, 1.6]
+						[
+							4,
+							0.4
+						],
+						[
+							5,
+							1
+						],
+						[
+							12,
+							1.2
+						],
+						[
+							16,
+							1.6
+						]
 					]
 				}
 			},
-			"filter": ["all", ["in", "admin_level", 3, 4, 5, 6, 7, 8, 9, 10], ["==", "maritime", 0]]
+			"filter": [
+				"all",
+				[
+					"in",
+					"admin_level",
+					3,
+					4,
+					5,
+					6,
+					7,
+					8,
+					9,
+					10
+				],
+				[
+					"==",
+					"maritime",
+					0
+				]
+			]
 		},
 		{
 			"id": "Disputed border",
@@ -1499,18 +2737,50 @@
 			},
 			"paint": {
 				"line-color": "hsl(251, 7%, 70%)",
-				"line-dasharray": [1, 3],
+				"line-dasharray": [
+					1,
+					3
+				],
 				"line-width": {
 					"base": 1,
 					"stops": [
-						[0, 0.6],
-						[4, 1],
-						[5, 1.4],
-						[12, 6]
+						[
+							0,
+							0.6
+						],
+						[
+							4,
+							1
+						],
+						[
+							5,
+							1.4
+						],
+						[
+							12,
+							6
+						]
 					]
 				}
 			},
-			"filter": ["all", ["==", "admin_level", 2], ["==", "disputed", 1], ["==", "maritime", 0]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"admin_level",
+					2
+				],
+				[
+					"==",
+					"disputed",
+					1
+				],
+				[
+					"==",
+					"maritime",
+					0
+				]
+			]
 		},
 		{
 			"id": "Country border",
@@ -1527,14 +2797,43 @@
 				"line-width": {
 					"base": 1,
 					"stops": [
-						[0, 0.6],
-						[4, 1],
-						[5, 1.4],
-						[12, 6]
+						[
+							0,
+							0.6
+						],
+						[
+							4,
+							1
+						],
+						[
+							5,
+							1.4
+						],
+						[
+							12,
+							6
+						]
 					]
 				}
 			},
-			"filter": ["all", ["==", "admin_level", 2], ["==", "disputed", 0], ["==", "maritime", 0]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"admin_level",
+					2
+				],
+				[
+					"==",
+					"disputed",
+					0
+				],
+				[
+					"==",
+					"maritime",
+					0
+				]
+			]
 		},
 		{
 			"id": "River labels",
@@ -1545,15 +2844,33 @@
 			"layout": {
 				"symbol-placement": "line",
 				"symbol-spacing": 350,
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Noto Sans Italic"],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Noto Sans Italic"
+				],
 				"text-letter-spacing": 0.1,
 				"text-max-width": 5,
 				"text-rotation-alignment": "map",
 				"text-size": {
 					"stops": [
-						[13, 14],
-						[16, 18]
+						[
+							13,
+							14
+						],
+						[
+							16,
+							18
+						]
 					]
 				},
 				"visibility": "visible"
@@ -1564,7 +2881,18 @@
 				"text-halo-color": "hsla(190, 100%, 97%, 0.7)",
 				"text-halo-width": 1.5
 			},
-			"filter": ["all", ["==", "$type", "LineString"], ["has", "name"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
 		},
 		{
 			"id": "Lakeline labels",
@@ -1574,8 +2902,20 @@
 			"layout": {
 				"symbol-placement": "line",
 				"symbol-spacing": 350,
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Noto Sans Italic"],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Noto Sans Italic"
+				],
 				"text-letter-spacing": 0.1,
 				"text-max-width": 5,
 				"text-rotation-alignment": "map",
@@ -1587,7 +2927,11 @@
 				"text-halo-color": "hsla(0,0%,100%,0.7)",
 				"text-halo-width": 1.5
 			},
-			"filter": ["==", "$type", "LineString"]
+			"filter": [
+				"==",
+				"$type",
+				"LineString"
+			]
 		},
 		{
 			"id": "Ocean labels",
@@ -1600,10 +2944,25 @@
 				"symbol-placement": "point",
 				"symbol-spacing": 350,
 				"text-field": "{name:en}",
-				"text-font": ["Noto Sans Italic"],
+				"text-font": [
+					"Noto Sans Italic"
+				],
 				"text-letter-spacing": 0.1,
 				"text-max-width": 5,
-				"text-size": ["interpolate", ["linear", 1], ["zoom"], 1, 13, 3, 16],
+				"text-size": [
+					"interpolate",
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
+					1,
+					13,
+					3,
+					16
+				],
 				"visibility": "visible"
 			},
 			"paint": {
@@ -1614,7 +2973,18 @@
 				"text-halo-width": 1.2,
 				"text-opacity": 1
 			},
-			"filter": ["all", ["==", "class", "ocean"], ["has", "name"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"class",
+					"ocean"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
 		},
 		{
 			"id": "Sea labels",
@@ -1625,11 +2995,40 @@
 			"layout": {
 				"symbol-placement": "point",
 				"symbol-spacing": 350,
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Noto Sans Italic"],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Noto Sans Italic"
+				],
 				"text-letter-spacing": 0.1,
 				"text-max-width": 5,
-				"text-size": ["interpolate", ["linear", 1], ["zoom"], 1, 10, 3, 14, 9, 18, 14, 20],
+				"text-size": [
+					"interpolate",
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
+					1,
+					10,
+					3,
+					14,
+					9,
+					18,
+					14,
+					20
+				],
 				"visibility": "visible"
 			},
 			"paint": {
@@ -1640,7 +3039,18 @@
 				"text-halo-width": 1.2,
 				"text-opacity": 1
 			},
-			"filter": ["all", ["==", "class", "sea"], ["has", "name"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"class",
+					"sea"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
 		},
 		{
 			"id": "Lake labels",
@@ -1651,12 +3061,37 @@
 			"layout": {
 				"symbol-placement": "point",
 				"symbol-spacing": 350,
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Noto Sans Italic"],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Noto Sans Italic"
+				],
 				"text-letter-spacing": 0.1,
 				"text-max-width": 5,
 				"text-rotation-alignment": "map",
-				"text-size": ["interpolate", ["linear", 1], ["zoom"], 9, 12, 14, 14],
+				"text-size": [
+					"interpolate",
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
+					9,
+					12,
+					14,
+					14
+				],
 				"visibility": "visible"
 			},
 			"paint": {
@@ -1667,7 +3102,18 @@
 				"text-halo-width": 1.2,
 				"text-opacity": 1
 			},
-			"filter": ["all", ["==", "class", "lake"], ["has", "name"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"class",
+					"lake"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
 		},
 		{
 			"id": "Ferry labels",
@@ -1677,24 +3123,52 @@
 			"minzoom": 12.2,
 			"layout": {
 				"symbol-placement": "line",
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Noto Sans Italic"],
-				"text-offset": [0, 0.5],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Noto Sans Italic"
+				],
+				"text-offset": [
+					0,
+					0.5
+				],
 				"text-rotation-alignment": "map",
 				"text-size": {
 					"base": 1,
 					"stops": [
-						[13, 11],
-						[14, 12]
+						[
+							13,
+							11
+						],
+						[
+							14,
+							12
+						]
 					]
 				},
 				"visibility": "visible"
 			},
 			"paint": {
 				"text-color": "hsl(222,32%,30%)",
-				"text-translate": [9, 0]
+				"text-translate": [
+					9,
+					0
+				]
 			},
-			"filter": ["in", "class", "ferry"]
+			"filter": [
+				"in",
+				"class",
+				"ferry"
+			]
 		},
 		{
 			"id": "Oneway road",
@@ -1706,7 +3180,22 @@
 				"icon-image": "oneway",
 				"icon-padding": 2,
 				"icon-rotation-alignment": "map",
-				"icon-size": ["interpolate", ["exponential", 1], ["zoom"], 15, 0.5, 17, 0.7, 19, 1],
+				"icon-size": [
+					"interpolate",
+					[
+						"exponential",
+						1
+					],
+					[
+						"zoom"
+					],
+					15,
+					0.5,
+					17,
+					0.7,
+					19,
+					1
+				],
 				"symbol-placement": "line",
 				"symbol-spacing": 75,
 				"visibility": "visible"
@@ -1716,8 +3205,22 @@
 			},
 			"filter": [
 				"all",
-				["==", "oneway", 1],
-				["in", "class", "motorway", "trunk", "primary", "secondary", "tertiary", "minor", "service"]
+				[
+					"==",
+					"oneway",
+					1
+				],
+				[
+					"in",
+					"class",
+					"motorway",
+					"trunk",
+					"primary",
+					"secondary",
+					"tertiary",
+					"minor",
+					"service"
+				]
 			]
 		},
 		{
@@ -1730,18 +3233,43 @@
 				"symbol-placement": "line",
 				"symbol-spacing": {
 					"stops": [
-						[20, 250],
-						[22, 600]
+						[
+							20,
+							250
+						],
+						[
+							22,
+							600
+						]
 					]
 				},
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Open Sans Regular", "Noto Sans Regular"],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Open Sans Regular",
+					"Noto Sans Regular"
+				],
 				"text-rotation-alignment": "map",
 				"text-size": {
 					"base": 1,
 					"stops": [
-						[13, 12],
-						[14, 13]
+						[
+							13,
+							12
+						],
+						[
+							14,
+							13
+						]
 					]
 				},
 				"visibility": "visible"
@@ -1757,7 +3285,11 @@
 			},
 			"filter": [
 				"all",
-				["==", "$type", "LineString"],
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
 				[
 					"in",
 					"class",
@@ -1779,19 +3311,35 @@
 			"source-layer": "transportation_name",
 			"minzoom": 8,
 			"layout": {
-				"icon-image": ["concat", "road", "_", ["get", "ref_length"]],
+				"icon-image": [
+					"concat",
+					"road",
+					"_",
+					[
+						"get",
+						"ref_length"
+					]
+				],
 				"icon-rotation-alignment": "viewport",
 				"icon-size": 1,
 				"symbol-placement": {
 					"base": 1,
 					"stops": [
-						[10, "point"],
-						[11, "line"]
+						[
+							10,
+							"point"
+						],
+						[
+							11,
+							"line"
+						]
 					]
 				},
 				"symbol-spacing": 200,
 				"text-field": "{ref}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-rotation-alignment": "viewport",
 				"text-size": 10,
 				"visibility": "visible"
@@ -1805,9 +3353,23 @@
 			},
 			"filter": [
 				"all",
-				["<=", "ref_length", 6],
-				["==", "$type", "LineString"],
-				["!in", "network", "us-interstate", "us-highway", "us-state"]
+				[
+					"<=",
+					"ref_length",
+					6
+				],
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"!in",
+					"network",
+					"us-interstate",
+					"us-highway",
+					"us-state"
+				]
 			]
 		},
 		{
@@ -1817,20 +3379,42 @@
 			"source-layer": "transportation_name",
 			"minzoom": 7,
 			"layout": {
-				"icon-image": ["concat", ["get", "network"], "_", ["get", "ref_length"]],
+				"icon-image": [
+					"concat",
+					[
+						"get",
+						"network"
+					],
+					"_",
+					[
+						"get",
+						"ref_length"
+					]
+				],
 				"icon-rotation-alignment": "viewport",
 				"icon-size": 1,
 				"symbol-placement": {
 					"base": 1,
 					"stops": [
-						[7, "point"],
-						[7, "line"],
-						[8, "line"]
+						[
+							7,
+							"point"
+						],
+						[
+							7,
+							"line"
+						],
+						[
+							8,
+							"line"
+						]
 					]
 				},
 				"symbol-spacing": 200,
 				"text-field": "{ref}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-rotation-alignment": "viewport",
 				"text-size": 10,
 				"visibility": "visible"
@@ -1845,9 +3429,23 @@
 			},
 			"filter": [
 				"all",
-				["<=", "ref_length", 6],
-				["==", "$type", "LineString"],
-				["in", "network", "us-interstate", "us-highway", "us-state"]
+				[
+					"<=",
+					"ref_length",
+					6
+				],
+				[
+					"==",
+					"$type",
+					"LineString"
+				],
+				[
+					"in",
+					"network",
+					"us-interstate",
+					"us-highway",
+					"us-state"
+				]
 			]
 		},
 		{
@@ -1860,16 +3458,37 @@
 				"icon-image": "airport",
 				"icon-size": 1,
 				"text-anchor": "top",
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Noto Sans Regular"],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": {
 					"stops": [
-						[11, 12],
-						[16, 14]
+						[
+							11,
+							12
+						],
+						[
+							16,
+							14
+						]
 					]
 				},
 				"visibility": "visible"
@@ -1884,7 +3503,10 @@
 				"text-halo-color": "hsl(0, 0%, 100%)",
 				"text-halo-width": 1.5
 			},
-			"filter": ["has", "iata"]
+			"filter": [
+				"has",
+				"iata"
+			]
 		},
 		{
 			"id": "Other POI",
@@ -1895,17 +3517,43 @@
 			"layout": {
 				"icon-image": [
 					"coalesce",
-					["image", ["get", "subclass"]],
-					["image", ["get", "class"]],
-					["image", "dot"]
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"dot"
+					]
 				],
 				"icon-size": 1,
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -1918,16 +3566,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -1937,16 +3635,66 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
@@ -2046,7 +3794,10 @@
 			"layout": {
 				"icon-image": [
 					"match",
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
 					[
 						"atm",
 						"bank",
@@ -2061,21 +3812,41 @@
 						"toilets",
 						"town_hall"
 					],
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
 					""
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2088,16 +3859,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2107,16 +3928,66 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
@@ -2147,23 +4018,52 @@
 			"layout": {
 				"icon-image": [
 					"match",
-					["get", "class"],
-					["art_gallery", "cinema", "museum", "music", "theatre"],
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
+					[
+						"art_gallery",
+						"cinema",
+						"museum",
+						"music",
+						"theatre"
+					],
+					[
+						"get",
+						"class"
+					],
 					""
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2176,16 +4076,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2195,24 +4145,85 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
 			},
 			"filter": [
 				"all",
-				["in", "class", "art_gallery", "cinema", "museum", "music", "theatre"],
-				["has", "name"]
+				[
+					"in",
+					"class",
+					"art_gallery",
+					"cinema",
+					"museum",
+					"music",
+					"theatre"
+				],
+				[
+					"has",
+					"name"
+				]
 			]
 		},
 		{
@@ -2222,19 +4233,52 @@
 			"source-layer": "poi",
 			"minzoom": 13,
 			"layout": {
-				"icon-image": ["match", ["get", "class"], ["bar", "beer", "cafe"], ["get", "class"], ""],
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"bar",
+						"beer",
+						"cafe"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2247,16 +4291,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2266,21 +4360,77 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
 			},
-			"filter": ["in", "class", "bar", "beer", "cafe"]
+			"filter": [
+				"in",
+				"class",
+				"bar",
+				"beer",
+				"cafe"
+			]
 		},
 		{
 			"id": "Food",
@@ -2291,23 +4441,51 @@
 			"layout": {
 				"icon-image": [
 					"match",
-					["get", "class"],
-					["bakery", "fast_food", "ice_cream", "restaurant"],
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
+					[
+						"bakery",
+						"fast_food",
+						"ice_cream",
+						"restaurant"
+					],
+					[
+						"get",
+						"class"
+					],
 					""
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2320,16 +4498,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2339,21 +4567,78 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
 			},
-			"filter": ["in", "class", "fast_food", "ice_cream", "restaurant", "bakery"]
+			"filter": [
+				"in",
+				"class",
+				"fast_food",
+				"ice_cream",
+				"restaurant",
+				"bakery"
+			]
 		},
 		{
 			"id": "Tourism",
@@ -2364,22 +4649,54 @@
 			"layout": {
 				"icon-image": [
 					"coalesce",
-					["image", ["get", "subclass"]],
-					["image", ["get", "class"]],
-					["image", "dot"]
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"dot"
+					]
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2392,16 +4709,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2411,16 +4778,66 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
@@ -2448,19 +4865,51 @@
 			"source-layer": "poi",
 			"minzoom": 13,
 			"layout": {
-				"icon-image": ["match", ["get", "class"], ["college", "school"], ["get", "class"], ""],
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"college",
+						"school"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2473,16 +4922,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2492,21 +4991,83 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
 			},
-			"filter": ["all", ["in", "class", "college", "school"], ["has", "name"]]
+			"filter": [
+				"all",
+				[
+					"in",
+					"class",
+					"college",
+					"school"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
 		},
 		{
 			"id": "Sport",
@@ -2517,22 +5078,54 @@
 			"layout": {
 				"icon-image": [
 					"coalesce",
-					["image", ["get", "subclass"]],
-					["image", ["get", "class"]],
-					["image", "dot"]
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"dot"
+					]
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2545,16 +5138,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2564,16 +5207,66 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
@@ -2594,7 +5287,10 @@
 					"swimming_pool",
 					"water_park"
 				],
-				["has", "name"]
+				[
+					"has",
+					"name"
+				]
 			]
 		},
 		{
@@ -2606,22 +5302,54 @@
 			"layout": {
 				"icon-image": [
 					"coalesce",
-					["image", ["get", "subclass"]],
-					["image", ["get", "class"]],
-					["image", "shop"]
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"shop"
+					]
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2634,16 +5362,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2653,16 +5431,66 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
@@ -2687,23 +5515,51 @@
 			"layout": {
 				"icon-image": [
 					"match",
-					["get", "class"],
-					["dentist", "doctors", "hospital", "pharmacy"],
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
+					[
+						"dentist",
+						"doctors",
+						"hospital",
+						"pharmacy"
+					],
+					[
+						"get",
+						"class"
+					],
 					""
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2716,16 +5572,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2735,21 +5641,78 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
 			},
-			"filter": ["in", "class", "dentist", "doctors", "hospital", "pharmacy"]
+			"filter": [
+				"in",
+				"class",
+				"dentist",
+				"doctors",
+				"hospital",
+				"pharmacy"
+			]
 		},
 		{
 			"id": "Transport",
@@ -2760,7 +5723,10 @@
 			"layout": {
 				"icon-image": [
 					"match",
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
 					[
 						"aerialway",
 						"bicycle",
@@ -2773,23 +5739,43 @@
 						"motorcycle_parking",
 						"parking"
 					],
-					["get", "class"],
+					[
+						"get",
+						"class"
+					],
 					"bus",
 					"bus_stop",
 					""
 				],
 				"icon-size": {
 					"stops": [
-						[14, 0.7],
-						[22, 1]
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2802,16 +5788,66 @@
 				"icon-halo-width": 1.5,
 				"icon-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				],
@@ -2821,16 +5857,66 @@
 				"text-halo-width": 1.5,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					14,
-					["case", ["<=", ["get", "rank"], 14], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
 					15,
-					["case", ["<=", ["get", "rank"], 25], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
 					16,
-					["case", ["<=", ["get", "rank"], 99], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
 					17,
-					["case", ["<=", ["get", "rank"], 999], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
 					18,
 					1
 				]
@@ -2860,19 +5946,46 @@
 			"layout": {
 				"icon-image": [
 					"match",
-					["get", "subclass"],
-					["subway"],
-					["get", "subclass"],
+					[
+						"get",
+						"subclass"
+					],
+					[
+						"subway"
+					],
+					[
+						"get",
+						"subclass"
+					],
 					"station",
 					"railway",
-					["case", ["has", "subclass"], "tramway", ""]
+					[
+						"case",
+						[
+							"has",
+							"subclass"
+						],
+						"tramway",
+						""
+					]
 				],
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "top",
 				"text-field": "{name}",
-				"text-font": ["Noto Sans Regular"],
+				"text-font": [
+					"Noto Sans Regular"
+				],
 				"text-max-width": 9,
-				"text-offset": [0, 0.6],
+				"text-offset": [
+					0,
+					0.6
+				],
 				"text-optional": true,
 				"text-padding": 2,
 				"text-size": 12,
@@ -2888,7 +6001,18 @@
 				"text-halo-color": "hsl(0, 0%, 100%)",
 				"text-halo-width": 1.5
 			},
-			"filter": ["all", ["==", "class", "railway"], ["has", "name"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"class",
+					"railway"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
 		},
 		{
 			"id": "Place labels",
@@ -2897,25 +6021,68 @@
 			"source-layer": "place",
 			"minzoom": 9,
 			"layout": {
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "center",
 				"text-field": "{name}",
-				"text-font": ["Open Sans Regular", "Noto Sans Regular"],
+				"text-font": [
+					"Open Sans Regular",
+					"Noto Sans Regular"
+				],
 				"text-letter-spacing": [
 					"match",
-					["get", "class"],
-					["suburb", "neighborhood", "neighbourhood", "quarter"],
+					[
+						"get",
+						"class"
+					],
+					[
+						"suburb",
+						"neighborhood",
+						"neighbourhood",
+						"quarter"
+					],
 					0.1,
 					0
 				],
 				"text-max-width": 8,
-				"text-offset": [0, 0],
+				"text-offset": [
+					0,
+					0
+				],
 				"text-padding": 2,
-				"text-size": ["interpolate", ["linear", 1], ["zoom"], 3, 11, 10, 9, 16, 14],
+				"text-size": [
+					"interpolate",
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
+					3,
+					11,
+					10,
+					9,
+					16,
+					14
+				],
 				"text-transform": [
 					"match",
-					["get", "class"],
-					["suburb", "neighborhood", "neighbourhood", "quarter"],
+					[
+						"get",
+						"class"
+					],
+					[
+						"suburb",
+						"neighborhood",
+						"neighbourhood",
+						"quarter"
+					],
 					"uppercase",
 					"none"
 				],
@@ -2946,15 +6113,42 @@
 			"source-layer": "place",
 			"minzoom": 4,
 			"layout": {
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "center",
 				"text-field": "{name}",
-				"text-font": ["Open Sans Regular", "Noto Sans Regular"],
+				"text-font": [
+					"Open Sans Regular",
+					"Noto Sans Regular"
+				],
 				"text-letter-spacing": 0,
 				"text-max-width": 8,
-				"text-offset": [0, 0],
+				"text-offset": [
+					0,
+					0
+				],
 				"text-padding": 2,
-				"text-size": ["interpolate", ["linear", 1], ["zoom"], 3, 11, 10, 12, 16, 19],
+				"text-size": [
+					"interpolate",
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
+					3,
+					11,
+					10,
+					12,
+					16,
+					19
+				],
 				"text-transform": "none",
 				"visibility": "visible"
 			},
@@ -2965,7 +6159,11 @@
 				"text-opacity": 1
 			},
 			"metadata": {},
-			"filter": ["==", "class", "village"]
+			"filter": [
+				"==",
+				"class",
+				"village"
+			]
 		},
 		{
 			"id": "Town labels",
@@ -2975,15 +6173,40 @@
 			"minzoom": 4,
 			"maxzoom": 16,
 			"layout": {
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Open Sans Regular", "Noto Sans Regular"],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Open Sans Regular",
+					"Noto Sans Regular"
+				],
 				"text-max-width": 8,
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[10, 12],
-						[15, 22]
+						[
+							10,
+							12
+						],
+						[
+							15,
+							22
+						]
 					]
 				},
 				"visibility": "visible"
@@ -2993,7 +6216,11 @@
 				"text-halo-color": "hsla(0,0%,100%,0.8)",
 				"text-halo-width": 1.2
 			},
-			"filter": ["==", "class", "town"]
+			"filter": [
+				"==",
+				"class",
+				"town"
+			]
 		},
 		{
 			"id": "Island labels",
@@ -3002,15 +6229,52 @@
 			"source-layer": "place",
 			"minzoom": 9,
 			"layout": {
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "center",
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Open Sans Regular", "Noto Sans Regular"],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Open Sans Regular",
+					"Noto Sans Regular"
+				],
 				"text-letter-spacing": 0.1,
 				"text-max-width": 6,
-				"text-offset": [0, 0],
+				"text-offset": [
+					0,
+					0
+				],
 				"text-padding": 2,
-				"text-size": ["interpolate", ["linear", 1], ["zoom"], 3, 11, 10, 8, 16, 11],
+				"text-size": [
+					"interpolate",
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
+					3,
+					11,
+					10,
+					8,
+					16,
+					11
+				],
 				"text-transform": "uppercase",
 				"visibility": "visible"
 			},
@@ -3021,7 +6285,11 @@
 				"text-opacity": 1
 			},
 			"metadata": {},
-			"filter": ["==", "class", "island"]
+			"filter": [
+				"==",
+				"class",
+				"island"
+			]
 		},
 		{
 			"id": "City labels",
@@ -3034,21 +6302,45 @@
 				"icon-image": "circle",
 				"icon-size": {
 					"stops": [
-						[6, 0.35],
-						[12, 0.5]
+						[
+							6,
+							0.35
+						],
+						[
+							12,
+							0.5
+						]
 					]
 				},
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "left",
 				"text-field": "{name:en}",
-				"text-font": ["Open Sans Semibold", "Noto Sans Regular"],
+				"text-font": [
+					"Open Sans Semibold",
+					"Noto Sans Regular"
+				],
 				"text-max-width": 8,
-				"text-offset": [0.4, 0],
+				"text-offset": [
+					0.4,
+					0
+				],
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[7, 13],
-						[11, 23]
+						[
+							7,
+							13
+						],
+						[
+							11,
+							23
+						]
 					]
 				},
 				"visibility": "visible"
@@ -3060,8 +6352,14 @@
 				"icon-halo-width": 1,
 				"icon-opacity": {
 					"stops": [
-						[11.99, 1],
-						[12, 0]
+						[
+							11.99,
+							1
+						],
+						[
+							12,
+							0
+						]
 					]
 				},
 				"text-color": "hsl(0, 0%, 25%)",
@@ -3069,7 +6367,19 @@
 				"text-halo-color": "hsl(0, 0%, 100%)",
 				"text-halo-width": 1
 			},
-			"filter": ["all", ["!=", "capital", 2], ["==", "class", "city"]]
+			"filter": [
+				"all",
+				[
+					"!=",
+					"capital",
+					2
+				],
+				[
+					"==",
+					"class",
+					"city"
+				]
+			]
 		},
 		{
 			"id": "State labels",
@@ -3079,16 +6389,41 @@
 			"minzoom": 3,
 			"maxzoom": 9,
 			"layout": {
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
-				"text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-				"text-font": ["Open Sans Regular", "Noto Sans Regular"],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-field": [
+					"coalesce",
+					[
+						"get",
+						"name:en"
+					],
+					[
+						"get",
+						"name"
+					]
+				],
+				"text-font": [
+					"Open Sans Regular",
+					"Noto Sans Regular"
+				],
 				"text-letter-spacing": 0.1,
 				"text-max-width": 9,
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[3, 8],
-						[5, 10]
+						[
+							3,
+							8
+						],
+						[
+							5,
+							10
+						]
 					]
 				},
 				"text-transform": "uppercase",
@@ -3101,15 +6436,54 @@
 				"text-halo-width": 1.2,
 				"text-opacity": [
 					"step",
-					["zoom"],
+					[
+						"zoom"
+					],
 					0,
 					3,
-					["case", ["<=", ["get", "rank"], 3], 1, 0],
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							3
+						],
+						1,
+						0
+					],
 					8,
-					["case", ["==", ["get", "rank"], 0], 0, 1]
+					[
+						"case",
+						[
+							"==",
+							[
+								"get",
+								"rank"
+							],
+							0
+						],
+						0,
+						1
+					]
 				]
 			},
-			"filter": ["all", ["in", "class", "state", "province"], ["<=", "rank", 6]]
+			"filter": [
+				"all",
+				[
+					"in",
+					"class",
+					"state",
+					"province"
+				],
+				[
+					"<=",
+					"rank",
+					6
+				]
+			]
 		},
 		{
 			"id": "Capital city labels",
@@ -3121,17 +6495,35 @@
 			"layout": {
 				"icon-image": "star",
 				"icon-size": 0.8,
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-anchor": "left",
 				"text-field": "{name:en}",
-				"text-font": ["Open Sans Semibold", "Noto Sans Regular"],
+				"text-font": [
+					"Open Sans Semibold",
+					"Noto Sans Regular"
+				],
 				"text-max-width": 8,
-				"text-offset": [0.4, 0],
+				"text-offset": [
+					0.4,
+					0
+				],
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[7, 15],
-						[11, 25]
+						[
+							7,
+							15
+						],
+						[
+							11,
+							25
+						]
 					]
 				},
 				"visibility": "visible"
@@ -3146,7 +6538,19 @@
 				"text-halo-color": "hsl(0, 0%, 100%)",
 				"text-halo-width": 1
 			},
-			"filter": ["all", ["==", "capital", 2], ["==", "class", "city"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"capital",
+					2
+				],
+				[
+					"==",
+					"class",
+					"city"
+				]
+			]
 		},
 		{
 			"id": "Country labels",
@@ -3156,30 +6560,74 @@
 			"minzoom": 1,
 			"maxzoom": 12,
 			"layout": {
-				"symbol-sort-key": ["to-number", ["get", "rank"]],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
 				"text-allow-overlap": false,
 				"text-field": "{name:en}",
-				"text-font": ["Open Sans Semibold", "Noto Sans Regular"],
+				"text-font": [
+					"Open Sans Semibold",
+					"Noto Sans Regular"
+				],
 				"text-letter-spacing": 0,
 				"text-max-width": {
 					"stops": [
-						[1, 5],
-						[5, 8]
+						[
+							1,
+							5
+						],
+						[
+							5,
+							8
+						]
 					]
 				},
 				"text-padding": 1,
 				"text-size": [
 					"interpolate",
-					["linear", 1],
-					["zoom"],
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
 					0,
 					6,
 					1,
 					9,
 					4,
-					["case", [">", ["get", "rank"], 2], 12, 14],
+					[
+						"case",
+						[
+							">",
+							[
+								"get",
+								"rank"
+							],
+							2
+						],
+						12,
+						14
+					],
 					8,
-					["case", [">", ["get", "rank"], 2], 16, 20]
+					[
+						"case",
+						[
+							">",
+							[
+								"get",
+								"rank"
+							],
+							2
+						],
+						16,
+						20
+					]
 				],
 				"text-transform": "uppercase",
 				"visibility": "visible"
@@ -3191,18 +6639,75 @@
 				"text-halo-width": 1,
 				"text-opacity": [
 					"interpolate",
-					["linear", 1],
-					["zoom"],
+					[
+						"linear",
+						1
+					],
+					[
+						"zoom"
+					],
 					4,
-					["case", [">", ["get", "rank"], 4], 0, 1],
+					[
+						"case",
+						[
+							">",
+							[
+								"get",
+								"rank"
+							],
+							4
+						],
+						0,
+						1
+					],
 					5.9,
-					["case", [">", ["get", "rank"], 4], 0, 1],
+					[
+						"case",
+						[
+							">",
+							[
+								"get",
+								"rank"
+							],
+							4
+						],
+						0,
+						1
+					],
 					6,
-					["case", [">", ["get", "rank"], 4], 1, 1]
+					[
+						"case",
+						[
+							">",
+							[
+								"get",
+								"rank"
+							],
+							4
+						],
+						1,
+						1
+					]
 				]
 			},
 			"metadata": {},
-			"filter": ["all", ["==", "class", "country"], ["has", "iso_a2"], ["!=", "iso_a2", "VA"]]
+			"filter": [
+				"all",
+				[
+					"==",
+					"class",
+					"country"
+				],
+				[
+					"has",
+					"iso_a2"
+				],
+				[
+					"!=",
+					"iso_a2",
+					"VA"
+				]
+			]
 		},
 		{
 			"id": "Continent labels",
@@ -3212,12 +6717,21 @@
 			"maxzoom": 1,
 			"layout": {
 				"text-field": "{name:en}",
-				"text-font": ["Open Sans Semibold", "Noto Sans Regular"],
+				"text-font": [
+					"Open Sans Semibold",
+					"Noto Sans Regular"
+				],
 				"text-max-width": 6.25,
 				"text-size": {
 					"stops": [
-						[0, 12],
-						[2, 13]
+						[
+							0,
+							12
+						],
+						[
+							2,
+							13
+						]
 					]
 				},
 				"text-transform": "uppercase",
@@ -3229,9 +6743,12 @@
 				"text-halo-color": "hsl(0,0%,100%)",
 				"text-halo-width": 2
 			},
-			"filter": ["==", "class", "continent"]
+			"filter": [
+				"==",
+				"class",
+				"continent"
+			]
 		},
-
 		{
 			"id": "routes-outline",
 			"type": "line",
@@ -3242,7 +6759,8 @@
 			},
 			"paint": {
 				"line-color": "#fff",
-				"line-width": 7
+				"line-width": 7,
+				"line-opacity": 1
 			}
 		},
 		{
@@ -3255,7 +6773,8 @@
 			},
 			"paint": {
 				"line-color": "#12538b",
-				"line-width": 5
+				"line-width": 5,
+				"line-opacity": 1
 			}
 		},
 		{
@@ -3264,14 +6783,25 @@
 			"source": "places",
 			"minzoom": 11.5,
 			"layout": {
-				"icon-image": ["get", "type"],
+				"icon-image": [
+					"get",
+					"type"
+				],
 				"icon-size": 0.8,
 				"icon-allow-overlap": true,
 				"text-optional": true,
-				"text-field": ["get", "name"],
-				"text-offset": [0, 1.8],
+				"text-field": [
+					"get",
+					"name"
+				],
+				"text-offset": [
+					0,
+					1.8
+				],
 				"text-anchor": "top",
-				"text-font": ["Noto Sans Bold"],
+				"text-font": [
+					"Noto Sans Bold"
+				],
 				"text-size": 14,
 				"visibility": "visible",
 				"text-max-width": 8
@@ -3281,19 +6811,44 @@
 				"text-halo-blur": 0,
 				"text-halo-color": "rgba(255,255,255,1)",
 				"text-halo-width": 3,
-				"icon-opacity": ["step", ["zoom"], 0.0, 12.0, 1.0],
-				"text-opacity": ["step", ["zoom"], 0.0, 12.0, 1.0]
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					13.5,
+					1
+				],
+				"icon-opacity-transition": {
+					"duration": 400
+				},
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					13.5,
+					1
+				],
+				"text-opacity-transition": {
+					"duration": 400
+				}
 			}
 		},
 		{
 			"id": "places-dots",
 			"type": "circle",
 			"source": "places",
-			"maxzoom": 12.5,
+			"maxzoom": 14,
 			"paint": {
 				"circle-color": [
 					"match",
-					["get", "type"],
+					[
+						"get",
+						"type"
+					],
 					"sports-climbing",
 					"#3b82f6",
 					"multi-pitch",
@@ -3314,11 +6869,48 @@
 					"#6b7280",
 					"#3b82f6"
 				],
-				"circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 3.5, 12, 6],
-				"circle-stroke-width": 1.5,
+				"circle-radius": [
+					"interpolate",
+					[
+						"linear"
+					],
+					[
+						"zoom"
+					],
+					4,
+					2.5,
+					12,
+					4.5
+				],
+				"circle-radius-transition": {
+					"duration": 400
+				},
+				"circle-stroke-width": 0,
 				"circle-stroke-color": "#ffffff",
-				"circle-opacity": ["step", ["zoom"], 1.0, 12.0, 0.0],
-				"circle-stroke-opacity": ["step", ["zoom"], 1.0, 12.0, 0.0]
+				"circle-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					1,
+					13.5,
+					0
+				],
+				"circle-opacity-transition": {
+					"duration": 400
+				},
+				"circle-stroke-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					1,
+					13.5,
+					0
+				],
+				"circle-stroke-opacity-transition": {
+					"duration": 400
+				}
 			}
 		}
 	],
@@ -3329,6 +6921,9 @@
 	"sprite": "https://api.maptiler.com/maps/bright-v2/sprite",
 	"bearing": 0,
 	"pitch": 0,
-	"center": [0, 0],
+	"center": [
+		0,
+		0
+	],
 	"zoom": 1
 }
