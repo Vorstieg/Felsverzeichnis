@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { topoSymbols } from '@fels/topo-renderer';
+import { topoSymbols } from '@vorstieg/topo-renderer';
 	import { fly } from 'svelte/transition';
 
 	type LegendGroup = {

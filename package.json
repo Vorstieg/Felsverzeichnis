@@ -33,7 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@fels/topo-renderer": "file:../Felsstudio/topo-renderer",
+		"@vorstieg/topo-renderer": "^0.1.0",
 		"@fortawesome/fontawesome-free": "^6.5.2",
 		"@tailwindcss/vite": "^4.0.12",
 		"@threlte/core": "^8.0.1",

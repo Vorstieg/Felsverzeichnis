@@ -7,11 +7,14 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: Deploy to production
         run: |
           cd /home/vorstieg/felsverzeichnis_prod
           git pull origin main
-          npm install
+          NODE_AUTH_TOKEN="${{ github.token }}" npm install
           npm run build
           PM2_HOME=/home/vorstieg/.pm2 pm2 restart felsverzeichnis_prod
