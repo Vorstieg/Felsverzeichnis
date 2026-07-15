@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Deploy to production
         run: |
+          set -euo pipefail
           cd /home/vorstieg/felsverzeichnis_prod
           git pull origin main
           NODE_AUTH_TOKEN="${{ github.token }}" npm install
