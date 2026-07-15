@@ -16,6 +16,7 @@ jobs:
           set -euo pipefail
           cd /home/vorstieg/felsverzeichnis_prod
           git pull origin main
-          NODE_AUTH_TOKEN="${{ github.token }}" npm install
+          rm -rf node_modules/@vorstieg
+          NODE_AUTH_TOKEN="${{ github.token }}" npm install --package-lock=false --prefer-online
           npm run build
           PM2_HOME=/home/vorstieg/.pm2 pm2 restart felsverzeichnis_prod
