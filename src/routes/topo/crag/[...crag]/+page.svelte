@@ -102,9 +102,15 @@
 	let has3D = $derived(data.has3D);
 	let has2D = $derived(
 		!!data.topo?.image2D ||
-		data.topo?.routes?.some((r) => r.points2D?.length > 0) ||
+		data.topo?.routes?.some(
+			(r) =>
+				r.points2D?.length > 0 ||
+				r.pitches?.some((pitch) => pitch.points2D?.length > 0) ||
+				r.variants?.some((variant) => variant.points2D?.length > 0)
+		) ||
 		data.topo?.outlines?.length > 0 ||
-		data.topo?.fixPoints?.some((fp) => fp.position2D)
+		data.topo?.fixPoints?.some((fp) => fp.position2D) ||
+		data.topo?.textLabels?.some((label) => label.position2D)
 	);
 	let displayMode = $state('3d');
 	let isTopoLegendOpen = $state(false);
@@ -145,7 +151,10 @@
 	function getParentRoute(childId: string) {
 		if (!data.topo || !data.topo.routes) return null;
 		return data.topo.routes.find(
-			(r) => r.id === childId || (r.pitches && r.pitches.some((p) => p.id === childId))
+			(r) =>
+				r.id === childId ||
+				(r.pitches && r.pitches.some((p) => p.id === childId)) ||
+				(r.variants && r.variants.some((variant) => variant.id === childId))
 		);
 	}
 
@@ -582,8 +591,8 @@
 	{#if displayMode === '2d' && has2D}
 		<Topo2DViewer
 			topo={data.topo}
-			routes={visualRoutes}
-			selectedRouteId={activeRouteId}
+			routes={data.topo.routes || []}
+			selectedRouteId={getParentRoute(activeRouteId)?.id || activeRouteId}
 			onRouteSelect={(route) => goto(base + '/topo/crag/' + data.path + '/' + route.id)}
 			bind:hoveredRouteId
 		/>

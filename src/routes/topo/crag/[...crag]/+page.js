@@ -22,6 +22,15 @@ export const load = async ({ params, url, fetch }) => {
 				return null;
 			}
 		};
+		const findRouteOrChild = (routes, id) => {
+			for (const parent of routes || []) {
+				if (parent.id === id) return parent;
+				for (const child of [...(parent.pitches || []), ...(parent.variants || [])]) {
+					if (child.id === id) return { ...child, parentId: parent.id };
+				}
+			}
+			return null;
+		};
 
 		const normalizeSectorData = (sector) =>
 			sector
@@ -58,7 +67,7 @@ export const load = async ({ params, url, fetch }) => {
 				if (topo) {
 					baseCragPath = parentPath;
 					path = parentPath;
-					route = topo.routes?.find((it) => it.id === lastPart);
+					route = findRouteOrChild(topo.routes, lastPart);
 				} else if (pathParts.length > 2) {
 					// Try as Sector + Route
 					const grandParentPath = pathParts.slice(0, -2).join('/');
@@ -70,7 +79,7 @@ export const load = async ({ params, url, fetch }) => {
 						sectorId = sectorName;
 						sectorPath = `${grandParentPath}/${sectorName}`;
 						path = sectorPath;
-						route = topo.routes?.find((it) => it.id === lastPart);
+						route = findRouteOrChild(topo.routes, lastPart);
 						sectorData = normalizeSectorData(await fetchJson(`${sectorPath}/${sectorId}.json`));
 					}
 				}
