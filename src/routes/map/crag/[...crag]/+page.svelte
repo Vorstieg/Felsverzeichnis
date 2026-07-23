@@ -1,6 +1,5 @@
 <script>
 	import { base } from '$app/paths';
-	import { snapToBiggestHeight } from '$lib/assets/js/resize.js';
 	import { afterNavigate, goto } from '$app/navigation';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
@@ -106,9 +105,6 @@
 	});
 
 	function onMarkerClicked() {
-		if (snapToBiggestHeight) {
-			snapToBiggestHeight();
-		}
 	}
 
 	async function share() {
@@ -319,7 +315,7 @@
 				<h1 class="my-0 text-2xl font-bold text-slate-800">{displayTitle}</h1>
 			</div>
 		</div>
-		<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-5">
+		<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-5" overflow-y>
 			{#if !details}
 				<div class="flex animate-pulse flex-col space-y-4 pt-4">
 					<div class="h-40 w-full rounded-2xl bg-gray-200"></div>

@@ -834,7 +834,11 @@
     .style-selector-btn {
         @media (width <= 40rem) {
             bottom: var(--dynamic-bottom, 9.25rem);
-            transition: var(--info-panel-transition, bottom 0.2s ease-out);
+            transition: var(--info-panel-transition, bottom 0.2s ease-out), opacity 0.2s ease-out, transform 0.2s ease-out;
+            opacity: var(--controls-opacity, 1);
+            transform: scale(var(--controls-scale, 1));
+            transform-origin: center;
+            pointer-events: var(--controls-pointer, auto);
         }
     }
 
@@ -875,7 +879,11 @@
         @media (width <= 40rem) {
             @apply left-auto right-4 top-auto;
             bottom: 5rem;
-            transition: var(--info-panel-transition, bottom 0.2s ease-out);
+            transition: var(--info-panel-transition, bottom 0.2s ease-out), opacity 0.2s ease-out, transform 0.2s ease-out;
+            opacity: var(--controls-opacity, 1);
+            transform: scale(var(--controls-scale, 1));
+            transform-origin: center;
+            pointer-events: var(--controls-pointer, auto);
         }
     }
 
