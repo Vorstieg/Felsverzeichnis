@@ -39,20 +39,44 @@
     let lastTime = 0;
     let dragVelocity = 0;
 
-    const handleTouchStart = () => {
-        if (!pane) return;
-        lastY = pane.getPanelTransformY();
+    const handleTouchStart = (e: any) => {
+        if (!pane || !pane.paneEl) return;
+        const transform = pane.paneEl.style.transform;
+        let ty = 0;
+        if (transform) {
+            const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
+            const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
+            if (matchY) ty = parseFloat(matchY[1]);
+            else if (match3d) ty = parseFloat(match3d[1]);
+        }
+        lastY = ty;
         lastTime = Date.now();
         dragVelocity = 0;
+
+        const scrollContainer = e.target && (e.target.closest('.overflow-y-auto') || e.target.closest('[overflow-y]'));
+        if (!scrollContainer && pane['events']) {
+            pane['events'].contentScrollTop = 0;
+        } else if (scrollContainer && pane['events']) {
+            pane['events'].contentScrollTop = scrollContainer.scrollTop;
+        }
     };
 
-    const handleTouchMove = () => {
-        if (!pane) return;
-        const currentY = pane.getPanelTransformY();
+    const handleTouchMove = (e: any) => {
+        if (!pane || !pane.paneEl) return;
+        
+        const transform = pane.paneEl.style.transform;
+        let currentY = 0;
+        if (transform) {
+            const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
+            const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
+            if (matchY) currentY = parseFloat(matchY[1]);
+            else if (match3d) currentY = parseFloat(match3d[1]);
+        }
+        
         const currentTime = Date.now();
         const dt = currentTime - lastTime;
         if (dt > 0) {
-            dragVelocity = (currentY - lastY) / dt;
+            dragVelocity = (currentY - lastY) / dt; // negative = UP
         }
         lastY = currentY;
         lastTime = currentTime;
@@ -63,13 +87,9 @@
             const targetBreak = dragVelocity < -1.0 ? 'top' : 'bottom';
             setTimeout(() => { 
                 if (pane) {
-                    const originalDuration = pane.settings?.animationDuration;
-                    if (pane.settings) pane.settings.animationDuration = 300;
-                    
                     pane.moveToBreak(targetBreak);
-                    
-                    if (pane.settings && originalDuration) {
-                        setTimeout(() => { pane.settings.animationDuration = originalDuration; }, 350);
+                    if (pane.paneEl) {
+                        pane.paneEl.style.setProperty('transition', 'all 380ms cubic-bezier(.155,1.105,.295,1.12)', 'important');
                     }
                 }
             }, 10);
@@ -81,46 +101,55 @@
         const presentPromise = pane.present({ animate: true });
         document.body.style.overscrollBehaviorY = 'none';
         document.documentElement.style.overscrollBehaviorY = 'none';
-        if (paneElement) {
-            paneElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-            paneElement.addEventListener('touchmove', handleTouchMove, { passive: true });
-            paneElement.addEventListener('touchend', handleTouchEnd);
-        }
-        if (pane.paneEl && !observer) {
-            const syncState = () => {
-                const trans = pane.paneEl.style.transition;
-                if (trans) {
-                    document.body.style.setProperty('--info-panel-transition', trans.replace(/transform/g, 'bottom'));
-                } else {
-                    document.body.style.setProperty('--info-panel-transition', 'none');
-                }
+        
+        setTimeout(() => {
+            if (pane && pane.paneEl) {
+                pane.paneEl.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+                pane.paneEl.addEventListener('touchmove', handleTouchMove, { passive: true, capture: true });
+                pane.paneEl.addEventListener('touchend', handleTouchEnd, { capture: true });
                 
-                const transform = pane.paneEl.style.transform;
-                if (transform && transform.includes('translateY')) {
-                    const match = transform.match(/translateY\(([-0-9.]+)px\)/);
-                    if (match) {
-                        const ty = parseFloat(match[1]);
-                        const height = window.innerHeight - ty;
-                        document.body.style.setProperty('--info-panel-height', height + 'px');
-                        
-                        if (height > window.innerHeight * 0.7) {
-                            document.body.style.setProperty('--controls-opacity', '0');
-                            document.body.style.setProperty('--controls-pointer', 'none');
-                            document.body.style.setProperty('--controls-scale', '0');
-                            if (controlsElement) { controlsElement.style.opacity = '0'; controlsElement.style.pointerEvents = 'none'; controlsElement.style.transform = 'scale(0)'; }
+                if (!observer) {
+                    const syncState = () => {
+                        if (!pane || !pane.paneEl) return;
+                        const trans = pane.paneEl.style.transition;
+                        if (trans) {
+                            document.body.style.setProperty('--info-panel-transition', trans.replace(/transform/g, 'bottom'));
                         } else {
-                            document.body.style.setProperty('--controls-opacity', '1');
-                            document.body.style.setProperty('--controls-pointer', 'auto');
-                            document.body.style.setProperty('--controls-scale', '1');
-                            if (controlsElement) { controlsElement.style.opacity = '1'; controlsElement.style.pointerEvents = ''; controlsElement.style.transform = 'scale(1)'; }
+                            document.body.style.setProperty('--info-panel-transition', 'none');
                         }
-                    }
+                        
+                        const transform = pane.paneEl.style.transform;
+                        let ty = null;
+                        if (transform) {
+                            const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
+                            const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
+                            if (matchY) ty = parseFloat(matchY[1]);
+                            else if (match3d) ty = parseFloat(match3d[1]);
+                        }
+                        
+                        if (ty !== null && !isNaN(ty)) {
+                            const height = window.innerHeight - ty;
+                            const isHigh = height > window.innerHeight * 0.7;
+                            
+                            document.body.style.setProperty('--info-panel-height', height + 'px');
+                            document.body.style.setProperty('--controls-opacity', isHigh ? '0' : '1');
+                            document.body.style.setProperty('--controls-pointer', isHigh ? 'none' : 'auto');
+                            document.body.style.setProperty('--controls-scale', isHigh ? '0' : '1');
+                            
+                            if (controlsElement) { 
+                                controlsElement.style.opacity = isHigh ? '0' : '1'; 
+                                controlsElement.style.pointerEvents = isHigh ? 'none' : ''; 
+                                controlsElement.style.transform = isHigh ? 'scale(0)' : 'scale(1)'; 
+                            }
+                        }
+                    };
+                    observer = new MutationObserver(syncState);
+                    observer.observe(pane.paneEl, { attributes: true, attributeFilter: ['style'] });
+                    syncState(); // run once immediately
                 }
-            };
-            observer = new MutationObserver(syncState);
-            observer.observe(pane.paneEl, { attributes: true, attributeFilter: ['style'] });
-            syncState();
-        }
+            }
+        }, 50);
+
         presentPromise.catch(() => {});
     };
 
@@ -129,7 +158,7 @@
             pane = new CupertinoPaneClass(paneElement, {
                 parentElement: 'body',
                 breaks: {
-                    top: { enabled: true, height: window.innerHeight * 0.85, bounce: true },
+                    top: { enabled: true, height: window.innerHeight - 80, bounce: true },
                     middle: { enabled: true, height: window.innerHeight * 0.5, bounce: true },
                     bottom: { enabled: true, height: window.innerHeight * 0.14, bounce: true },
                 },
@@ -253,5 +282,16 @@
             opacity: var(--controls-opacity, 1);
             pointer-events: var(--controls-pointer, auto);
         }
+    }
+    
+    :global(.cupertino-pane-wrapper .draggable::after) {
+        content: '';
+        position: absolute;
+        top: -30px;
+        bottom: -80px;
+        left: -100vw;
+        right: -100vw;
+        background: transparent;
+        z-index: 1000;
     }
 </style>
