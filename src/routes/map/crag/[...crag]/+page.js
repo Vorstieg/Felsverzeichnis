@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
+import { browser } from '$app/environment';
 
 export async function load({ params, url, parent, fetch }) {
 	try {
@@ -7,14 +8,65 @@ export async function load({ params, url, parent, fetch }) {
 		const crags = parentData.locations || [];
 
 		const API_URL = fsApiUrl;
-		const fetchJson = async (path) => {
+		
+		const _fetchJson = async (p) => {
+			const url = `${API_URL}/${p}`;
 			try {
-				const res = await fetch(`${API_URL}/${path}`);
+				const res = await fetch(url);
 				if (res.ok) return await res.json();
-				return null;
 			} catch (e) {
-				return null;
+				// Offline, fall back below
 			}
+			try {
+				if (browser) {
+					const cache = await caches.open('felslager-crags');
+					const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
+					if (cached) return await cached.json();
+				}
+			} catch(e) {}
+			return null;
+		};
+
+		const cacheCragFolder = async (cragPath) => {
+			try {
+				const hashRes = await fetch(`${API_URL}/${cragPath}/hash.txt`);
+				if (!hashRes.ok) return;
+				const currentHash = (await hashRes.text()).trim();
+				
+				const cache = await caches.open('felslager-crags');
+				const cachedHashRes = await cache.match(`${API_URL}/${cragPath}/hash.txt`);
+				const cachedHash = cachedHashRes ? (await cachedHashRes.text()).trim() : null;
+				
+				const baseDirCached = await cache.match(`${API_URL}/${cragPath}`);
+				
+				if (currentHash !== cachedHash || !baseDirCached) {
+					const indexRes = await fetch(`${API_URL}/${cragPath}/?recursive=true`);
+					const files = await indexRes.json();
+					
+					const jsonFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.json'));
+					const otherFiles = files.filter(f => f.type === 'file' && !f.name.endsWith('.json'));
+					
+					await Promise.all(jsonFiles.map(async (file) => {
+						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+						const fileRes = await fetch(fileUrl);
+						if (fileRes.ok) await cache.put(fileUrl, fileRes);
+					}));
+					
+					const dirsToCache = [cragPath, ...files.filter(f => f.type === 'dir').map(d => `${cragPath}/${d.path}`)];
+					await Promise.all(dirsToCache.map(async (dir) => {
+						const dRes = await fetch(`${API_URL}/${dir}`);
+						if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
+					}));
+					
+					await cache.put(`${API_URL}/${cragPath}/hash.txt`, new Response(currentHash));
+					
+					Promise.all(otherFiles.map(async (file) => {
+						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+						const fileRes = await fetch(fileUrl);
+						if (fileRes.ok) await cache.put(fileUrl, fileRes);
+					})).catch(() => {});
+				}
+			} catch (e) {}
 		};
 		const normalizeSectorData = (sector) =>
 			sector
@@ -159,19 +211,26 @@ export async function load({ params, url, parent, fetch }) {
 		let crag = matchingCrag;
 		let sectorData = null;
 
+		if (crag) {
+			const fullCrag = await _fetchJson(`${basePath}/${cragName}.json`);
+			if (fullCrag) {
+				crag = fullCrag;
+				if (!crag.properties) crag.properties = {};
+				crag.properties.path = basePath;
+			}
+		}
+
 		if (!crag) {
-			crag = await fetchJson(`${params.crag}/${cragName}.json`);
-			if (!crag) {
-				const parts = params.crag.split('/');
-				if (parts.length > 1) {
-					sectorId = parts.pop();
-					basePath = parts.join('/');
-					const baseName = basePath.split('/').at(-1);
-					crag = await fetchJson(`${basePath}/${baseName}.json`);
-					if (crag) {
-						isSectorPath = true;
-						sectorData = normalizeSectorData(await fetchJson(`${basePath}/${sectorId}/${sectorId}.json`));
-					}
+			const parts = params.crag.split('/');
+			if (parts.length > 1) {
+				sectorId = parts.pop();
+				basePath = parts.join('/');
+				const baseName = basePath.split('/').at(-1);
+				const baseCrag = await _fetchJson(`${basePath}/${baseName}.json`);
+				if (baseCrag) {
+					crag = baseCrag;
+					isSectorPath = true;
+					sectorData = normalizeSectorData(await _fetchJson(`${basePath}/${sectorId}/${sectorId}.json`));
 				}
 			}
 		} else {
@@ -179,7 +238,7 @@ export async function load({ params, url, parent, fetch }) {
 				sectorData = crag.properties?.sectors?.find((s) => s.id === sectorId);
 				if (!sectorData) {
 					sectorData = normalizeSectorData(
-						await fetchJson(`${basePath}/${sectorId}/${sectorId}.json`)
+						await _fetchJson(`${basePath}/${sectorId}/${sectorId}.json`)
 					);
 				}
 			}
@@ -188,6 +247,21 @@ export async function load({ params, url, parent, fetch }) {
 		if (!crag) {
 			throw new Error(`Crag data not found at ${params.crag}`);
 		}
+
+		if (browser) {
+			cacheCragFolder(basePath);
+		}
+
+		let allFiles = await _fetchJson(`${basePath}/?recursive=true`);
+		const fetchJson = async (p) => {
+			if (allFiles && p.startsWith(`${basePath}/`)) {
+				const relPath = p.slice(basePath.length + 1);
+				if (!allFiles.some(f => f.type === 'file' && f.path === relPath)) {
+					return null;
+				}
+			}
+			return await _fetchJson(p);
+		};
 
 		const cragForUi = crag;
 		let tracks = [];

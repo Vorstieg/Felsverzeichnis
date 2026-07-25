@@ -4,12 +4,24 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="manifest" href="/manifest.json" />
+		<link rel="icon" type="image/svg+xml" href="/icon.svg" />
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 		%sveltekit.head%
 		<!-- You can add global <meta> tags here, but anything not global or dynamic should be a `<svelte:head>` tag on the proper page(s) instead. -->
+		<script>
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.getRegistrations().then((registrations) => {
+					for (let reg of registrations) {
+						if (reg.active && reg.active.scriptURL.endsWith('/sw.js')) {
+							reg.unregister();
+						}
+					}
+				});
+			}
+		</script>
 
 		<script
 			async

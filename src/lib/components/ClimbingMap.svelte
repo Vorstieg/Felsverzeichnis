@@ -513,43 +513,47 @@
 			const cached = poiCache.get(cragPath) || {};
 
 			try {
-				const parkingRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-parking.json`);
-				if (parkingRes.ok) {
-					const parking = await parkingRes.json();
-					if (parking && parking.properties && parking.geometry) {
-						crag.properties.parking = parking;
-						poiFeatures.push(parking);
-					}
-					cached.parking = parking;
-					added = true;
-				}
-			} catch (e) {
-			}
+				const dirRes = await fetch(`${fsApiUrl}/${cragPath}`);
+				if (!dirRes.ok) return;
+				const dirFiles = await dirRes.json();
 
-			try {
-				const transitRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit.json`);
-				if (transitRes.ok) {
-					const transit = await transitRes.json();
-					if (transit && transit.properties && transit.geometry) {
-						crag.properties.transit = transit;
-						poiFeatures.push(transit);
+				if (dirFiles.some(f => f.name === `${cragSlug}-parking.json`)) {
+					const parkingRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-parking.json`);
+					if (parkingRes.ok) {
+						const parking = await parkingRes.json();
+						if (parking && parking.properties && parking.geometry) {
+							crag.properties.parking = parking;
+							poiFeatures.push(parking);
+						}
+						cached.parking = parking;
+						added = true;
 					}
-					cached.transit = transit;
-					added = true;
 				}
-			} catch (e) {
-			}
 
-			try {
-				const trackRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit-track.json`);
-				if (trackRes.ok) {
-					const track = await trackRes.json();
-					if (track && track.properties && track.geometry) {
-						crag.properties.transitTrack = track;
-						poiRoutes.push(track);
+				if (dirFiles.some(f => f.name === `${cragSlug}-transit.json`)) {
+					const transitRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit.json`);
+					if (transitRes.ok) {
+						const transit = await transitRes.json();
+						if (transit && transit.properties && transit.geometry) {
+							crag.properties.transit = transit;
+							poiFeatures.push(transit);
+						}
+						cached.transit = transit;
+						added = true;
 					}
-					cached.transitTrack = track;
-					added = true;
+				}
+
+				if (dirFiles.some(f => f.name === `${cragSlug}-transit-track.json`)) {
+					const trackRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit-track.json`);
+					if (trackRes.ok) {
+						const track = await trackRes.json();
+						if (track && track.properties && track.geometry) {
+							crag.properties.transitTrack = track;
+							poiRoutes.push(track);
+						}
+						cached.transitTrack = track;
+						added = true;
+					}
 				}
 			} catch (e) {
 			}
@@ -602,10 +606,16 @@
 			const loadedTracks = [];
 
 			try {
-				const cragTopoRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-topo.json`);
-				if (cragTopoRes.ok) {
-					const cragTopo = await cragTopoRes.json();
-					loadedTracks.push(...extractRouteTrackFeatures(cragTopo?.routes || [], { cragPath }));
+				const dirRes = await fetch(`${fsApiUrl}/${cragPath}`);
+				if (dirRes.ok) {
+					const dirFiles = await dirRes.json();
+					if (dirFiles.some(f => f.name === `${cragSlug}-topo.json`)) {
+						const cragTopoRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-topo.json`);
+						if (cragTopoRes.ok) {
+							const cragTopo = await cragTopoRes.json();
+							loadedTracks.push(...extractRouteTrackFeatures(cragTopo?.routes || [], { cragPath }));
+						}
+					}
 				}
 			} catch (e) {
 			}
@@ -614,18 +624,24 @@
 			await Promise.all(sectors.map(async (sector) => {
 				if (!sector?.id) return;
 				try {
-					const sectorTopoRes = await fetch(
-						`${fsApiUrl}/${cragPath}/${sector.id}/${sector.id}-topo.json`
-					);
-					if (!sectorTopoRes.ok) return;
-					const sectorTopo = await sectorTopoRes.json();
-					loadedTracks.push(
-						...extractRouteTrackFeatures(sectorTopo?.routes || [], {
-							cragPath,
-							sectorId: sector.id,
-							sectorName: sector.name
-						})
-					);
+					const sectorDirRes = await fetch(`${fsApiUrl}/${cragPath}/${sector.id}`);
+					if (!sectorDirRes.ok) return;
+					const sectorDirFiles = await sectorDirRes.json();
+					
+					if (sectorDirFiles.some(f => f.name === `${sector.id}-topo.json`)) {
+						const sectorTopoRes = await fetch(
+							`${fsApiUrl}/${cragPath}/${sector.id}/${sector.id}-topo.json`
+						);
+						if (!sectorTopoRes.ok) return;
+						const sectorTopo = await sectorTopoRes.json();
+						loadedTracks.push(
+							...extractRouteTrackFeatures(sectorTopo?.routes || [], {
+								cragPath,
+								sectorId: sector.id,
+								sectorName: sector.name
+							})
+						);
+					}
 				} catch (e) {
 				}
 			}));

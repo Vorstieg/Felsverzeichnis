@@ -3,6 +3,7 @@ import { base } from '$app/paths';
 
 // Allows client side routing. Necessary for page transitions and link prefetching; change to false if you prefer ordinary routing without JS
 export const csr = true;
+export const ssr = false;
 
 console.log("=== LAYOUT LOADED ===");
 import { browser } from '$app/environment';

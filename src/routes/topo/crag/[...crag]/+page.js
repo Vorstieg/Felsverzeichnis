@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
+import { browser } from '$app/environment';
 
 export const load = async ({ params, url, fetch }) => {
 	try {
@@ -14,13 +15,66 @@ export const load = async ({ params, url, fetch }) => {
 
 		const API_URL = fsApiUrl;
 		const fetchJson = async (p) => {
+			const url = `${API_URL}/${p}`;
 			try {
-				const res = await fetch(`${API_URL}/${p}`);
+				const res = await fetch(url);
 				if (res.ok) return await res.json();
-				return null;
 			} catch (e) {
-				return null;
+				// Offline, fall back below
 			}
+			try {
+				if (browser) {
+					const cache = await caches.open('felslager-crags');
+					const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
+					if (cached) return await cached.json();
+				}
+			} catch(e) {}
+			return null;
+		};
+
+		const cacheCragFolder = async (cragPath) => {
+			try {
+				const hashRes = await fetch(`${API_URL}/${cragPath}/hash.txt`);
+				if (!hashRes.ok) return;
+				const currentHash = (await hashRes.text()).trim();
+				
+				const cache = await caches.open('felslager-crags');
+				const cachedHashRes = await cache.match(`${API_URL}/${cragPath}/hash.txt`);
+				const cachedHash = cachedHashRes ? (await cachedHashRes.text()).trim() : null;
+				
+				// Verify if the directory was cached previously
+				const baseDirCached = await cache.match(`${API_URL}/${cragPath}`);
+				
+				if (currentHash !== cachedHash || !baseDirCached) {
+					const indexRes = await fetch(`${API_URL}/${cragPath}/?recursive=true`);
+					const files = await indexRes.json();
+					
+					const jsonFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.json'));
+					const otherFiles = files.filter(f => f.type === 'file' && !f.name.endsWith('.json'));
+					
+					await Promise.all(jsonFiles.map(async (file) => {
+						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+						const fileRes = await fetch(fileUrl);
+						if (fileRes.ok) await cache.put(fileUrl, fileRes);
+					}));
+					
+					const dirsToCache = [cragPath, ...files.filter(f => f.type === 'dir').map(d => `${cragPath}/${d.path}`)];
+					await Promise.all(dirsToCache.map(async (dir) => {
+						const dRes = await fetch(`${API_URL}/${dir}`);
+						if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
+					}));
+					
+					// Cache the new hash as soon as the critical JSON is safe
+					await cache.put(`${API_URL}/${cragPath}/hash.txt`, new Response(currentHash));
+					
+					// Cache heavy images and 3D models in the background (fire and forget)
+					Promise.all(otherFiles.map(async (file) => {
+						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+						const fileRes = await fetch(fileUrl);
+						if (fileRes.ok) await cache.put(fileUrl, fileRes);
+					})).catch(() => {});
+				}
+			} catch (e) {}
 		};
 		const findRouteOrChild = (routes, id) => {
 			for (const parent of routes || []) {
@@ -164,6 +218,10 @@ export const load = async ({ params, url, fetch }) => {
 			// Ignore
 		}
 
+		if (browser) {
+			cacheCragFolder(baseCragPath);
+		}
+
 		return {
 			path,
 			baseCragPath,
@@ -181,8 +239,8 @@ export const load = async ({ params, url, fetch }) => {
 			cragName: indexedCrag?.properties?.name,
 			cragType: indexedCrag?.properties?.type,
 			name: topo?.name,
-			description_de: topo?.description_de,
-			description_en: topo?.description_en,
+			description_de: topo?.description_de || indexedCrag?.properties?.description_de,
+			description_en: topo?.description_en || indexedCrag?.properties?.description_en,
 			meta: {
 				lang: 'de',
 				title: (topo?.name || 'Topo') + ' - Felsverzeichnis',
