@@ -252,8 +252,9 @@ export async function load({ params, url, parent, fetch }) {
 			cacheCragFolder(basePath);
 		}
 
-		let allFiles = await _fetchJson(`${basePath}/?recursive=true`);
+		let allFilesPromise = _fetchJson(`${basePath}/?recursive=true`);
 		const fetchJson = async (p) => {
+			const allFiles = await allFilesPromise;
 			if (allFiles && p.startsWith(`${basePath}/`)) {
 				const relPath = p.slice(basePath.length + 1);
 				if (!allFiles.some(f => f.type === 'file' && f.path === relPath)) {
@@ -264,23 +265,6 @@ export async function load({ params, url, parent, fetch }) {
 		};
 
 		const cragForUi = crag;
-		let tracks = [];
-		if (isSectorPath) {
-			const sectorTopo = await fetchJson(`${basePath}/${sectorId}/${sectorId}-topo.json`);
-			tracks = extractRouteTrackFeatures(sectorTopo?.routes || [], {
-				cragPath: basePath,
-				sectorId,
-				sectorName: sectorData?.name
-			});
-		} else {
-			const cragTopo = await fetchJson(`${params.crag}/${cragName}-topo.json`);
-			tracks = [
-				...extractRouteTrackFeatures(cragTopo?.routes || [], {
-					cragPath: params.crag
-				}),
-				...(await aggregateSectorTrackFeatures(basePath, cragForUi.properties?.sectors || []))
-			];
-		}
 
 		const streamDetails = async () => {
 			let images = [];
@@ -340,6 +324,23 @@ export async function load({ params, url, parent, fetch }) {
 					// Ignore
 				}
 			}
+			
+			let tracks;
+			if (isSectorPath) {
+				tracks = extractRouteTrackFeatures(topoJson?.routes || [], {
+					cragPath: basePath,
+					sectorId,
+					sectorName: sectorData?.name
+				});
+			} else {
+				const sectorTracks = await aggregateSectorTrackFeatures(basePath, cragForUi.properties?.sectors || []);
+				tracks = [
+					...extractRouteTrackFeatures(topoJson?.routes || [], {
+						cragPath: params.crag
+					}),
+					...sectorTracks
+				];
+			}
 
 			return {
 				images,
@@ -348,7 +349,8 @@ export async function load({ params, url, parent, fetch }) {
 				transitTrack,
 				topoJson,
 				gradeRoutes,
-				has3DTopo
+				has3DTopo,
+				tracks
 			};
 		};
 
@@ -361,7 +363,7 @@ export async function load({ params, url, parent, fetch }) {
 			crag: cragForUi,
 			zoom: 16,
 			locations: [cragForUi],
-			tracks,
+			tracks: [],
 			center:
 				getGeometryCenter(isSectorPath ? sectorData?.geometry : cragForUi.geometry) ||
 				cragForUi.geometry.coordinates,
