@@ -4,149 +4,102 @@
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
-	import { afterNavigate, goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
-	import { fsApiUrl } from '$lib/config';
-	import * as turf from '@turf/turf';
-
-	afterNavigate((_navigation) => {
-		fillLayers(locations);
-		if (zoomToLocations) {
-			const markerTarget = nextMarkerTarget || cameraTarget;
-			nextMarkerTarget = null;
-			if (markerTarget?.center) {
-				focusMarker(markerTarget.center, markerTarget.zoom);
-				return;
-			}
-			const requestedMinZoom = cameraTarget?.zoom || null;
-			const coordinates = places.features.map((it) => it.geometry.coordinates);
-			const bounds = coordinates.reduce(
-				(bounds, coord) => {
-					return bounds.extend(coord);
-				},
-				new maplibregl.LngLatBounds(coordinates[0], coordinates[0])
-			);
-			const mediaQuery = '(min-width: 40rem)';
-			const queries = window.matchMedia(mediaQuery);
-			if (detailsShown) {
-				if (queries.matches) {
-					fitBounds(bounds, requestedMinZoom, {
-						pitch,
-						padding: { left: 200, top: 200, bottom: 200, right: 1000 }
-					});
-				} else {
-					fitBounds(bounds, requestedMinZoom, {
-						pitch,
-						padding: { left: 50, top: 100, bottom: 600, right: 50 }
-					});
-				}
-			} else {
-				if (queries.matches) {
-					fitBounds(bounds, requestedMinZoom, { pitch, padding: 200 });
-				} else {
-					fitBounds(bounds, requestedMinZoom, { pitch, padding: 100 });
-				}
-			}
-		}
-	});
 
 	/** @type {{locations?: any, tracks?: any, zoom?: number, center?: any, pitch?: number}} */
 	let {
 		locations = [],
-		tracks = [],
 		zoom = 8,
 		center = [16.0, 48],
-		pitch = 50,
-		detailsShown = false,
-		zoomToLocations = false,
 		cameraTarget = null
 	} = $props();
 
 	let mapElement = $state();
 	let map;
 	let tileLayerMenuOpen = $state(false);
-	let places;
-	let routes;
-	let sectorShapes;
-	let cragFeatures = [];
-	let sectorPointFeatures = [];
-	let poiFeatures = [];
-	let poiRoutes = [];
-	let topoRouteFeatures = [];
-	let nextMarkerTarget = null;
-	let lastCameraTargetKey = null;
+	const placeTypeColor = ['match', ['get', 'type'],
+		'sports-climbing', '#3b82f6', 'multi-pitch', '#10b981', 'bouldering', '#f97316',
+		'trad', '#eab308', 'alpine-tour', '#8b5cf6', 'via-ferrata', '#ec4899',
+		'bus', '#6366f1', 'train', '#8b5cf6', 'parking-space', '#6b7280', '#3b82f6'];
 
-	// Module-level cache to persist POIs across navigations
-	const poiCache = new Map();
-	const topoTrackCache = new Map();
-
-	const sectorDetailZoom = 16.5;
-	const topoTrackDetailZoom = 11;
-	const poiDetailZoom = 14;
-
-	$effect(() => {
-		if (!map || !zoomToLocations || !cameraTarget?.center) return;
-
-		const cameraTargetKey = JSON.stringify(cameraTarget);
-		if (cameraTargetKey === lastCameraTargetKey) return;
-		lastCameraTargetKey = cameraTargetKey;
-
-		focusMarker(cameraTarget.center, cameraTarget.zoom);
-	});
-
-	let currentZoomState = '';
-
-	function updateMarkerVisibility() {
-		if (!map || !map.getLayer('places') || !map.getLayer('places-dots')) return;
-
-		if (zoomToLocations) {
-			map.setLayerZoomRange('places', 0, 24);
-			map.setPaintProperty('places', 'icon-opacity', 1);
-			map.setPaintProperty('places', 'text-opacity', 1);
-			map.setPaintProperty('places', 'text-halo-blur', 0);
-			map.setPaintProperty('places-dots', 'circle-opacity', 0);
-			map.setPaintProperty('places-dots', 'circle-stroke-opacity', 0);
-			map.setPaintProperty('places-dots', 'circle-radius', 15);
-			currentZoomState = 'close';
-		} else {
-			map.getCanvas().style.cursor = '';
-			map.setLayerZoomRange('places', 11.5, 24);
-			const z = map.getZoom();
-			if (z >= 13.5 && currentZoomState !== 'close') {
-				currentZoomState = 'close';
-				map.setPaintProperty('places', 'icon-opacity', 1);
-				map.setPaintProperty('places', 'text-opacity', 1);
-				map.setPaintProperty('places', 'text-halo-blur', 0);
-				map.setPaintProperty('places-dots', 'circle-opacity', 0);
-				map.setPaintProperty('places-dots', 'circle-stroke-opacity', 0);
-				map.setPaintProperty('places-dots', 'circle-radius', 15);
-			} else if (z < 13.5 && currentZoomState !== 'far') {
-				currentZoomState = 'far';
-				map.setPaintProperty('places', 'icon-opacity', 0);
-				map.setPaintProperty('places', 'text-opacity', 0);
-				map.setPaintProperty('places', 'text-halo-blur', 15);
-				map.setPaintProperty('places-dots', 'circle-opacity', 1);
-				map.setPaintProperty('places-dots', 'circle-stroke-opacity', 1);
-				map.setPaintProperty('places-dots', 'circle-radius', ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5]);
-			}
+	const placesLayer = {
+		id: 'places', type: 'symbol', source: 'places', minzoom: 11.5,
+		filter: [
+			'all',
+			['!=', ['geometry-type'], 'Polygon'],
+			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 0]]
+		],
+		layout: {
+			'icon-image': ['get', 'type'], 'icon-size': 0.55, 'icon-allow-overlap': true,
+			'text-optional': true, 'text-field': ['get', 'name'], 'text-offset': [0, 1.8],
+			'text-anchor': 'top', 'text-font': ['Noto Sans Bold'], 'text-size': 14,
+			'visibility': 'visible', 'text-max-width': 8
+		},
+		paint: {
+			'text-color': 'rgba(47,57,72,1)', 'text-halo-blur': 0,
+			'text-halo-color': 'rgba(255,255,255,1)', 'text-halo-width': 3,
+			'icon-opacity': ['step', ['zoom'], 0, 13.5, 1],
+			'icon-opacity-transition': { duration: 400 },
+			'text-opacity': ['step', ['zoom'], 0, 13.5, 1],
+			'text-opacity-transition': { duration: 400 }
 		}
-	}
+	};
 
-	$effect(() => {
-		updateMarkerVisibility();
-	});
-
-	onMount(() => {
-		function onFocusMapTarget(event) {
-			nextMarkerTarget = event.detail;
+	const placesDotsLayer = {
+		id: 'places-dots', type: 'circle', source: 'places', maxzoom: 14,
+		filter: ['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 0]],
+		paint: {
+			'circle-color': placeTypeColor,
+			'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5],
+			'circle-radius-transition': { duration: 400 }, 'circle-stroke-width': 0,
+			'circle-stroke-color': '#ffffff', 'circle-opacity': ['step', ['zoom'], 1, 13.5, 0],
+			'circle-opacity-transition': { duration: 400 },
+			'circle-stroke-opacity': ['step', ['zoom'], 1, 13.5, 0],
+			'circle-stroke-opacity-transition': { duration: 400 }
 		}
+	};
 
-		window.addEventListener('crag-review:focus-map-target', onFocusMapTarget);
+	const sectorFillLayer = {
+		id: 'sector-fill', type: 'fill', source: 'places',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 13]]
+		],
+		paint: { 'fill-color': placeTypeColor, 'fill-opacity': 0.12 }
+	};
 
-		return () => {
-			window.removeEventListener('crag-review:focus-map-target', onFocusMapTarget);
-		};
-	});
+	const sectorLineLayer = {
+		id: 'sector-line', type: 'line', source: 'places',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 13]]
+		],
+		paint: { 'line-color': placeTypeColor, 'line-width': 2, 'line-opacity': 0.7 }
+	};
+
+	const sectorLabelsLayer = {
+		id: 'sector-labels', type: 'symbol', source: 'places',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 13]],
+			['has', 'name']
+		],
+		layout: {
+			'text-field': ['get', 'name'],
+			'text-size': 12,
+			'text-anchor': 'center',
+			'text-allow-overlap': false
+		},
+		paint: {
+			'text-color': '#000',
+			'text-halo-color': '#ffffff',
+			'text-halo-width': 2
+		}
+	};
 
 	onMount(async () => {
 		map = new maplibregl.Map({
@@ -178,19 +131,15 @@
 
 		map.on('load', async () => {
 			await drawLayers();
-			map.on('style.load', async () => drawLayers());
-			map.on('zoom', updateMarkerVisibility);
-			checkAndLoadVisiblePois();
-			checkAndLoadVisibleTopoTracks();
+			applyCameraTarget();
+			slowRasterTileDecay(map);
 		});
-		map.on('style.load', () => slowRasterTileDecay(map));
-		map.on('zoom', () => {
-			updateVisiblePlaces();
-			checkAndLoadVisibleTopoTracks();
-		});
-		map.on('moveend', () => {
-			checkAndLoadVisiblePois();
-			checkAndLoadVisibleTopoTracks();
+		map.on('style.load', async () => {
+			slowRasterTileDecay(map);
+			map.once('idle', async () => {
+				await drawLayers();
+				applyCameraTarget();
+			});
 		});
 
 		map.on('mouseenter', 'places', function() {
@@ -217,469 +166,99 @@
 			if (map.getZoom() < 12.0 && e.features[0]?.properties?.path)
 				openPlace(e.features[0].properties.path, e.features[0].geometry.coordinates);
 		});
+
+		const sectorLayerIds = ['sector-fill', 'sector-line', 'sector-labels'];
+		map.on('mouseenter', sectorLayerIds, () => {
+			map.getCanvas().style.cursor = 'pointer';
+		});
+		map.on('mouseleave', sectorLayerIds, () => {
+			map.getCanvas().style.cursor = 'default';
+		});
+		map.on('click', sectorLayerIds, (e) => {
+			const feature = e.features?.[0];
+			const path = feature?.properties?.path;
+			if (path) openPlace(path, e.lngLat.toArray());
+		});
 	});
 
 	function openPlace(path, coordinates) {
-		nextMarkerTarget = { center: coordinates };
 		goto(`${base}/map/crag/${path}`);
 	}
 
-	function focusMarker(markerCenter, requestedMinZoom = null) {
-		map.easeTo({
-			center: markerCenter,
-			zoom: Math.max(map.getZoom(), requestedMinZoom || zoom),
-			pitch
-		});
-	}
-
-	function fitBounds(bounds, requestedMinZoom, options) {
-		if (!requestedMinZoom) {
-			map.fitBounds(bounds, options);
-			return;
-		}
-
-		const camera = map.cameraForBounds(bounds, options);
-		if (!camera) {
-			map.fitBounds(bounds, options);
-			return;
-		}
-
-		map.easeTo({
-			...camera,
-			zoom: Math.max(camera.zoom, requestedMinZoom),
-			pitch: options.pitch ?? pitch
-		});
-	}
-
-	function fillLayers(locations) {
-		places = {
-			type: 'FeatureCollection',
-			features: []
-		};
-		routes = {
-			type: 'FeatureCollection',
-			features: []
-		};
-		sectorShapes = {
-			type: 'FeatureCollection',
-			features: []
-		};
-		cragFeatures = [];
-		sectorPointFeatures = [];
-		poiFeatures = [];
-		poiRoutes = [];
-		topoRouteFeatures = [];
-
-		locations.forEach((location) => {
-			const processedLocation = JSON.parse(JSON.stringify(location));
-			if (['parking-space', 'bus', 'train'].includes(processedLocation.properties?.type)) {
-				poiFeatures.push(processedLocation);
-				return;
-			}
-
-			if (Array.isArray(processedLocation.properties.type)) {
-				processedLocation.properties.type = processedLocation.properties.type[0];
-			}
-			const sectors = processedLocation.properties.sectors || [];
-			processedLocation.properties.hasSectors = sectors.length > 0;
-			cragFeatures.push(processedLocation);
-
-			const path = processedLocation.properties.path;
-			if (path && !poiCache.has(path)) {
-				poiCache.set(path, {
-					parking: processedLocation.properties.parking,
-					transit: processedLocation.properties.transit,
-					transitTrack: processedLocation.properties.transitTrack
-				});
-			} else if (path && poiCache.has(path)) {
-				const cached = poiCache.get(path);
-				if (!processedLocation.properties.parking && cached.parking) processedLocation.properties.parking = cached.parking;
-				if (!processedLocation.properties.transit && cached.transit) processedLocation.properties.transit = cached.transit;
-				if (!processedLocation.properties.transitTrack && cached.transitTrack) processedLocation.properties.transitTrack = cached.transitTrack;
-			}
-
-			if (processedLocation.properties.parking) {
-				poiFeatures.push(processedLocation.properties.parking);
-			}
-			if (processedLocation.properties.transit) {
-				poiFeatures.push(processedLocation.properties.transit);
-			}
-			if (processedLocation.properties.transitTrack) {
-				poiRoutes.push(processedLocation.properties.transitTrack);
-			}
-
-			if (path && topoTrackCache.has(path)) {
-				const cached = topoTrackCache.get(path);
-				if (Array.isArray(cached?.tracks) && cached.tracks.length > 0) {
-					topoRouteFeatures.push(...cached.tracks);
-				}
-			}
-
-			sectors.forEach((sector) => {
-				const sectorCoordinates = getSectorCoordinates(sector.geometry);
-				if (!sectorCoordinates) return;
-				const sectorProperties = {
-					name: sector.name,
-					path: `${processedLocation.properties.path}/${sector.id}`,
-					type: processedLocation.properties.type,
-					parentCrag: processedLocation.properties.name,
-					isSector: true
-				};
-
-				if (isPolygonGeometry(sector.geometry)) {
-					const feature = {
-						type: 'Feature',
-						geometry: sector.geometry,
-						properties: sectorProperties
-					};
-					try {
-						// Morphological opening: shrink then expand to round convex corners without increasing the size
-						const shrunk = turf.buffer(feature, -1.5, { units: 'meters', steps: 16 });
-						if (shrunk && shrunk.geometry && shrunk.geometry.type) {
-							const rounded = turf.buffer(shrunk, 1.5, { units: 'meters', steps: 16 });
-							sectorShapes.features.push(rounded && rounded.geometry ? rounded : feature);
-						} else {
-							// If the polygon is too small and disappears when shrunk, keep the original
-							sectorShapes.features.push(feature);
-						}
-					} catch (e) {
-						sectorShapes.features.push(feature);
-					}
-				}
-
-				sectorPointFeatures.push({
-					type: 'Feature',
-					geometry: {
-						type: 'Point',
-						coordinates: sectorCoordinates
-					},
-					properties: sectorProperties
-				});
-			});
-		});
-		updateVisiblePlaces();
-		if (map?.loaded) drawLayers();
-	}
-
-	function updateVisiblePlaces() {
-		if (!places) return;
-
-		const showSectorDetail = (map?.getZoom() || 0) >= sectorDetailZoom;
-		const showTopoTrackDetail = (map?.getZoom() || 0) >= topoTrackDetailZoom;
-		const showPoiDetail = (map?.getZoom() || 0) >= poiDetailZoom || detailsShown;
-
-		const visibleCrags = showSectorDetail
-			? cragFeatures.filter((feature) => !feature.properties.hasSectors)
-			: cragFeatures;
-
-		places.features = [
-			...visibleCrags,
-			...(showSectorDetail ? sectorPointFeatures : []),
-			...(showPoiDetail ? poiFeatures : [])
-		];
-
-		map?.getSource('places')?.setData(places);
-
-		if (routes) {
-			routes.features = [
-				...tracks,
-				...(tracks.length === 0 && showTopoTrackDetail ? topoRouteFeatures : []),
-				...(showPoiDetail ? poiRoutes : [])
-			];
-			map?.getSource('routes')?.setData(routes);
-		}
-	}
-
-	function isPolygonGeometry(geometry) {
-		return geometry?.type === 'Polygon' || geometry?.type === 'MultiPolygon';
-	}
-
-	function getSectorCoordinates(geometry) {
-		if (!geometry?.coordinates) return null;
-		if (geometry.type === 'Point') return geometry.coordinates;
-
-		const coordinates = getGeometryCoordinates(geometry);
-
-		if (!Array.isArray(coordinates) || coordinates.length === 0) return null;
-
-		const usableCoordinates =
-			coordinates.length > 1 &&
-			coordinates[0][0] === coordinates[coordinates.length - 1][0] &&
-			coordinates[0][1] === coordinates[coordinates.length - 1][1]
-				? coordinates.slice(0, -1)
-				: coordinates;
-
-		const sums = usableCoordinates.reduce(
-			(acc, coordinate) => [acc[0] + coordinate[0], acc[1] + coordinate[1]],
-			[0, 0]
-		);
-
-		return [sums[0] / usableCoordinates.length, sums[1] / usableCoordinates.length];
-	}
-
-	function getGeometryCoordinates(geometry) {
-		if (geometry.type === 'Polygon') return geometry.coordinates?.[0];
-		if (geometry.type === 'MultiPolygon')
-			return geometry.coordinates?.flatMap((polygon) => polygon[0]);
-		return geometry.coordinates;
-	}
-
-	function isLineGeometry(geometry) {
-		return geometry?.type === 'LineString' || geometry?.type === 'MultiLineString';
-	}
-
-	function normalizeLineGeometry(candidate) {
-		if (isLineGeometry(candidate)) return candidate;
-		if (candidate?.type === 'Feature' && isLineGeometry(candidate.geometry)) {
-			return candidate.geometry;
-		}
-		return null;
-	}
-
-	function extractRouteTrackFeatures(routeEntries = [], context = {}) {
-		return routeEntries.flatMap((route) => {
-			const pathAssets = Array.isArray(route?.assets?.paths) ? route.assets.paths : [];
-			if (pathAssets.length === 0) return [];
-
-			return pathAssets
-				.map((pathAsset, index) => {
-					const geometry = normalizeLineGeometry(pathAsset?.path || pathAsset);
-					if (!geometry) return null;
-
-					return {
-						type: 'Feature',
-						geometry,
-						properties: {
-							name: pathAsset.label || route.name || route.id || 'Route',
-							routeId: route.id || null,
-							routeName: route.name || null,
-							routeType: route.type || null,
-							geometryMode: route.geometryMode || null,
-							pathRole: pathAsset.role || null,
-							pathIndex: index,
-							sectorId: context.sectorId || null,
-							sectorName: context.sectorName || null,
-							cragPath: context.cragPath || null
-						}
-					};
-				})
-				.filter(Boolean);
-		});
-	}
-
-	const loadedPoisForCrags = new Set();
-	const loadedTopoTracksForCrags = new Set();
-
-	async function checkAndLoadVisiblePois() {
-		if (!map) return;
-		const showPoiDetail = (map.getZoom() || 0) >= poiDetailZoom || detailsShown;
-		if (!showPoiDetail) return;
-
-		const bounds = map.getBounds();
-		const visibleCrags = cragFeatures.filter(feature => {
-			if (!feature.properties || !feature.properties.path) return false;
-			const path = feature.properties.path;
-			if (loadedPoisForCrags.has(path) || (poiCache.has(path) && poiCache.get(path).fetched)) return false;
-
-			// Only load for actual crags (including alpine tours and via ferratas)
-			const type = feature.properties.type;
-			const supportedCragTypes = ['sports-climbing', 'bouldering', 'trad', 'multi-pitch', 'alpine-tour', 'via-ferrata'];
-			if (!supportedCragTypes.includes(type)) return false;
-
-			let coord;
-			if (feature.geometry?.type === 'Point') {
-				coord = feature.geometry.coordinates;
-			} else if (feature.geometry?.type === 'Polygon') {
-				coord = feature.geometry.coordinates[0]?.[0];
-			} else if (feature.geometry?.type === 'MultiPolygon') {
-				coord = feature.geometry.coordinates[0]?.[0]?.[0];
-			} else {
-				return false;
-			}
-
-			return bounds.contains(coord);
-		});
-
-		if (visibleCrags.length === 0) return;
-
-		for (const crag of visibleCrags) {
-			loadedPoisForCrags.add(crag.properties.path);
-		}
-
-		let added = false;
-		await Promise.all(visibleCrags.map(async (crag) => {
-			const cragPath = crag.properties.path;
-			const cragSlug = cragPath.split('/').at(-1);
-			const cached = poiCache.get(cragPath) || {};
-
-			try {
-				const dirRes = await fetch(`${fsApiUrl}/${cragPath}`);
-				if (!dirRes.ok) return;
-				const dirFiles = await dirRes.json();
-
-				if (dirFiles.some(f => f.name === `${cragSlug}-parking.json`)) {
-					const parkingRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-parking.json`);
-					if (parkingRes.ok) {
-						const parking = await parkingRes.json();
-						if (parking && parking.properties && parking.geometry) {
-							crag.properties.parking = parking;
-							poiFeatures.push(parking);
-						}
-						cached.parking = parking;
-						added = true;
-					}
-				}
-
-				if (dirFiles.some(f => f.name === `${cragSlug}-transit.json`)) {
-					const transitRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit.json`);
-					if (transitRes.ok) {
-						const transit = await transitRes.json();
-						if (transit && transit.properties && transit.geometry) {
-							crag.properties.transit = transit;
-							poiFeatures.push(transit);
-						}
-						cached.transit = transit;
-						added = true;
-					}
-				}
-
-				if (dirFiles.some(f => f.name === `${cragSlug}-transit-track.json`)) {
-					const trackRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-transit-track.json`);
-					if (trackRes.ok) {
-						const track = await trackRes.json();
-						if (track && track.properties && track.geometry) {
-							crag.properties.transitTrack = track;
-							poiRoutes.push(track);
-						}
-						cached.transitTrack = track;
-						added = true;
-					}
-				}
-			} catch (e) {
-			}
-
-			cached.fetched = true;
-			poiCache.set(cragPath, cached);
-		}));
-
-		if (added) {
-			updateVisiblePlaces();
-		}
-	}
-
-	async function checkAndLoadVisibleTopoTracks() {
-		if (!map) return;
-		if (tracks.length > 0) return;
-		const showTopoTrackDetail = (map.getZoom() || 0) >= topoTrackDetailZoom;
-		if (!showTopoTrackDetail) return;
-
-		const bounds = map.getBounds();
-		const visibleCrags = cragFeatures.filter((feature) => {
-			if (!feature.properties?.path) return false;
-			const path = feature.properties.path;
-			if (
-				loadedTopoTracksForCrags.has(path) ||
-				(topoTrackCache.has(path) && topoTrackCache.get(path).fetched)
-			) {
-				return false;
-			}
-
-			const type = feature.properties.type;
-			const supportedCragTypes = ['sports-climbing', 'bouldering', 'trad', 'multi-pitch', 'alpine-tour', 'via-ferrata'];
-			if (!supportedCragTypes.includes(type)) return false;
-
-			const coord = getSectorCoordinates(feature.geometry);
-			return coord ? bounds.contains(coord) : false;
-		});
-
-		if (visibleCrags.length === 0) return;
-
-		for (const crag of visibleCrags) {
-			loadedTopoTracksForCrags.add(crag.properties.path);
-		}
-
-		let added = false;
-		await Promise.all(visibleCrags.map(async (crag) => {
-			const cragPath = crag.properties.path;
-			const cragSlug = cragPath.split('/').at(-1);
-			const cached = topoTrackCache.get(cragPath) || { tracks: [] };
-			const loadedTracks = [];
-
-			try {
-				const dirRes = await fetch(`${fsApiUrl}/${cragPath}`);
-				if (dirRes.ok) {
-					const dirFiles = await dirRes.json();
-					if (dirFiles.some(f => f.name === `${cragSlug}-topo.json`)) {
-						const cragTopoRes = await fetch(`${fsApiUrl}/${cragPath}/${cragSlug}-topo.json`);
-						if (cragTopoRes.ok) {
-							const cragTopo = await cragTopoRes.json();
-							loadedTracks.push(...extractRouteTrackFeatures(cragTopo?.routes || [], { cragPath }));
-						}
-					}
-				}
-			} catch (e) {
-			}
-
-			const sectors = Array.isArray(crag.properties?.sectors) ? crag.properties.sectors : [];
-			await Promise.all(sectors.map(async (sector) => {
-				if (!sector?.id) return;
-				try {
-					const sectorDirRes = await fetch(`${fsApiUrl}/${cragPath}/${sector.id}`);
-					if (!sectorDirRes.ok) return;
-					const sectorDirFiles = await sectorDirRes.json();
-					
-					if (sectorDirFiles.some(f => f.name === `${sector.id}-topo.json`)) {
-						const sectorTopoRes = await fetch(
-							`${fsApiUrl}/${cragPath}/${sector.id}/${sector.id}-topo.json`
-						);
-						if (!sectorTopoRes.ok) return;
-						const sectorTopo = await sectorTopoRes.json();
-						loadedTracks.push(
-							...extractRouteTrackFeatures(sectorTopo?.routes || [], {
-								cragPath,
-								sectorId: sector.id,
-								sectorName: sector.name
-							})
-						);
-					}
-				} catch (e) {
-				}
-			}));
-
-			if (loadedTracks.length > 0) {
-				cached.tracks = loadedTracks;
-				topoRouteFeatures.push(...loadedTracks);
-				added = true;
-			}
-
-			cached.fetched = true;
-			topoTrackCache.set(cragPath, cached);
-		}));
-
-		if (added) {
-			updateVisiblePlaces();
-		}
-	}
 
 	async function drawLayers() {
 		if (!map || !map.isStyleLoaded()) return;
-		await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
-		await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
-		await addMapImage('bouldering', base + '/icons/bouldering.png');
-		await addMapImage('alpine-tour', '/icons/alpine-tour.png');
-		await addMapImage('via-ferrata', '/icons/via-ferrata.png');
-		await addMapImage('train', base + '/icons/train.png');
-		await addMapImage('bus', base + '/icons/bus.png');
-		await addMapImage('parking-space', base + '/icons/parking.png');
-		addSectorShapeLayers();
-		updateVisiblePlaces();
-		
-		if (map.getSource('places')) map.getSource('places').setData(places);
-		if (map.getSource('routes')) map.getSource('routes').setData(routes);
-		if (map.getSource('sector-shapes')) map.getSource('sector-shapes').setData(sectorShapes);
+		try {
+			await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
+			await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
+			await addMapImage('bouldering', base + '/icons/bouldering.png');
+			await addMapImage('alpine-tour', '/icons/alpine-tour.png');
+			await addMapImage('via-ferrata', '/icons/via-ferrata.png');
+			await addMapImage('train', base + '/icons/train.png');
+			await addMapImage('bus', base + '/icons/bus.png');
+			await addMapImage('parking-space', base + '/icons/parking.png');
+			addPlacesLayers();
+		} catch (error) {
+			console.error('Failed to restore map layers after style change', error);
+		}
+	}
 
-		currentZoomState = ''; // Force re-evaluation on style change
-		updateMarkerVisibility();
+	function getPlacesData() {
+		const placeFeatures = Array.isArray(locations)
+			? locations.map((feature) => {
+				const properties = feature?.properties || {};
+				const rawType = properties.type;
+				const type = Array.isArray(rawType)
+					? rawType[0] || null
+					: typeof rawType === 'string'
+						? rawType.split(',')[0].trim() || null
+						: rawType;
+
+				return {
+					...feature,
+					properties: { ...properties, type }
+				};
+			})
+			: [];
+		return {
+			type: 'FeatureCollection',
+			features: placeFeatures
+		};
+	}
+
+	function addPlacesLayers() {
+		if (!map.getSource('places')) {
+			map.addSource('places', { type: 'geojson', cluster: false, data: getPlacesData() });
+		}
+		if (!map.getLayer('sector-fill')) map.addLayer(sectorFillLayer);
+		if (!map.getLayer('sector-line')) map.addLayer(sectorLineLayer);
+		if (!map.getLayer('sector-labels')) map.addLayer(sectorLabelsLayer);
+		if (!map.getLayer('places-dots')) map.addLayer(placesDotsLayer);
+		if (!map.getLayer('places')) map.addLayer(placesLayer);
+	}
+
+	$effect(() => {
+		const source = map?.getSource('places');
+		if (source && Array.isArray(locations)) source.setData(getPlacesData());
+	});
+
+	$effect(() => {
+		cameraTarget;
+		applyCameraTarget();
+	});
+
+	function applyCameraTarget() {
+		if (!map || !map.isStyleLoaded() || !cameraTarget) return;
+
+		if (cameraTarget.type === 'bounds' && cameraTarget.bounds) {
+			map.fitBounds(cameraTarget.bounds, {
+				padding: cameraTarget.padding ?? 80,
+				maxZoom: cameraTarget.maxZoom ?? 18,
+				duration: 900
+			});
+		} else if (cameraTarget.center) {
+			map.easeTo({ center: cameraTarget.center, zoom: cameraTarget.zoom ?? zoom, duration: 900 });
+		}
 	}
 
 	async function addMapImage(name, url) {
@@ -692,96 +271,6 @@
 			}
 		} catch (e) {
 			console.error('Failed to load image', name, e);
-		}
-	}
-
-	function addSectorShapeLayers() {
-		if (!map.getSource('sector-shapes')) {
-			map.addSource('sector-shapes', {
-				type: 'geojson',
-				data: sectorShapes
-			});
-		}
-
-		if (!map.getLayer('sector-shapes-fill')) {
-			map.addLayer(
-				{
-					id: 'sector-shapes-fill',
-					type: 'fill',
-					source: 'sector-shapes',
-					minzoom: sectorDetailZoom,
-					paint: {
-						'fill-color': [
-							'match',
-							['get', 'type'],
-							'sports-climbing',
-							'#3b82f6',
-							'multi-pitch',
-							'#10b981',
-							'bouldering',
-							'#f97316',
-							'trad',
-							'#eab308',
-							'alpine-tour',
-							'#8b5cf6',
-							'via-ferrata',
-							'#eab308',
-							'bus',
-							'#6366f1',
-							'train',
-							'#8b5cf6',
-							'parking-space',
-							'#6b7280',
-							'#3b82f6'
-						],
-						'fill-opacity': 0.18
-					}
-				},
-				'places'
-			);
-		}
-
-		if (!map.getLayer('sector-shapes-outline')) {
-			map.addLayer(
-				{
-					id: 'sector-shapes-outline',
-					type: 'line',
-					source: 'sector-shapes',
-					minzoom: sectorDetailZoom,
-					layout: {
-						'line-join': 'round',
-						'line-cap': 'round'
-					},
-					paint: {
-						'line-color': [
-							'match',
-							['get', 'type'],
-							'sports-climbing',
-							'#3b82f6',
-							'multi-pitch',
-							'#10b981',
-							'bouldering',
-							'#f97316',
-							'trad',
-							'#eab308',
-							'alpine-tour',
-							'#8b5cf6',
-							'via-ferrata',
-							'#ec4899',
-							'bus',
-							'#6366f1',
-							'train',
-							'#8b5cf6',
-							'parking-space',
-							'#6b7280',
-							'#3b82f6'
-						],
-						'line-width': 2.5,
-						'line-opacity': 0.9
-					}
-				},
-				'places'
-			);
 		}
 	}
 
@@ -801,18 +290,20 @@
 	}
 </script>
 
-<div class="sticky h-screen w-screen top-0 bottom-0 left-0 right-0" bind:this={mapElement}
-     class:details-shown={detailsShown}></div>
+<div
+	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full"
+	bind:this={mapElement}
+></div>
 <div
 	class="fixed sm:left-15 sm:right-auto right-4 sm:top-37 z-[1000] flex sm:flex-col flex-col-reverse items-center style-selector-btn"
-	style={detailsShown ? `--dynamic-bottom: calc(var(--info-panel-height, 50vh) + 84px);` : ''}
 	onmouseleave={() => (tileLayerMenuOpen = false)}
 >
 	<button
 		class="cursor-pointer bg-white w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md text-gray-600"
 		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
 		class:sm:rounded-b-none={tileLayerMenuOpen}
-		class:max-sm:rounded-t-none={tileLayerMenuOpen}><i class="fa-solid fa-layer-group text-lg"></i></button
+		class:max-sm:rounded-t-none={tileLayerMenuOpen}
+	><i class="fa-solid fa-layer-group text-lg"></i></button
 	>
 	{#if tileLayerMenuOpen}
 		<div
@@ -850,7 +341,9 @@
     .style-selector-btn {
         @media (width <= 40rem) {
             bottom: var(--dynamic-bottom, 9.25rem);
-            transition: var(--info-panel-transition, bottom 0.2s ease-out), opacity 0.2s ease-out, transform 0.2s ease-out;
+            transition: var(--info-panel-transition, bottom 0.2s ease-out),
+            opacity 0.2s ease-out,
+            transform 0.2s ease-out;
             opacity: var(--controls-opacity, 1);
             transform: scale(var(--controls-scale, 1));
             transform-origin: center;
@@ -895,7 +388,9 @@
         @media (width <= 40rem) {
             @apply left-auto right-4 top-auto;
             bottom: 5rem;
-            transition: var(--info-panel-transition, bottom 0.2s ease-out), opacity 0.2s ease-out, transform 0.2s ease-out;
+            transition: var(--info-panel-transition, bottom 0.2s ease-out),
+            opacity 0.2s ease-out,
+            transform 0.2s ease-out;
             opacity: var(--controls-opacity, 1);
             transform: scale(var(--controls-scale, 1));
             transform-origin: center;

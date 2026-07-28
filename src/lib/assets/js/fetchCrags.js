@@ -6,30 +6,26 @@ let fetchPromise = null;
 let cacheTime = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-function normalizeEntryPath(path = '') {
-	return path.replace(/^entries\//, '');
-}
-
 export class crag {
 	constructor(name, path) {
 		this.name = name;
 		this.path = path;
 	}
 
-	getMainPath(){
+	getMainPath() {
 		return `${this.name} ${this.path}`;
 	}
 
 	getTransitPath() {
-		return `${this.getMainPath()}-transit.json`
+		return `${this.getMainPath()}-transit.json`;
 	}
 
-	getParkingPath(){
-		return `${this.getMainPath()}-parking.json`
+	getParkingPath() {
+		return `${this.getMainPath()}-parking.json`;
 	}
 
-	getTopoPath(){
-		return `${this.getMainPath()}-topo.json`
+	getTopoPath() {
+		return `${this.getMainPath()}-topo.json`;
 	}
 }
 
@@ -44,23 +40,11 @@ const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}
 		if (!fetchPromise) {
 			fetchPromise = (async () => {
 				try {
-					console.log(`[fetchCrags] Fetching manifest from ${API_URL}/manifest.json`);
-					const res = await fetch(`${API_URL}/manifest.json`);
-					if (!res.ok) throw new Error('Failed to fetch crag manifest from API');
-					const manifest = await res.json();
-					console.log(`[fetchCrags] Manifest loaded, ${manifest.length} crags found`);
+					const res = await fetch(`${API_URL}/fels-layer.json`);
+					if (!res.ok) throw new Error('Failed to fetch map GeoJSON from API');
+					const featureCollection = await res.json();
 
-					return manifest.map(entry => ({
-						type: "Feature",
-						geometry: entry.geometry,
-						properties: {
-							id: entry.id,
-							name: entry.name,
-							path: entry.path,
-							type: entry.type || [],
-							hash: entry.hash
-						}
-					}));
+					return featureCollection.features;
 				} finally {
 					fetchPromise = null;
 				}

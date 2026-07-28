@@ -100,13 +100,6 @@
 		Helm: 'fa-solid fa-hard-hat'
 	};
 
-	afterNavigate((_navigation) => {
-		if (location.hash) onMarkerClicked();
-	});
-
-	function onMarkerClicked() {
-	}
-
 	async function share() {
 		await navigator.share({
 			title: data.name,
@@ -288,7 +281,7 @@
 	<SearchBar actionBase="/map" bind:searchTerm={searchTerm} />
 </div>
 
-<main class="z-[500] h-24">
+<main class="z-[500]">
 	<InfoPanel onShare={share}>
 		<div class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start">
 			{#if activeSectorId}

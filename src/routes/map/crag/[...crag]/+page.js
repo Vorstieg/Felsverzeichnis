@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
+import { getGeometryBounds, getBoundsCenter } from '$lib/assets/js/map-camera.js';
 
 export async function load({ params, url, parent, fetch }) {
 	try {
@@ -8,7 +9,7 @@ export async function load({ params, url, parent, fetch }) {
 		const crags = parentData.locations || [];
 
 		const API_URL = fsApiUrl;
-		
+
 		const _fetchJson = async (p) => {
 			const url = `${API_URL}/${p}`;
 			try {
@@ -23,7 +24,7 @@ export async function load({ params, url, parent, fetch }) {
 					const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
 					if (cached) return await cached.json();
 				}
-			} catch(e) {}
+			} catch (e) {}
 			return null;
 		};
 
@@ -32,39 +33,48 @@ export async function load({ params, url, parent, fetch }) {
 				const hashRes = await fetch(`${API_URL}/${cragPath}/hash.txt`);
 				if (!hashRes.ok) return;
 				const currentHash = (await hashRes.text()).trim();
-				
+
 				const cache = await caches.open('felslager-crags');
 				const cachedHashRes = await cache.match(`${API_URL}/${cragPath}/hash.txt`);
 				const cachedHash = cachedHashRes ? (await cachedHashRes.text()).trim() : null;
-				
+
 				const baseDirCached = await cache.match(`${API_URL}/${cragPath}`);
-				
+
 				if (currentHash !== cachedHash || !baseDirCached) {
 					const indexRes = await fetch(`${API_URL}/${cragPath}/?recursive=true`);
 					const files = await indexRes.json();
-					
-					const jsonFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.json'));
-					const otherFiles = files.filter(f => f.type === 'file' && !f.name.endsWith('.json'));
-					
-					await Promise.all(jsonFiles.map(async (file) => {
-						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-						const fileRes = await fetch(fileUrl);
-						if (fileRes.ok) await cache.put(fileUrl, fileRes);
-					}));
-					
-					const dirsToCache = [cragPath, ...files.filter(f => f.type === 'dir').map(d => `${cragPath}/${d.path}`)];
-					await Promise.all(dirsToCache.map(async (dir) => {
-						const dRes = await fetch(`${API_URL}/${dir}`);
-						if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
-					}));
-					
+
+					const jsonFiles = files.filter((f) => f.type === 'file' && f.name.endsWith('.json'));
+					const otherFiles = files.filter((f) => f.type === 'file' && !f.name.endsWith('.json'));
+
+					await Promise.all(
+						jsonFiles.map(async (file) => {
+							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+							const fileRes = await fetch(fileUrl);
+							if (fileRes.ok) await cache.put(fileUrl, fileRes);
+						})
+					);
+
+					const dirsToCache = [
+						cragPath,
+						...files.filter((f) => f.type === 'dir').map((d) => `${cragPath}/${d.path}`)
+					];
+					await Promise.all(
+						dirsToCache.map(async (dir) => {
+							const dRes = await fetch(`${API_URL}/${dir}`);
+							if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
+						})
+					);
+
 					await cache.put(`${API_URL}/${cragPath}/hash.txt`, new Response(currentHash));
-					
-					Promise.all(otherFiles.map(async (file) => {
-						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-						const fileRes = await fetch(fileUrl);
-						if (fileRes.ok) await cache.put(fileUrl, fileRes);
-					})).catch(() => {});
+
+					Promise.all(
+						otherFiles.map(async (file) => {
+							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+							const fileRes = await fetch(fileUrl);
+							if (fileRes.ok) await cache.put(fileUrl, fileRes);
+						})
+					).catch(() => {});
 				}
 			} catch (e) {}
 		};
@@ -230,7 +240,9 @@ export async function load({ params, url, parent, fetch }) {
 				if (baseCrag) {
 					crag = baseCrag;
 					isSectorPath = true;
-					sectorData = normalizeSectorData(await _fetchJson(`${basePath}/${sectorId}/${sectorId}.json`));
+					sectorData = normalizeSectorData(
+						await _fetchJson(`${basePath}/${sectorId}/${sectorId}.json`)
+					);
 				}
 			}
 		} else {
@@ -257,7 +269,7 @@ export async function load({ params, url, parent, fetch }) {
 			const allFiles = await allFilesPromise;
 			if (allFiles && p.startsWith(`${basePath}/`)) {
 				const relPath = p.slice(basePath.length + 1);
-				if (!allFiles.some(f => f.type === 'file' && f.path === relPath)) {
+				if (!allFiles.some((f) => f.type === 'file' && f.path === relPath)) {
 					return null;
 				}
 			}
@@ -276,7 +288,8 @@ export async function load({ params, url, parent, fetch }) {
 					const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.pdf'];
 					images = files
 						.filter(
-							(f) => f.type === 'file' && imageExts.some((ext) => f.name.toLowerCase().endsWith(ext))
+							(f) =>
+								f.type === 'file' && imageExts.some((ext) => f.name.toLowerCase().endsWith(ext))
 						)
 						.map((f) => `${API_URL}/${imageScanPath}/${f.name}`);
 				}
@@ -308,7 +321,7 @@ export async function load({ params, url, parent, fetch }) {
 				gradeRoutes = sectorRoutes.length > 0 ? sectorRoutes : topoJson?.routes || [];
 				modelCandidates.push({ path: params.crag, fileName: `${cragName}.glb` });
 			}
-			
+
 			if (topoJson) {
 				try {
 					for (const candidate of modelCandidates) {
@@ -324,7 +337,7 @@ export async function load({ params, url, parent, fetch }) {
 					// Ignore
 				}
 			}
-			
+
 			let tracks;
 			if (isSectorPath) {
 				tracks = extractRouteTrackFeatures(topoJson?.routes || [], {
@@ -333,7 +346,10 @@ export async function load({ params, url, parent, fetch }) {
 					sectorName: sectorData?.name
 				});
 			} else {
-				const sectorTracks = await aggregateSectorTrackFeatures(basePath, cragForUi.properties?.sectors || []);
+				const sectorTracks = await aggregateSectorTrackFeatures(
+					basePath,
+					cragForUi.properties?.sectors || []
+				);
 				tracks = [
 					...extractRouteTrackFeatures(topoJson?.routes || [], {
 						cragPath: params.crag
@@ -362,15 +378,23 @@ export async function load({ params, url, parent, fetch }) {
 			isSectorPath,
 			crag: cragForUi,
 			zoom: 16,
-			locations: [cragForUi],
+			// Keep the overview collection on the map when the detail panel is open.
+			// Returning only the selected crag here replaces the parent layout data
+			// and makes crag mode render a single marker.
+			locations: parentData.allLocations || crags,
 			tracks: [],
 			center:
 				getGeometryCenter(isSectorPath ? sectorData?.geometry : cragForUi.geometry) ||
 				cragForUi.geometry.coordinates,
-			cameraTarget:
-				isSectorPath && getGeometryCenter(sectorData?.geometry)
-					? { center: getGeometryCenter(sectorData.geometry), zoom: 18 }
-					: null,
+			cameraTarget: (() => {
+				console.log(cragForUi)
+				if (isSectorPath) {
+					const bounds = getGeometryBounds(sectorData?.geometry);
+					if (bounds) return { type: 'bounds', bounds, padding: 80, maxZoom: 18 };
+				}
+				const center = getGeometryCenter(cragForUi.geometry);
+				return center ? { type: 'center', center, zoom: 16 } : null;
+			})(),
 			name:
 				isSectorPath && sectorData?.name
 					? `${cragForUi.properties.name} - ${sectorData.name}`
@@ -386,8 +410,6 @@ export async function load({ params, url, parent, fetch }) {
 					: cragForUi.properties.description_en,
 			type: isSectorPath && sectorData?.type ? sectorData.type : cragForUi.properties.type,
 			sector: normalizeSectorData(sectorData),
-			detailsShown: true,
-			zoomToLocations: true,
 			meta: {
 				lang: 'de',
 				title:

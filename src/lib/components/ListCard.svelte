@@ -11,7 +11,7 @@
 </script>
 
 <div class="relative flex bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-slate-200 overflow-hidden h-28 sm:h-32 text-slate-800 group">
-	<a href="{base}/map/crag/{crag.properties.path}" class="absolute inset-0 z-10" aria-label="{crag.properties.name}"></a>
+	<a href="{base}/map/crag/{crag.properties.path}#16/{crag.geometry.coordinates[1]}/{crag.geometry.coordinates[0]}" class="absolute inset-0 z-10" aria-label="{crag.properties.name}"></a>
 	{#if crag.properties.previewImage}
 		<img src="{crag.properties.previewImage}" alt="{crag.properties.name}" class="w-28 sm:w-36 h-full object-cover shrink-0 border-r border-slate-100" />
 	{/if}

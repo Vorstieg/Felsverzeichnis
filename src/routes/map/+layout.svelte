@@ -6,6 +6,8 @@
 	let { children } = $props();
 </script>
 
-<ClimbingMap tracks={$page.data.tracks} locations={$page.data.locations} zoom={$page.data.zoom} center={$page.data.center}
-						 zoomToLocations={$page.data.zoomToLocations} detailsShown={$page.data.detailsShown}></ClimbingMap>
+<ClimbingMap
+	locations={$page.data.locations}
+	cameraTarget={$page.data.cameraTarget}
+></ClimbingMap>
 {@render children?.()}
