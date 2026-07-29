@@ -8,6 +8,7 @@
 	import { _, locale } from 'svelte-i18n';
 	import { securityRatings } from '$lib/config.js';
 	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
+	import TopoButton from '$lib/components/ui/TopoButton.svelte';
 
 	let fullscreenImage = $state();
 	let sunInfo = $state({ hours: 'N/A' });
@@ -24,8 +25,8 @@
 	let description = $derived(
 		$locale === 'de' ? data.description_de : data.description_en || data.description_de
 	);
-	let sectors = $derived(data.crag?.properties?.sectors || []);
-	let activeSectorId = $derived(data.sectorId || data.sector?.id);
+	let sectors = $derived(data.cragData?.properties?.sectors || []);
+	let activeSectorId = $derived(data.currentLocation.sectorId);
 	let displayWallDirection = $derived(
 		wallDirection !== 'N/A' && wallDirection !== 'Unknown'
 			? $_('directions.' + wallDirection)
@@ -51,14 +52,6 @@
 		}
 	});
 
-	let gpxEntry = $derived(data.gpxEntry || details?.gpxEntry || details?.gpxTracks?.length > 0);
-	let has2D = $derived(
-		!!details?.topoJson?.image2D ||
-		details?.topoJson?.routes?.some((r) => r.points2D?.length > 0) ||
-		details?.topoJson?.outlines?.length > 0 ||
-		details?.topoJson?.fixPoints?.some((fp) => fp.position2D)
-	);
-
 	$effect(() => {
 		if (details?.topoJson) {
 			sunInfo = calculateSunInfo(details.topoJson);
@@ -66,28 +59,18 @@
 		}
 	});
 
-	let type = $derived(data.type);
-	let name = $derived(data.name);
-	let displayTitle = $derived.by(() => {
-		if (activeSectorId) {
-			const sectorName = data.crag?.properties?.sectors?.find((s) => s.id === activeSectorId)?.name;
-			const baseName = data.crag?.properties?.name || name;
-			if (sectorName && baseName.includes(sectorName)) return baseName;
-			return sectorName ? `${baseName} - ${sectorName}` : `${baseName} - ${activeSectorId}`;
-		}
-		return data.crag?.properties?.name || name;
-	});
-	let path = $derived(data.path);
-	let topoPath = $derived(data.topoPath || data.path);
-	let breadcrumbParts = $derived((data.basePath || path || '').split('/').filter(Boolean));
-	let topo = $derived(data.topo);
+	let type = $derived(data.currentData?.properties?.type);
+	let topo = $derived(data.currentData?.properties?.topo)
+	let breadcrumbParts = $derived((data.currentLocation.getFolder()).split('/').filter(Boolean));
 	let topoJson = $derived(details?.topoJson);
 	let transit = $derived(details?.transit);
 	let parking = $derived(details?.parking);
-	let has3DTopo = $derived(details?.has3DTopo && !gpxEntry);
-	let tags = $derived(data.tags);
-	let security = $derived(data.security);
-	let equipment = $derived(data.equipment);
+	let has3DTopo = $derived(details?.has3DTopo);
+	let gradeRoutes = $derived(details?.gradeRoutes);
+	let has2DTopo = $derived(details?.has2DTopo);
+	let tags = $derived(data.currentData?.properties?.tags);
+	let security = $derived(data.currentData?.properties?.security);
+	let equipment = $derived(data.currentData?.properties?.equipament);
 	let images = $derived(details?.images);
 
 	const equipmentIcons = {
@@ -257,7 +240,7 @@
 				})
 			);
 		}
-		goto(`${base}/map/crag/${data.basePath || path}/${sector.id}`);
+		goto(`${base}/map/crag/${data.currentLocation._getCragPath()}/${sector.id}`);
 	}
 </script>
 
@@ -283,21 +266,14 @@
 
 <main class="z-[500]">
 	<InfoPanel onShare={share}>
-		<div class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start">
-			{#if activeSectorId}
-				<a
-					href="{base}/map/crag/{data.basePath || path}"
-					class="mr-3 rounded-full p-2 transition-colors hover:bg-gray-100"
-					aria-label={$_('ui.back')}
-				>
-					<i class="fa-solid fa-arrow-left text-gray-600"></i>
-				</a>
-			{/if}
+		<div
+			class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start">
 			<div class="flex flex-col sm:px-2">
 				<div class="relative z-20 flex flex-wrap items-center text-[10px] sm:text-xs mb-0.5 font-medium tracking-wide">
 					{#each breadcrumbParts as part, i}
 						{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
-						<a href="{base}/list/{encodeURIComponent(subpath)}" class="text-slate-500 hover:text-slate-700 hover:underline transition-colors px-0.5 -mx-0.5 rounded focus:outline-none focus:ring-2 focus:ring-slate-400">
+						<a href="{base}/list/{encodeURIComponent(subpath)}"
+						   class="text-slate-500 hover:text-slate-700 hover:underline transition-colors px-0.5 -mx-0.5 rounded focus:outline-none focus:ring-2 focus:ring-slate-400">
 							{part}
 						</a>
 						{#if i < breadcrumbParts.length - 1}
@@ -305,7 +281,7 @@
 						{/if}
 					{/each}
 				</div>
-				<h1 class="my-0 text-2xl font-bold text-slate-800">{displayTitle}</h1>
+				<h1 class="my-0 text-2xl font-bold text-slate-800">{data.currentData?.properties?.name}</h1>
 			</div>
 		</div>
 		<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-5" overflow-y>
@@ -348,23 +324,14 @@
 					</div>
 				{/if}
 				<div class="mt-5 mb-6 flex flex-wrap gap-3 text-sm font-medium text-gray-700">
-					{#if Array.isArray(type)}
-						{#each type as t}
-							<a
-								href="{base}/map/{t}/"
-								class="inline-flex items-center justify-center rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 no-underline transition-colors hover:bg-blue-100"
-							>
-								{$_('types.' + t)}
-							</a>
-						{/each}
-					{:else}
+					{#each type as t}
 						<a
-							href="{base}/map/{type}/"
+							href="{base}/map/{t}/"
 							class="inline-flex items-center justify-center rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 no-underline transition-colors hover:bg-blue-100"
 						>
-							{$_('types.' + type)}
+							{$_('types.' + t)}
 						</a>
-					{/if}
+					{/each}
 					{#if tags && tags.length > 0}
 						{#each tags as tag}
 							<span
@@ -436,63 +403,13 @@
 				<div class="mt-6 mb-6 flex items-center">
 					<div class="prose w-full text-slate-800">
 						<div class="mb-3 w-full">
-							{#if has3DTopo || has2D}
-								<div class="grid {has3DTopo && has2D ? 'grid-cols-2' : 'grid-cols-1'} mb-4 gap-3">
+							{#if has3DTopo || has2DTopo}
+								<div class="grid {has3DTopo && has2DTopo ? 'grid-cols-2' : 'grid-cols-1'} mb-4 gap-3">
 									{#if has3DTopo}
-										<a
-											href="{base}/topo/crag/{topoPath}"
-											onclick={() => navigatingTo = '3d'}
-											class="group relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-300 hover:bg-slate-50 hover:shadow-xl hover:ring-8 hover:ring-blue-500/5"
-										>
-											<div class="z-10 flex flex-row items-center gap-2 px-2 sm:gap-3">
-												<div
-													class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-50"
-												>
-													{#if navigatingTo === '3d'}
-														<i class="fa-solid fa-spinner fa-spin text-xl text-blue-600"></i>
-													{:else}
-														<i class="fa-solid fa-cube text-xl text-blue-600"></i>
-													{/if}
-												</div>
-												<div class="flex flex-col">
-													<span
-														class="text-base leading-tight font-bold text-slate-800 transition-colors group-hover:text-blue-700 sm:text-lg"
-													>{$_('ui.topo_3d')}</span
-													>
-													<span class="text-xs font-medium text-slate-500 sm:text-sm"
-													>{$_('ui.interactive_view')}</span
-													>
-												</div>
-											</div>
-										</a>
+										<TopoButton mode="3d" path="{data.currentLocation._getPath()}"></TopoButton>
 									{/if}
-									{#if has2D}
-										<a
-											href="{base}/topo/crag/{topoPath}?mode=2d"
-											onclick={() => navigatingTo = '2d'}
-											class="group relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-emerald-300 hover:bg-slate-50 hover:shadow-xl hover:ring-8 hover:ring-emerald-500/5"
-										>
-											<div class="z-10 flex flex-row items-center gap-2 px-2 sm:gap-3">
-												<div
-													class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:bg-emerald-50"
-												>
-													{#if navigatingTo === '2d'}
-														<i class="fa-solid fa-spinner fa-spin text-xl text-emerald-600"></i>
-													{:else}
-														<i class="fa-solid fa-image text-xl text-emerald-600"></i>
-													{/if}
-												</div>
-												<div class="flex flex-col">
-													<span
-														class="text-base leading-tight font-bold text-slate-800 transition-colors group-hover:text-emerald-700 sm:text-lg"
-													>{$_('ui.topo_2d')}</span
-													>
-													<span class="text-xs font-medium text-slate-500 sm:text-sm"
-													>{$_('ui.schematic_view')}</span
-													>
-												</div>
-											</div>
-										</a>
+									{#if has2DTopo}
+										<TopoButton mode="2d" path="{data.currentLocation._getPath()}"></TopoButton>
 									{/if}
 								</div>
 							{/if}
@@ -509,8 +426,10 @@
 									</a>
 								{/if}
 								{#if transit}
-									<div class="inline-flex items-center rounded-xl bg-white shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:-translate-y-0.5 hover:shadow-md">
-										<span class="flex items-center rounded-l-xl border-r border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-500">
+									<div
+										class="inline-flex items-center rounded-xl bg-white shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:-translate-y-0.5 hover:shadow-md">
+										<span
+											class="flex items-center rounded-l-xl border-r border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-500">
 											<i class="fa-solid fa-train"></i>
 										</span>
 										<a
@@ -547,9 +466,9 @@
 						</div>
 						<span>{description}</span>
 
-						{#if data.gradeRoutes?.length}
+						{#if gradeRoutes?.length}
 							<div class="not-prose mt-5 mb-5 h-40 w-full">
-								<GradeChart routes={data.gradeRoutes} />
+								<GradeChart routes={gradeRoutes} />
 							</div>
 						{/if}
 

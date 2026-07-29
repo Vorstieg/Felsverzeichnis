@@ -1,12 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
-import { getGeometryBounds, getBoundsCenter } from '$lib/assets/js/map-camera.js';
+import { Topo } from '$lib/assets/js/topo-paths.js';
 
 export async function load({ params, url, parent, fetch }) {
 	try {
 		const parentData = await parent();
-		const crags = parentData.locations || [];
 
 		const API_URL = fsApiUrl;
 
@@ -24,7 +23,8 @@ export async function load({ params, url, parent, fetch }) {
 					const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
 					if (cached) return await cached.json();
 				}
-			} catch (e) {}
+			} catch (e) {
+			}
 			return null;
 		};
 
@@ -74,18 +74,12 @@ export async function load({ params, url, parent, fetch }) {
 							const fileRes = await fetch(fileUrl);
 							if (fileRes.ok) await cache.put(fileUrl, fileRes);
 						})
-					).catch(() => {});
+					).catch(() => {
+					});
 				}
-			} catch (e) {}
+			} catch (e) {
+			}
 		};
-		const normalizeSectorData = (sector) =>
-			sector
-				? {
-						...sector,
-						...(sector.properties || {}),
-						geometry: sector.geometry || sector.properties?.geometry
-					}
-				: null;
 		const getGeometryCenter = (geometry) => {
 			if (!geometry?.coordinates) return null;
 			if (geometry.type === 'Point') return geometry.coordinates;
@@ -122,161 +116,48 @@ export async function load({ params, url, parent, fetch }) {
 			}
 			return null;
 		};
-		const extractRouteTrackFeatures = (routes = [], context = {}) =>
-			routes.flatMap((route) => {
-				const pathAssets = Array.isArray(route?.assets?.paths) ? route.assets.paths : [];
-				if (pathAssets.length === 0) return [];
 
-				return pathAssets
-					.map((pathAsset, index) => {
-						const geometry = normalizeLineGeometry(pathAsset?.path || pathAsset);
-						if (!geometry) return null;
 
-						return {
-							type: 'Feature',
-							geometry,
-							properties: {
-								name: pathAsset.label || route.name || route.id || 'Route',
-								routeId: route.id || null,
-								routeName: route.name || null,
-								routeType: route.type || null,
-								geometryMode: route.geometryMode || null,
-								pathRole: pathAsset.role || null,
-								pathIndex: index,
-								sectorId: context.sectorId || null,
-								sectorName: context.sectorName || null,
-								cragPath: context.cragPath || null
-							}
-						};
-					})
-					.filter(Boolean);
-			});
-		const aggregateSectorRoutes = async (cragPath, sectors = []) => {
-			const routes = [];
-			for (const sector of sectors) {
-				if (!sector?.id) continue;
-				const sectorTopo = await fetchJson(`${cragPath}/${sector.id}/${sector.id}-topo.json`);
-				if (!Array.isArray(sectorTopo?.routes)) continue;
-				routes.push(
-					...sectorTopo.routes.map((route) => ({
-						...route,
-						sectorId: sector.id,
-						sectorName: sector.name,
-						sectorWallAzimuth: sectorTopo.wallAzimuth,
-						sectorTags: sectorTopo.tags
-					}))
-				);
-			}
-			return routes;
-		};
-		const aggregateSectorTrackFeatures = async (cragPath, sectors = []) => {
-			const tracks = [];
-			for (const sector of sectors) {
-				if (!sector?.id) continue;
-				const sectorTopo = await fetchJson(`${cragPath}/${sector.id}/${sector.id}-topo.json`);
-				if (!Array.isArray(sectorTopo?.routes)) continue;
-				tracks.push(
-					...extractRouteTrackFeatures(sectorTopo.routes, {
-						cragPath,
-						sectorId: sector.id,
-						sectorName: sector.name
-					})
-				);
-			}
-			return tracks;
-		};
-
-		const matchingCrag = crags
-			.filter(
-				(it) =>
-					params.crag === it.properties?.path || params.crag.startsWith(`${it.properties?.path}/`)
-			)
-			.sort((a, b) => b.properties.path.length - a.properties.path.length)
-			.find((it) => {
-				const rest =
-					params.crag === it.properties.path
-						? []
-						: params.crag
-								.slice(it.properties.path.length + 1)
-								.split('/')
-								.filter(Boolean);
-				return rest.length === 0 || it.properties?.sectors?.some((sector) => sector.id === rest[0]);
+		const openCrag = parentData.locations
+			?.filter((it) => params.crag.startsWith(`${it.properties?.path}`))
+			?.sort((a, b) => b.properties.path.length - a.properties.path.length)
+			?.find((it) => {
+				return it.properties?.minzoom < 16;
 			});
 
-		const relativeParts =
-			matchingCrag && params.crag !== matchingCrag.properties.path
-				? params.crag
-						.slice(matchingCrag.properties.path.length + 1)
-						.split('/')
-						.filter(Boolean)
-				: [];
-		let isSectorPath = Boolean(
-			relativeParts[0] &&
-				matchingCrag?.properties?.sectors?.some((sector) => sector.id === relativeParts[0])
-		);
-		let basePath = matchingCrag?.properties?.path || params.crag;
-		let sectorId = isSectorPath ? relativeParts[0] : null;
-		const cragName = basePath.split('/').at(-1);
+		const sectorIds = params.crag
+			.slice(openCrag.properties.path.length + 1)
+			.split('/')
+			.filter(Boolean);
+		const sectorId = sectorIds.at(-1) || null;
 
-		let crag = matchingCrag;
-		let sectorData = null;
+		const cragPath = openCrag.properties.path
+			.slice(0, - (openCrag.properties.id.length + 1))
 
-		if (crag) {
-			const fullCrag = await _fetchJson(`${basePath}/${cragName}.json`);
-			if (fullCrag) {
-				crag = fullCrag;
-				if (!crag.properties) crag.properties = {};
-				crag.properties.path = basePath;
-			}
-		}
+		const currentLocation = openCrag.properties.path === params.crag ? new Topo(cragPath, openCrag.properties.id) :
+			new Topo(cragPath, openCrag.properties.id, sectorId);
 
-		if (!crag) {
-			const parts = params.crag.split('/');
-			if (parts.length > 1) {
-				sectorId = parts.pop();
-				basePath = parts.join('/');
-				const baseName = basePath.split('/').at(-1);
-				const baseCrag = await _fetchJson(`${basePath}/${baseName}.json`);
-				if (baseCrag) {
-					crag = baseCrag;
-					isSectorPath = true;
-					sectorData = normalizeSectorData(
-						await _fetchJson(`${basePath}/${sectorId}/${sectorId}.json`)
-					);
-				}
-			}
-		} else {
-			if (isSectorPath) {
-				sectorData = crag.properties?.sectors?.find((s) => s.id === sectorId);
-				if (!sectorData) {
-					sectorData = normalizeSectorData(
-						await _fetchJson(`${basePath}/${sectorId}/${sectorId}.json`)
-					);
-				}
-			}
-		}
+		const cragData = await _fetchJson(currentLocation.getCragPath());
 
-		if (!crag) {
-			throw new Error(`Crag data not found at ${params.crag}`);
-		}
+		const sectorData = currentLocation.sectorId ? await _fetchJson(currentLocation.getCurrentPath()) : null;
+
+		const currentData = sectorData ? sectorData : cragData;
 
 		if (browser) {
-			cacheCragFolder(basePath);
+			cacheCragFolder(currentLocation.getFolder());
 		}
 
-		let allFilesPromise = _fetchJson(`${basePath}/?recursive=true`);
+		let allFilesPromise = _fetchJson(`${currentLocation.getFolder()}/?recursive=true`);
 		const fetchJson = async (p) => {
 			const allFiles = await allFilesPromise;
-			if (allFiles && p.startsWith(`${basePath}/`)) {
-				const relPath = p.slice(basePath.length + 1);
+			if (allFiles && p.startsWith(`${currentLocation.getFolder()}/`)) {
+				const relPath = p.slice(currentLocation.getFolder().length + 1);
 				if (!allFiles.some((f) => f.type === 'file' && f.path === relPath)) {
 					return null;
 				}
 			}
 			return await _fetchJson(p);
 		};
-
-		const cragForUi = crag;
 
 		const streamDetails = async () => {
 			let images = [];
@@ -297,129 +178,122 @@ export async function load({ params, url, parent, fetch }) {
 				// Ignore
 			}
 
-			const assetPath = isSectorPath ? basePath : params.crag;
-			const assetName = assetPath.split('/').at(-1);
-			const transit = await fetchJson(`${assetPath}/${assetName}-transit.json`);
-			const transitTrack = await fetchJson(`${assetPath}/${assetName}-transit-track.json`);
-			const parking = await fetchJson(`${assetPath}/${assetName}-parking.json`);
+			const accessFeatures = accessData?.features || [];
+			const transitFeature = accessFeatures.find(
+				(feature) => feature.properties?.kind === 'transit'
+			);
+			const parkingFeature = accessFeatures.find(
+				(feature) => feature.properties?.kind === 'parking'
+			);
 
-			let topoJson = null;
-			let gradeRoutes = [];
-			const modelCandidates = [];
-			let has3DTopo = false;
+			let topoJson = await fetchJson(currentLocation.getTopoPath());
+			let gradeRoutes = topoJson?.routes || [];
+			let sectorTopos = [];
 
-			if (isSectorPath) {
-				topoJson = await fetchJson(`${basePath}/${sectorId}/${sectorId}-topo.json`);
-				gradeRoutes = topoJson?.routes || [];
-				modelCandidates.push({ path: `${basePath}/${sectorId}`, fileName: `${sectorId}.glb` });
-			} else {
-				topoJson = await fetchJson(`${params.crag}/${cragName}-topo.json`);
-				const sectorRoutes = await aggregateSectorRoutes(
-					basePath,
-					cragForUi.properties?.sectors || []
+			if (currentLocation.sectorId && topoJson) {
+				const sector = cragData?.properties?.sectors?.find(
+					(candidate) => candidate?.id === currentLocation.sectorId
 				);
-				gradeRoutes = sectorRoutes.length > 0 ? sectorRoutes : topoJson?.routes || [];
-				modelCandidates.push({ path: params.crag, fileName: `${cragName}.glb` });
+				const sectorName = sector?.name || currentData?.properties?.name;
+
+				sectorTopos = [
+					{
+						sectorId: currentLocation.sectorId,
+						sectorName,
+						topo: topoJson
+					}
+				];
+				gradeRoutes = gradeRoutes.map((route) => ({
+					...route,
+					sectorId: currentLocation.sectorId,
+					sectorName,
+					sectorWallAzimuth: topoJson.wallAzimuth,
+					sectorTags: topoJson.tags
+				}));
 			}
+
+			if (!currentLocation.sectorId) {
+				const sectors = cragData?.properties?.sectors || [];
+
+				const sectorResults = await Promise.all(
+					sectors.map(async (sector) => {
+						if (!sector?.id) return null;
+
+						const sectorTopo = await fetchJson(
+							new Topo(cragPath, openCrag.properties.id, sector.id).getTopoPath()
+						);
+
+						if (!sectorTopo) return null;
+
+						return {
+							sectorId: sector.id,
+							sectorName: sector.name,
+							topo: sectorTopo
+						};
+					})
+				);
+
+				sectorTopos = sectorResults.filter(Boolean);
+
+				if (sectorTopos.length > 0) {
+					gradeRoutes = sectorTopos.flatMap(({ sectorId, sectorName, topo }) =>
+						(topo.routes || []).map((route) => ({
+							...route,
+							sectorId,
+							sectorName,
+							sectorWallAzimuth: topo.wallAzimuth,
+							sectorTags: topo.tags
+						}))
+					);
+				}
+			}
+			let has3DTopo = false;
 
 			if (topoJson) {
 				try {
-					for (const candidate of modelCandidates) {
-						const dirRes = await fetch(`${API_URL}/${candidate.path}`);
-						if (!dirRes.ok) continue;
-						const files = await dirRes.json();
-						if (files.some((file) => file.type === 'file' && file.name === candidate.fileName)) {
-							has3DTopo = true;
-							break;
-						}
+					const dirRes = await fetch(`${API_URL}/${currentLocation.getFolder()}`);
+					const files = await dirRes.json();
+					if (files.some((file) => file.type === 'file' && file.name === currentLocation.getGlbName())) {
+						has3DTopo = true;
 					}
 				} catch (e) {
 					// Ignore
 				}
 			}
-
-			let tracks;
-			if (isSectorPath) {
-				tracks = extractRouteTrackFeatures(topoJson?.routes || [], {
-					cragPath: basePath,
-					sectorId,
-					sectorName: sectorData?.name
-				});
-			} else {
-				const sectorTracks = await aggregateSectorTrackFeatures(
-					basePath,
-					cragForUi.properties?.sectors || []
-				);
-				tracks = [
-					...extractRouteTrackFeatures(topoJson?.routes || [], {
-						cragPath: params.crag
-					}),
-					...sectorTracks
-				];
-			}
-
+			let has2DTopo = topoJson?.routes?.some((r) => r.points2D?.length > 0);
 			return {
 				images,
-				transit: transit?.geometry?.coordinates,
-				parking: parking?.geometry?.coordinates,
-				transitTrack,
+				access: accessData,
+				transit: transitFeature?.geometry?.coordinates,
+				parking: parkingFeature?.geometry?.coordinates,
 				topoJson,
+				sectorTopos,
 				gradeRoutes,
 				has3DTopo,
-				tracks
+				has2DTopo
 			};
 		};
 
+		const accessData = await fetchJson(currentLocation.getAccessPath());
+
 		return {
-			path: params.crag,
-			topoPath: params.crag,
-			basePath,
-			sectorId,
-			isSectorPath,
-			crag: cragForUi,
-			zoom: 16,
-			// Keep the overview collection on the map when the detail panel is open.
-			// Returning only the selected crag here replaces the parent layout data
-			// and makes crag mode render a single marker.
-			locations: parentData.allLocations || crags,
-			tracks: [],
-			center:
-				getGeometryCenter(isSectorPath ? sectorData?.geometry : cragForUi.geometry) ||
-				cragForUi.geometry.coordinates,
+			currentLocation: currentLocation,
+			currentData: currentData,
+			cragData: cragData,
+			locations: parentData.allLocations,
+			access: accessData,
 			cameraTarget: (() => {
-				console.log(cragForUi)
-				if (isSectorPath) {
-					const bounds = getGeometryBounds(sectorData?.geometry);
-					if (bounds) return { type: 'bounds', bounds, padding: 80, maxZoom: 18 };
-				}
-				const center = getGeometryCenter(cragForUi.geometry);
+				const center = getGeometryCenter(currentData.geometry);
 				return center ? { type: 'center', center, zoom: 16 } : null;
 			})(),
-			name:
-				isSectorPath && sectorData?.name
-					? `${cragForUi.properties.name} - ${sectorData.name}`
-					: cragForUi.properties.name,
-			topo: isSectorPath && sectorData?.topo ? sectorData.topo : cragForUi.properties.topo,
-			description_de:
-				isSectorPath && sectorData?.description_de
-					? sectorData.description_de
-					: cragForUi.properties.description_de,
-			description_en:
-				isSectorPath && sectorData?.description_en
-					? sectorData.description_en
-					: cragForUi.properties.description_en,
-			type: isSectorPath && sectorData?.type ? sectorData.type : cragForUi.properties.type,
-			sector: normalizeSectorData(sectorData),
+			name: currentData.properties.name,
+			description_de: currentData.properties.description_de,
+			description_en: currentData.properties.description_en,
 			meta: {
 				lang: 'de',
-				title:
-					(isSectorPath && sectorData?.name
-						? `${cragForUi.properties.name} - ${sectorData.name}`
-						: cragForUi.properties.name) + ' - Felsverzeichnis',
-				description:
-					(isSectorPath && sectorData?.description_de
-						? sectorData.description_de
-						: cragForUi.properties.description_de) || '',
+				title: currentData.properties.name,
+				description_de: currentData.properties.description_de,
+				description: currentData.properties.description_de,
 				type: 'article',
 				author: 'Vorstieg Software FlexCo',
 				url: url.href

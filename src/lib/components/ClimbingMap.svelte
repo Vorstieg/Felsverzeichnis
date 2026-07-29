@@ -7,12 +7,12 @@
 	import { goto } from '$app/navigation';
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
 
-	/** @type {{locations?: any, tracks?: any, zoom?: number, center?: any, pitch?: number}} */
+	/** @type {{locations?: any, access?: any, accessKey?: string, tracks?: any, pitch?: number}} */
 	let {
 		locations = [],
-		zoom = 8,
-		center = [16.0, 48],
-		cameraTarget = null
+		access = null,
+		accessKey = '',
+		cameraTarget = {type: 'center', center: [16.0, 48.0], zoom: 8 }
 	} = $props();
 
 	let mapElement = $state();
@@ -101,11 +101,59 @@
 		}
 	};
 
+	const accessLineLayer = {
+		id: 'access-lines',
+		type: 'line',
+		source: 'access',
+		filter: ['==', ['get', 'kind'], 'approach'],
+		paint: {
+			'line-color': '#10b981',
+			'line-width': 4,
+			'line-opacity': 0.9
+		}
+	};
+
+	const accessPointsLayer = {
+		id: 'access-points',
+		type: 'symbol',
+		source: 'access',
+		filter: ['==', ['geometry-type'], 'Point'],
+		layout: {
+			'icon-image': [
+				'match',
+				['get', 'kind'],
+				'parking', 'parking',
+				['coalesce', ['get', 'mode'], 'bus']
+			],
+			'icon-size': 0.65,
+			'icon-allow-overlap': true,
+			'icon-ignore-placement': true,
+			'icon-offset': [
+				'match',
+				['get', 'kind'],
+				'parking', ['literal', [0, -8]],
+				['literal', [0, 8]]
+			],
+			'text-optional': true,
+			'text-field': ['get', 'name'],
+			'text-offset': [0, 1.8],
+			'text-anchor': 'top',
+			'text-font': ['Noto Sans Bold'],
+			'text-size': 14,
+			'text-max-width': 8
+		},
+		paint: {
+			'text-color': '#2f3948',
+			'text-halo-color': '#fff',
+			'text-halo-width': 3
+		}
+	};
+
 	onMount(async () => {
 		map = new maplibregl.Map({
 			container: mapElement,
-			zoom: zoom,
-			center: center,
+			zoom: cameraTarget.zoom,
+			center: cameraTarget.center,
 			pitch: 0,
 			hash: true,
 			style: base + '/terrain.json',
@@ -196,7 +244,9 @@
 			await addMapImage('via-ferrata', '/icons/via-ferrata.png');
 			await addMapImage('train', base + '/icons/train.png');
 			await addMapImage('bus', base + '/icons/bus.png');
+			await addMapImage('parking', base + '/icons/parking.png');
 			await addMapImage('parking-space', base + '/icons/parking.png');
+			if (access?.features?.length) addAccessLayers();
 			addPlacesLayers();
 		} catch (error) {
 			console.error('Failed to restore map layers after style change', error);
@@ -237,9 +287,42 @@
 		if (!map.getLayer('places')) map.addLayer(placesLayer);
 	}
 
+	function getAccessData() {
+		return {
+			type: 'FeatureCollection',
+			features: access?.features || []
+		};
+	}
+
+	function addAccessLayers() {
+		if (!map?.isStyleLoaded() || !access?.features?.length) return;
+		if (!map.getSource('access')) map.addSource('access', { type: 'geojson', data: getAccessData() });
+		if (!map.getLayer('access-lines')) map.addLayer(accessLineLayer);
+		if (!map.getLayer('access-points')) map.addLayer(accessPointsLayer);
+	}
+
+	function removeAccessLayers() {
+		if (!map?.isStyleLoaded()) return;
+		if (map.getLayer('access-points')) map.removeLayer('access-points');
+		if (map.getLayer('access-lines')) map.removeLayer('access-lines');
+		if (map.getSource('access')) map.removeSource('access');
+	}
+
 	$effect(() => {
 		const source = map?.getSource('places');
 		if (source && Array.isArray(locations)) source.setData(getPlacesData());
+	});
+
+	$effect(() => {
+		const lifecycleKey = accessKey;
+		if (!lifecycleKey) return;
+		if (!map?.isStyleLoaded()) return;
+		if (access?.features?.length) {
+			addAccessLayers();
+			map.getSource('access')?.setData(getAccessData());
+		} else {
+			removeAccessLayers();
+		}
 	});
 
 	$effect(() => {
@@ -257,18 +340,14 @@
 				duration: 900
 			});
 		} else if (cameraTarget.center) {
-			map.easeTo({ center: cameraTarget.center, zoom: cameraTarget.zoom ?? zoom, duration: 900 });
+			map.easeTo({ center: cameraTarget.center, zoom: cameraTarget.zoom, duration: 900 });
 		}
 	}
 
 	async function addMapImage(name, url) {
 		try {
 			const img = await map.loadImage(url);
-			if (map.hasImage(name)) {
-				map.updateImage(name, img.data);
-			} else {
-				map.addImage(name, img.data);
-			}
+			if (!map.hasImage(name)) map.addImage(name, img.data);
 		} catch (e) {
 			console.error('Failed to load image', name, e);
 		}

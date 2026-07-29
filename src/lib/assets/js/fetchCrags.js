@@ -6,29 +6,6 @@ let fetchPromise = null;
 let cacheTime = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-export class crag {
-	constructor(name, path) {
-		this.name = name;
-		this.path = path;
-	}
-
-	getMainPath() {
-		return `${this.name} ${this.path}`;
-	}
-
-	getTransitPath() {
-		return `${this.getMainPath()}-transit.json`;
-	}
-
-	getParkingPath() {
-		return `${this.getMainPath()}-parking.json`;
-	}
-
-	getTopoPath() {
-		return `${this.getMainPath()}-topo.json`;
-	}
-}
-
 const fetchCrags = async ({ offset = 0, limit = cragsPerPage, search = '' } = {}) => {
 	const API_URL = fsApiUrl;
 

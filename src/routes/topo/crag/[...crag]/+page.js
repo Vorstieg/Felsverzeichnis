@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
+import { Topo } from '$lib/assets/js/topo-paths.js';
 
 export const load = async ({ params, url, fetch }) => {
 	try {
@@ -28,7 +29,7 @@ export const load = async ({ params, url, fetch }) => {
 					const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
 					if (cached) return await cached.json();
 				}
-			} catch(e) {}
+			} catch (e) {}
 			return null;
 		};
 
@@ -37,42 +38,51 @@ export const load = async ({ params, url, fetch }) => {
 				const hashRes = await fetch(`${API_URL}/${cragPath}/hash.txt`);
 				if (!hashRes.ok) return;
 				const currentHash = (await hashRes.text()).trim();
-				
+
 				const cache = await caches.open('felslager-crags');
 				const cachedHashRes = await cache.match(`${API_URL}/${cragPath}/hash.txt`);
 				const cachedHash = cachedHashRes ? (await cachedHashRes.text()).trim() : null;
-				
+
 				// Verify if the directory was cached previously
 				const baseDirCached = await cache.match(`${API_URL}/${cragPath}`);
-				
+
 				if (currentHash !== cachedHash || !baseDirCached) {
 					const indexRes = await fetch(`${API_URL}/${cragPath}/?recursive=true`);
 					const files = await indexRes.json();
-					
-					const jsonFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.json'));
-					const otherFiles = files.filter(f => f.type === 'file' && !f.name.endsWith('.json'));
-					
-					await Promise.all(jsonFiles.map(async (file) => {
-						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-						const fileRes = await fetch(fileUrl);
-						if (fileRes.ok) await cache.put(fileUrl, fileRes);
-					}));
-					
-					const dirsToCache = [cragPath, ...files.filter(f => f.type === 'dir').map(d => `${cragPath}/${d.path}`)];
-					await Promise.all(dirsToCache.map(async (dir) => {
-						const dRes = await fetch(`${API_URL}/${dir}`);
-						if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
-					}));
-					
+
+					const jsonFiles = files.filter((f) => f.type === 'file' && f.name.endsWith('.json'));
+					const otherFiles = files.filter((f) => f.type === 'file' && !f.name.endsWith('.json'));
+
+					await Promise.all(
+						jsonFiles.map(async (file) => {
+							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+							const fileRes = await fetch(fileUrl);
+							if (fileRes.ok) await cache.put(fileUrl, fileRes);
+						})
+					);
+
+					const dirsToCache = [
+						cragPath,
+						...files.filter((f) => f.type === 'dir').map((d) => `${cragPath}/${d.path}`)
+					];
+					await Promise.all(
+						dirsToCache.map(async (dir) => {
+							const dRes = await fetch(`${API_URL}/${dir}`);
+							if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
+						})
+					);
+
 					// Cache the new hash as soon as the critical JSON is safe
 					await cache.put(`${API_URL}/${cragPath}/hash.txt`, new Response(currentHash));
-					
+
 					// Cache heavy images and 3D models in the background (fire and forget)
-					Promise.all(otherFiles.map(async (file) => {
-						const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-						const fileRes = await fetch(fileUrl);
-						if (fileRes.ok) await cache.put(fileUrl, fileRes);
-					})).catch(() => {});
+					Promise.all(
+						otherFiles.map(async (file) => {
+							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
+							const fileRes = await fetch(fileUrl);
+							if (fileRes.ok) await cache.put(fileUrl, fileRes);
+						})
+					).catch(() => {});
 				}
 			} catch (e) {}
 		};
@@ -97,16 +107,19 @@ export const load = async ({ params, url, fetch }) => {
 
 		const pathParts = params.crag.split('/');
 		const lastPart = pathParts.at(-1);
+		const cragPath = pathParts.slice(0, -1).join('/');
 
 		// Try as Crag
-		topo = await fetchJson(`${params.crag}/${lastPart}-topo.json`);
+		topo = await fetchJson(new Topo(cragPath, lastPart).getTopoPath());
 
 		if (topo) {
 			path = params.crag;
 		} else if (pathParts.length > 1) {
 			// Try as Sector
 			const parentPath = pathParts.slice(0, -1).join('/');
-			topo = await fetchJson(`${parentPath}/${lastPart}/${lastPart}-topo.json`);
+			topo = await fetchJson(
+				new Topo(pathParts.slice(0, -2).join('/'), pathParts.at(-2), lastPart).getTopoPath()
+			);
 			if (topo) {
 				isSectorPath = true;
 				baseCragPath = parentPath;
@@ -117,7 +130,9 @@ export const load = async ({ params, url, fetch }) => {
 			} else {
 				// Try as Crag + Route
 				const parentCragName = pathParts.at(-2);
-				topo = await fetchJson(`${parentPath}/${parentCragName}-topo.json`);
+				topo = await fetchJson(
+					new Topo(pathParts.slice(0, -2).join('/'), parentCragName).getTopoPath()
+				);
 				if (topo) {
 					baseCragPath = parentPath;
 					path = parentPath;
@@ -126,7 +141,9 @@ export const load = async ({ params, url, fetch }) => {
 					// Try as Sector + Route
 					const grandParentPath = pathParts.slice(0, -2).join('/');
 					const sectorName = pathParts.at(-2);
-					topo = await fetchJson(`${grandParentPath}/${sectorName}/${sectorName}-topo.json`);
+					topo = await fetchJson(
+						new Topo(pathParts.slice(0, -3).join('/'), pathParts.at(-3), sectorName).getTopoPath()
+					);
 					if (topo) {
 						isSectorPath = true;
 						baseCragPath = grandParentPath;
@@ -192,9 +209,16 @@ export const load = async ({ params, url, fetch }) => {
 		let modelUrl = null;
 		let lowResModelUrl = null;
 
-		const modelCandidates = isSectorPath
-			? [{ path: sectorPath, fileName: `${sectorId}.glb` }]
-			: [{ path, fileName: `${path.split('/').at(-1)}.glb` }];
+		const modelTopo = isSectorPath
+			? new Topo(
+					baseCragPath.slice(0, baseCragPath.lastIndexOf('/')),
+					baseCragPath.split('/').at(-1),
+					sectorId
+				)
+			: new Topo(path.slice(0, path.lastIndexOf('/')), path.split('/').at(-1));
+		const modelCandidates = [
+			{ path: isSectorPath ? sectorPath : path, fileName: modelTopo.getGlbPath().split('/').at(-1) }
+		];
 
 		try {
 			for (const candidate of modelCandidates) {
@@ -205,7 +229,7 @@ export const load = async ({ params, url, fetch }) => {
 					if (glbFile) {
 						has3D = true;
 						modelUrl = `${API_URL}/${candidate.path}/${candidate.fileName}`;
-						
+
 						const lowResName = candidate.fileName.replace('.glb', '-low.glb');
 						if (files.some((f) => f.name === lowResName)) {
 							lowResModelUrl = `${API_URL}/${candidate.path}/${lowResName}`;
