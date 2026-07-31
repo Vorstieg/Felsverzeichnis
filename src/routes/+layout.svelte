@@ -47,7 +47,6 @@
 	<link rel="stylesheet" href="{base}/css/layout.css" />
 	<link rel="stylesheet" href="{base}/css/utilities.css" />
 	<link rel="stylesheet" href="{base}/css/prism.css" />
-	<link rel="icon" href="{base}/favicon.png" />
 	<link rel="alternate" type="application/rss+xml" title={siteTitle} href="{siteLink}api/rss.xml" />
 </svelte:head>
 
