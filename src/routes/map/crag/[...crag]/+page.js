@@ -107,8 +107,7 @@ export async function load({ params, url, parent, fetch }) {
 
 			return [sums[0] / usableCoordinates.length, sums[1] / usableCoordinates.length];
 		};
-		const isLineGeometry = (geometry) =>
-			geometry?.type === 'LineString' || geometry?.type === 'MultiLineString';
+
 		const openCrag = parentData.locations
 			?.filter((it) => params.crag.startsWith(`${it.properties?.path}`))
 			?.sort((a, b) => b.properties.path.length - a.properties.path.length)

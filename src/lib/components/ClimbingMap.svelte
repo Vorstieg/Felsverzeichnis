@@ -2,6 +2,7 @@
 	import { base } from '$app/paths';
 	import { slide } from 'svelte/transition';
 	import maplibregl from 'maplibre-gl';
+	import { Protocol } from 'pmtiles';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -150,6 +151,7 @@
 	};
 
 	onMount(async () => {
+		maplibregl.addProtocol('pmtiles', new Protocol().tile);
 		map = new maplibregl.Map({
 			container: mapElement,
 			zoom: cameraTarget?.zoom ?? 8,
