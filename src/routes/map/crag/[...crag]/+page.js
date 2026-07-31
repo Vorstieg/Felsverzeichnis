@@ -109,15 +109,6 @@ export async function load({ params, url, parent, fetch }) {
 		};
 		const isLineGeometry = (geometry) =>
 			geometry?.type === 'LineString' || geometry?.type === 'MultiLineString';
-		const normalizeLineGeometry = (candidate) => {
-			if (isLineGeometry(candidate)) return candidate;
-			if (candidate?.type === 'Feature' && isLineGeometry(candidate.geometry)) {
-				return candidate.geometry;
-			}
-			return null;
-		};
-
-
 		const openCrag = parentData.locations
 			?.filter((it) => params.crag.startsWith(`${it.properties?.path}`))
 			?.sort((a, b) => b.properties.path.length - a.properties.path.length)
@@ -283,7 +274,7 @@ export async function load({ params, url, parent, fetch }) {
 			locations: parentData.allLocations,
 			access: accessData,
 			cameraTarget: (() => {
-				const center = getGeometryCenter(currentData.geometry);
+				const center = getGeometryCenter(currentData.geometry || openCrag.geometry);
 				return center ? { type: 'center', center, zoom: 16 } : null;
 			})(),
 			name: currentData.properties.name,

@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
 	import Logo from '$lib/components/ui/Logo.svelte';
+	import { getGeometryBounds, getBoundsCenter } from '$lib/assets/js/map-camera.js';
 
 	/** @type {{actionBase?: string, searchTerm?: string, showClear?: boolean, onClear?: function, containerClass?: string}} */
 	let { actionBase = '/map', searchTerm = $bindable(''), showClear = false, onClear = () => {}, containerClass = "mx-4 sm:mx-8 sm:max-w-120" } = $props();
@@ -46,11 +47,17 @@
 			if (activeIndex >= 0) {
 				e.preventDefault();
 				const selected = suggestions[activeIndex];
-				goto(`${base}/map/crag/${selected.properties.path}`);
+				goto(cragUrl(selected));
 				isFocused = false;
 				searchTerm = '';
 			}
 		}
+	}
+
+	function cragUrl(location) {
+		const center = getBoundsCenter(getGeometryBounds(location?.geometry));
+		const hash = center ? `#16/${center[1]}/${center[0]}` : '';
+		return `${base}/map/crag/${location.properties.path}${hash}`;
 	}
 </script>
 
@@ -86,7 +93,7 @@
 		<div bind:clientHeight={dropdownHeight} class="absolute top-full mt-2 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden z-[2000] {containerClass} transition-all duration-300" style="left: 0; right: 0;">
 			{#each suggestions as suggestion, i}
 				<a 
-					href="{base}/map/crag/{suggestion.properties.path}"
+					 href={cragUrl(suggestion)}
 					class="block px-6 py-3.5 text-slate-800 text-sm font-medium border-b border-slate-100 last:border-b-0 no-underline transition-colors {i === activeIndex ? 'bg-ink text-white' : 'hover:bg-gray-50'}"
 				>
 					<div class="flex items-center justify-between">
