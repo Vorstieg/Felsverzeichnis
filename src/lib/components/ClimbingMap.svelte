@@ -12,7 +12,7 @@
 		locations = [],
 		access = null,
 		accessKey = '',
-		cameraTarget = {type: 'center', center: [16.0, 48.0], zoom: 8 }
+		cameraTarget = null
 	} = $props();
 
 	let mapElement = $state();
@@ -152,8 +152,8 @@
 	onMount(async () => {
 		map = new maplibregl.Map({
 			container: mapElement,
-			zoom: cameraTarget.zoom,
-			center: cameraTarget.center,
+			zoom: cameraTarget?.zoom ?? 8,
+			center: cameraTarget?.center ?? [16.0, 48.0],
 			pitch: 0,
 			hash: true,
 			style: base + '/terrain.json',
