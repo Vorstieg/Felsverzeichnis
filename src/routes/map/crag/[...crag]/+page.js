@@ -3,6 +3,10 @@ import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
 import { Topo } from '$lib/assets/js/topo-paths.js';
 
+/** @typedef {import('@vorstieg/fels-data/types').CragFeature} CragFeature */
+/** @typedef {import('@vorstieg/fels-data/types').SectorFeature} SectorFeature */
+/** @typedef {import('@vorstieg/fels-data/types').TopoDocument} TopoDocument */
+
 export async function load({ params, url, parent, fetch }) {
 	try {
 		const parentData = await parent();
@@ -128,9 +132,13 @@ export async function load({ params, url, parent, fetch }) {
 		const currentLocation = openCrag.properties.path === params.crag ? new Topo(cragPath, openCrag.properties.id) :
 			new Topo(cragPath, openCrag.properties.id, sectorId);
 
+		/** @type {CragFeature | null} */
 		const cragData = await _fetchJson(currentLocation.getCragPath());
 
-		const sectorData = currentLocation.sectorId ? await _fetchJson(currentLocation.getCurrentPath()) : null;
+		/** @type {SectorFeature | null} */
+		const sectorData = currentLocation.sectorId
+			? await _fetchJson(currentLocation.getCurrentPath())
+			: null;
 
 		const currentData = sectorData ? sectorData : cragData;
 
@@ -177,6 +185,7 @@ export async function load({ params, url, parent, fetch }) {
 				(feature) => feature.properties?.kind === 'parking'
 			);
 
+			/** @type {TopoDocument | null} */
 			let topoJson = await fetchJson(currentLocation.getTopoPath());
 			let gradeRoutes = topoJson?.routes || [];
 			let sectorTopos = [];

@@ -3,9 +3,13 @@ import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
 import { Topo } from '$lib/assets/js/topo-paths.js';
 
+/** @typedef {import('@vorstieg/fels-data/types').CragFeature} CragFeature */
+/** @typedef {import('@vorstieg/fels-data/types').TopoDocument} TopoDocument */
+
 export const load = async ({ params, url, fetch }) => {
 	try {
-		let topo;
+		/** @type {TopoDocument | null} */
+		let topo = null;
 		let route;
 		let path;
 		let sectorData = null;
@@ -164,6 +168,7 @@ export const load = async ({ params, url, fetch }) => {
 		const pojo = (obj) => (obj ? JSON.parse(JSON.stringify(obj)) : obj);
 
 		// Fetch crag metadata to aggregate routes if it's a crag
+		/** @type {CragFeature | null} */
 		let indexedCrag = null;
 		let gradeRoutes = topo?.routes || [];
 		if (!isSectorPath) {
