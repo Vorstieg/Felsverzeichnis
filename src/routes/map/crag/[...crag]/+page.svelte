@@ -1,7 +1,6 @@
 <script>
 	import { base } from '$app/paths';
 	import { afterNavigate, goto } from '$app/navigation';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
 	import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
@@ -241,39 +240,56 @@
 				})
 			);
 		}
-		goto(`${base}/map/crag/${data.currentLocation._getCragPath()}/${sector.id}`);
+		goto(`${base}/map/crag/${data.cragPathUrl}/${sector.id}`);
 	}
 
 	function closePanel() {
 		goto(`${base}/map${window.location.hash}`);
 	}
+
+	function portal(node) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node.parentNode) {
+					node.parentNode.removeChild(node);
+				}
+			}
+		};
+	}
 </script>
 
 {#if fullscreenImage}
-	<div class="absolute top-0 right-0 bottom-0 left-0 z-[30000] bg-black opacity-70"></div>
-	<div
-		onclick={() => (fullscreenImage = undefined)}
-		class="absolute top-0 right-0 bottom-0 left-0 z-[30000] flex items-center justify-center"
-	>
+	<div use:portal class="fixed top-0 right-0 bottom-0 left-0 z-[30000] flex items-center justify-center">
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="absolute top-0 right-0 bottom-0 left-0 bg-black opacity-70"
+			onclick={() => (fullscreenImage = undefined)}
+		></div>
 		<img
-			class="max-h-full max-w-full self-center object-contain"
+			class="relative max-h-full max-w-full object-contain pointer-events-none"
 			src={fullscreenImage}
 			alt="Fullscreen Crag"
 		/>
 	</div>
 {/if}
 
-<div
-	class="fixed top-2 right-0 left-0 z-[1000] h-fit overflow-visible py-2 sm:top-21 sm:left-26 sm:w-auto"
->
-	<SearchBar actionBase="/map" bind:searchTerm={searchTerm} />
-</div>
 
-<main class="z-[500]">
-	<InfoPanel onClose={closePanel} onShare={share}>
+
+<main class="z-[500] flex flex-col h-full flex-1 min-h-0 w-full">
 		<div
 			class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start">
-			<div class="flex flex-col sm:px-2">
+			{#if activeSectorId}
+				<a
+					href="{base}/map/crag/{data.cragPathUrl}"
+					class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors shrink-0"
+					aria-label={$_('ui.back_to_crag') || 'Back'}
+				>
+					<i class="fa-solid fa-arrow-left text-gray-600"></i>
+				</a>
+			{/if}
+			<div class="flex flex-col sm:px-2 min-w-0">
 				<div class="relative z-20 flex flex-wrap items-center text-[10px] sm:text-xs mb-0.5 font-medium tracking-wide">
 					{#each breadcrumbParts as part, i}
 						{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
@@ -591,5 +607,4 @@
 				</div>
 			{/if}
 		</div>
-	</InfoPanel>
 </main>

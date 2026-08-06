@@ -301,6 +301,7 @@ export async function load({ params, url, parent, fetch }) {
 			currentLocation: currentLocation,
 			currentData: currentData,
 			cragData: cragData,
+			cragPathUrl: openCrag.properties.path,
 			locations: parentData.allLocations,
 			access: accessData,
 			topoPaths,

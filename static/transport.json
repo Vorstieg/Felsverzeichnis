@@ -16,6 +16,10 @@
 				"type": "FeatureCollection",
 				"features": []
 			}
+		},
+		"globalTerrainSource": {
+			"type": "raster-dem",
+			"url": "https://tiles.mapterhorn.com/tilejson.json"
 		}
 	},
 	"layers": [
