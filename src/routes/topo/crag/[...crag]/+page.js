@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
 import { Topo } from '$lib/assets/js/topo-paths.js';
+import { findRouteOrChild, normalizeSectorData } from '$lib/assets/js/topo-loader-utils.js';
 
 /** @typedef {import('@vorstieg/fels-data/types').CragFeature} CragFeature */
 /** @typedef {import('@vorstieg/fels-data/types').TopoDocument} TopoDocument */
@@ -90,25 +91,6 @@ export const load = async ({ params, url, fetch }) => {
 				}
 			} catch (e) {}
 		};
-		const findRouteOrChild = (routes, id) => {
-			for (const parent of routes || []) {
-				if (parent.id === id) return parent;
-				for (const child of [...(parent.pitches || []), ...(parent.variants || [])]) {
-					if (child.id === id) return { ...child, parentId: parent.id };
-				}
-			}
-			return null;
-		};
-
-		const normalizeSectorData = (sector) =>
-			sector
-				? {
-						...sector,
-						...(sector.properties || {}),
-						geometry: sector.geometry || sector.properties?.geometry
-					}
-				: null;
-
 		const pathParts = params.crag.split('/');
 		const lastPart = pathParts.at(-1);
 		const cragPath = pathParts.slice(0, -1).join('/');
