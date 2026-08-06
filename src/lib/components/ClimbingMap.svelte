@@ -9,6 +9,12 @@
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
 	import { colors } from '$lib/colors.js';
+	import {
+		createPlacesData,
+		createTopoPathsData,
+		getMapPadding as calculateMapPadding,
+		selectionExpression
+	} from '$lib/assets/js/climbing-map-utils.js';
 
 	/** @typedef {import('@vorstieg/fels-data/types').TopoPathFeature} TopoPathFeature */
 	/** @type {{locations?: any, access?: any, topoPaths?: TopoPathFeature[], accessKey?: string, tracks?: any, pitch?: number}} */
@@ -25,33 +31,63 @@
 	let tileLayerMenuOpen = $state(false);
 	let styleLoaded = $state(false);
 	let hasFilter = $derived(
-		!($page.url.pathname.startsWith(`${base}/map/crag`) ||
-		  $navigating?.to?.url?.pathname?.startsWith(`${base}/map/crag`))
+		!(
+			$page.url.pathname.startsWith(`${base}/map/crag`) ||
+			$navigating?.to?.url?.pathname?.startsWith(`${base}/map/crag`)
+		)
 	);
-	const placeTypeColor = ['match', ['get', 'type'],
-		'sports-climbing', colors.routeTypes['sports-climbing'],
-		'multi-pitch', colors.routeTypes['multi-pitch'], 'bouldering', colors.routeTypes.bouldering,
-		'trad', colors.routeTypes.trad, 'alpine-tour', colors.routeTypes['alpine-tour'],
-		'via-ferrata', colors.routeTypes['via-ferrata'], 'bus', colors.map.bus,
-		'train', colors.map.train, 'parking-space', colors.map.parking,
-		colors.routeTypes['sports-climbing']];
+	const placeTypeColor = [
+		'match',
+		['get', 'type'],
+		'sports-climbing',
+		colors.routeTypes['sports-climbing'],
+		'multi-pitch',
+		colors.routeTypes['multi-pitch'],
+		'bouldering',
+		colors.routeTypes.bouldering,
+		'trad',
+		colors.routeTypes.trad,
+		'alpine-tour',
+		colors.routeTypes['alpine-tour'],
+		'via-ferrata',
+		colors.routeTypes['via-ferrata'],
+		'bus',
+		colors.map.bus,
+		'train',
+		colors.map.train,
+		'parking-space',
+		colors.map.parking,
+		colors.routeTypes['sports-climbing']
+	];
 
 	const placesLayer = {
-		id: 'places', type: 'symbol', source: 'places', minzoom: 11.5,
+		id: 'places',
+		type: 'symbol',
+		source: 'places',
+		minzoom: 11.5,
 		filter: [
 			'all',
 			['!=', ['geometry-type'], 'Polygon'],
 			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 0]]
 		],
 		layout: {
-			'icon-image': ['get', 'type'], 'icon-size': 0.55, 'icon-allow-overlap': true,
-			'text-optional': true, 'text-field': ['get', 'name'], 'text-offset': [0, 1.8],
-			'text-anchor': 'top', 'text-font': ['Noto Sans Bold'], 'text-size': 14,
-			'visibility': 'visible', 'text-max-width': 8
+			'icon-image': ['get', 'type'],
+			'icon-size': 0.55,
+			'icon-allow-overlap': true,
+			'text-optional': true,
+			'text-field': ['get', 'name'],
+			'text-offset': [0, 1.8],
+			'text-anchor': 'top',
+			'text-font': ['Noto Sans Bold'],
+			'text-size': 14,
+			visibility: 'visible',
+			'text-max-width': 8
 		},
 		paint: {
-			'text-color': colors.text.ink, 'text-halo-blur': 0,
-			'text-halo-color': colors.text.white, 'text-halo-width': 3,
+			'text-color': colors.text.ink,
+			'text-halo-blur': 0,
+			'text-halo-color': colors.text.white,
+			'text-halo-width': 3,
 			'icon-opacity': ['step', ['zoom'], 0, 13.5, 1],
 			'icon-opacity-transition': { duration: 400 },
 			'text-opacity': ['step', ['zoom'], 0, 13.5, 1],
@@ -60,13 +96,18 @@
 	};
 
 	const placesDotsLayer = {
-		id: 'places-dots', type: 'circle', source: 'places', maxzoom: 14,
+		id: 'places-dots',
+		type: 'circle',
+		source: 'places',
+		maxzoom: 14,
 		filter: ['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 0]],
 		paint: {
 			'circle-color': placeTypeColor,
 			'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5],
-			'circle-radius-transition': { duration: 400 }, 'circle-stroke-width': 0,
-			'circle-stroke-color': colors.text.white, 'circle-opacity': ['step', ['zoom'], 1, 13.5, 0],
+			'circle-radius-transition': { duration: 400 },
+			'circle-stroke-width': 0,
+			'circle-stroke-color': colors.text.white,
+			'circle-opacity': ['step', ['zoom'], 1, 13.5, 0],
 			'circle-opacity-transition': { duration: 400 },
 			'circle-stroke-opacity': ['step', ['zoom'], 1, 13.5, 0],
 			'circle-stroke-opacity-transition': { duration: 400 }
@@ -74,7 +115,9 @@
 	};
 
 	const sectorFillLayer = {
-		id: 'sector-fill', type: 'fill', source: 'places',
+		id: 'sector-fill',
+		type: 'fill',
+		source: 'places',
 		filter: [
 			'all',
 			['==', ['geometry-type'], 'Polygon'],
@@ -84,7 +127,9 @@
 	};
 
 	const sectorLineLayer = {
-		id: 'sector-line', type: 'line', source: 'places',
+		id: 'sector-line',
+		type: 'line',
+		source: 'places',
 		filter: [
 			'all',
 			['==', ['geometry-type'], 'Polygon'],
@@ -94,7 +139,9 @@
 	};
 
 	const sectorLabelsLayer = {
-		id: 'sector-labels', type: 'symbol', source: 'places',
+		id: 'sector-labels',
+		type: 'symbol',
+		source: 'places',
 		filter: [
 			'all',
 			['==', ['geometry-type'], 'Polygon'],
@@ -142,12 +189,7 @@
 					'match',
 					['coalesce', ['get', 'mode'], 'bus'],
 					'train', 'train',
-					'rail', 'train',
 					'bus', 'bus',
-					'bus_stop', 'bus',
-					'bus-stop', 'bus',
-					'bus_station', 'bus',
-					'bus-station', 'bus',
 					'bus'
 				],
 				'bus'
@@ -158,7 +200,8 @@
 			'icon-offset': [
 				'match',
 				['get', 'kind'],
-				'parking', ['literal', [0, -8]],
+				'parking',
+				['literal', [0, -8]],
 				['literal', [0, 8]]
 			],
 			'text-optional': true,
@@ -207,7 +250,7 @@
 				]
 			],
 			'line-width': 4,
-			'line-opacity': 0.85,
+			'line-opacity': 0.85
 		}
 	};
 
@@ -222,6 +265,7 @@
 			maxZoom: 18,
 			maxPitch: 75
 		});
+		if (import.meta.env.DEV && typeof window !== 'undefined') window.__climbingMap = map;
 
 		map.addControl(
 			new maplibregl.GeolocateControl({
@@ -279,23 +323,23 @@
 			});
 		});
 
-		map.on('mouseenter', 'places', function() {
+		map.on('mouseenter', 'places', function () {
 			if (map.getZoom() >= 12.0) {
 				map.getCanvas().style.cursor = 'pointer';
 			}
 		});
 
-		map.on('mouseleave', 'places', function() {
+		map.on('mouseleave', 'places', function () {
 			map.getCanvas().style.cursor = 'default';
 		});
 
-		map.on('mouseenter', 'places-dots', function() {
+		map.on('mouseenter', 'places-dots', function () {
 			if (map.getZoom() < 12.0) {
 				map.getCanvas().style.cursor = 'pointer';
 			}
 		});
 
-		map.on('mouseleave', 'places-dots', function() {
+		map.on('mouseleave', 'places-dots', function () {
 			map.getCanvas().style.cursor = 'default';
 		});
 
@@ -324,13 +368,7 @@
 
 	function getMapPadding() {
 		if (typeof window === 'undefined') return { top: 0, bottom: 0, left: 0, right: 0 };
-		const isLg = window.innerWidth >= 1024;
-		const isDesktop = window.innerWidth > 640;
-		return isLg
-			? { top: 0, bottom: 0, left: 0, right: 680 } // 40rem + 2.5rem right gap
-			: isDesktop
-			? { top: 0, bottom: 0, left: 0, right: 440 } // 25rem + 2.5rem right gap
-			: { top: 0, bottom: window.innerHeight * 0.5, left: 0, right: 0 }; // 50vh
+		return calculateMapPadding({ width: window.innerWidth, height: window.innerHeight });
 	}
 
 	function handleFocusMapTarget(e) {
@@ -359,7 +397,6 @@
 		goto(`${base}/map/crag/${path}`);
 	}
 
-
 	async function drawLayers() {
 		if (!map || !map.isStyleLoaded()) return;
 		try {
@@ -383,26 +420,7 @@
 	}
 
 	function getPlacesData() {
-		const placeFeatures = Array.isArray(locations)
-			? locations.map((feature) => {
-				const properties = feature?.properties || {};
-				const rawType = properties.type;
-				const type = Array.isArray(rawType)
-					? rawType[0] || null
-					: typeof rawType === 'string'
-						? rawType.split(',')[0].trim() || null
-						: rawType;
-
-				return {
-					...feature,
-					properties: { ...properties, type }
-				};
-			})
-			: [];
-		return {
-			type: 'FeatureCollection',
-			features: placeFeatures
-		};
+		return createPlacesData(locations);
 	}
 
 	function addPlacesLayers() {
@@ -424,16 +442,7 @@
 	}
 
 	function getTopoPathsData() {
-		return {
-			type: 'FeatureCollection',
-			features: topoPaths.filter(
-				(feature) =>
-					feature?.type === 'Feature' &&
-					feature.geometry?.type === 'LineString' &&
-					Array.isArray(feature.geometry.coordinates) &&
-					feature.geometry.coordinates.length >= 2
-			)
-		};
+		return createTopoPathsData(topoPaths);
 	}
 
 	function addTopoPathLayers() {
@@ -462,7 +471,8 @@
 
 	function addAccessLayers() {
 		if (!map?.isStyleLoaded() || !access?.features?.length) return;
-		if (!map.getSource('access')) map.addSource('access', { type: 'geojson', data: getAccessData() });
+		if (!map.getSource('access'))
+			map.addSource('access', { type: 'geojson', data: getAccessData() });
 		if (!map.getLayer('access-lines')) map.addLayer(accessLineLayer);
 		if (!map.getLayer('access-points')) map.addLayer(accessPointsLayer);
 	}
@@ -538,14 +548,7 @@
 			return;
 		}
 
-		let decodedPath = selectedPath;
-		try {
-			decodedPath = decodeURIComponent(selectedPath);
-		} catch (e) {
-			// ignore decoding errors
-		}
-
-		const isSelected = ['==', ['index-of', ['concat', ['get', 'path'], '/'], decodedPath + '/'], 0];
+		const isSelected = selectionExpression(selectedPath);
 
 		// For dots, we set opacity to 0 when selected to avoid bleed-through
 		map.setPaintProperty('places-dots', 'circle-opacity', [
@@ -553,7 +556,7 @@
 			['zoom'],
 			['case', isSelected, 0, 1], // Zoom < 13.5
 			13.5,
-			0                           // Zoom >= 13.5
+			0 // Zoom >= 13.5
 		]);
 		map.setPaintProperty('places-dots', 'circle-stroke-opacity', [
 			'step',
@@ -577,7 +580,7 @@
 			['zoom'],
 			['case', isSelected, 1, 0], // Zoom < 13.5 (show ONLY selected marker)
 			13.5,
-			1                           // Zoom >= 13.5 (show all markers)
+			1 // Zoom >= 13.5 (show all markers)
 		]);
 
 		// Swap the icon image instantly
@@ -593,7 +596,7 @@
 		if (map && !map.hasImage('selected-marker')) {
 			const svg = `<svg width="48" height="72" viewBox="0 0 48 72" xmlns="http://www.w3.org/2000/svg"><path d="M24 2C13 2 4 11 4 22C4 37 24 48 24 48C24 48 44 37 44 22C44 11 35 2 24 2Z" fill="#dc2626" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="22" r="8" fill="#ffffff" /></svg>`;
 			const img = new Image();
-			await new Promise(resolve => {
+			await new Promise((resolve) => {
 				img.onload = resolve;
 				img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 			});
@@ -671,22 +674,26 @@
 </script>
 
 <div
-	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full {hasFilter ? 'has-filter' : 'details-shown'}"
+	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full {hasFilter
+		? 'has-filter'
+		: 'details-shown'}"
 	bind:this={mapElement}
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 ></div>
 <div
-	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center style-selector-btn gap-2 {hasFilter ? 'has-filter' : ''}"
+	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center style-selector-btn gap-2 {hasFilter
+		? 'has-filter'
+		: ''}"
 	role="group"
 	aria-label="Map style selector"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 >
-		<button
-			aria-label="Choose map style"
-			class="cursor-pointer bg-white w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink rounded-2xl border-1 border-gray-200 transition-all shadow-md text-gray-600"
+	<button
+		aria-label="Choose map style"
+		class="cursor-pointer bg-white w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink rounded-2xl border-1 border-gray-200 transition-all shadow-md text-gray-600"
 		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
-	><i class="fa-solid fa-layer-group text-lg"></i></button
+		><i class="fa-solid fa-layer-group text-lg"></i></button
 	>
 	{#if tileLayerMenuOpen}
 		<div
@@ -694,23 +701,23 @@
 			in:slide={{ duration: 200 }}
 			out:slide={{ duration: 200 }}
 		>
-				<button
-					aria-label="Show transport map"
-					class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
+			<button
+				aria-label="Show transport map"
+				class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
 				onclick={setTransportTileLayer}
 			>
 				<i class="fa-solid fa-bus-simple"></i>
 			</button>
-				<button
-					aria-label="Show satellite map"
-					class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
+			<button
+				aria-label="Show satellite map"
+				class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
 				onclick={setSatelliteTileLayer}
 			>
 				<i class="fa-solid fa-satellite"></i>
 			</button>
-				<button
-					aria-label="Show terrain map"
-					class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
+			<button
+				aria-label="Show terrain map"
+				class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
 				onclick={setTerrainTileLayer}
 			>
 				<i class="fa-solid fa-mountain"></i>
@@ -720,150 +727,166 @@
 </div>
 
 <div
-	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center btn-3d-toggle gap-2 {hasFilter ? 'has-filter' : ''}"
+	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center btn-3d-toggle gap-2 {hasFilter
+		? 'has-filter'
+		: ''}"
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 >
 	<button
-		class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center rounded-2xl border-1 transition-all shadow-md {is3D ? 'text-white bg-ink border-ink hover:opacity-90' : 'text-gray-600 bg-white border-gray-200 hover:bg-gray-50'}"
-		onclick={toggle3D}
-	><span class="font-bold text-sm">{is3D ? '3D' : '2D'}</span></button>
+		class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center rounded-2xl border-1 transition-all shadow-md {is3D
+			? 'text-white bg-ink border-ink hover:opacity-90'
+			: 'text-gray-600 bg-white border-gray-200 hover:bg-gray-50'}"
+		onclick={toggle3D}><span class="font-bold text-sm">{is3D ? '3D' : '2D'}</span></button
+	>
 </div>
 
 <style>
-    @import 'leaflet/dist/leaflet.css';
-    @import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-    @import 'tailwindcss';
+	@import 'leaflet/dist/leaflet.css';
+	@import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+	@import 'tailwindcss';
 
-    .style-selector-btn {
-        @media (width > 40rem) {
-            top: calc(14.75rem + var(--dropdown-offset, 0px));
-        }
-        @media (width <= 40rem) {
-            top: calc(11.25rem + var(--dropdown-offset, 0px));
-            bottom: auto;
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out, top 0.2s ease-out;
-            opacity: var(--controls-opacity, 1);
-            transform: scale(var(--controls-scale, 1));
-            transform-origin: center;
-            pointer-events: var(--controls-pointer, auto);
-        }
-    }
+	.style-selector-btn {
+		@media (width > 40rem) {
+			top: calc(14.75rem + var(--dropdown-offset, 0px));
+		}
+		@media (width <= 40rem) {
+			top: calc(11.25rem + var(--dropdown-offset, 0px));
+			bottom: auto;
+			transition:
+				opacity 0.2s ease-out,
+				transform 0.2s ease-out,
+				top 0.2s ease-out;
+			opacity: var(--controls-opacity, 1);
+			transform: scale(var(--controls-scale, 1));
+			transform-origin: center;
+			pointer-events: var(--controls-pointer, auto);
+		}
+	}
 
-    .style-selector-btn.has-filter {
-        @media (width <= 40rem) {
-            top: calc(14.5rem + var(--dropdown-offset, 0px));
-        }
-    }
+	.style-selector-btn.has-filter {
+		@media (width <= 40rem) {
+			top: calc(14.5rem + var(--dropdown-offset, 0px));
+		}
+	}
 
-    .btn-3d-toggle {
-        @media (width > 40rem) {
-            top: calc(11.75rem + var(--dropdown-offset, 0px));
-        }
-        @media (width <= 40rem) {
-            top: calc(8rem + var(--dropdown-offset, 0px));
-            bottom: auto;
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out, top 0.2s ease-out;
-            opacity: var(--controls-opacity, 1);
-            transform: scale(var(--controls-scale, 1));
-            transform-origin: center;
-            pointer-events: var(--controls-pointer, auto);
-        }
-    }
+	.btn-3d-toggle {
+		@media (width > 40rem) {
+			top: calc(11.75rem + var(--dropdown-offset, 0px));
+		}
+		@media (width <= 40rem) {
+			top: calc(8rem + var(--dropdown-offset, 0px));
+			bottom: auto;
+			transition:
+				opacity 0.2s ease-out,
+				transform 0.2s ease-out,
+				top 0.2s ease-out;
+			opacity: var(--controls-opacity, 1);
+			transform: scale(var(--controls-scale, 1));
+			transform-origin: center;
+			pointer-events: var(--controls-pointer, auto);
+		}
+	}
 
-    .btn-3d-toggle.has-filter {
-        @media (width <= 40rem) {
-            top: calc(11.25rem + var(--dropdown-offset, 0px));
-        }
-    }
+	.btn-3d-toggle.has-filter {
+		@media (width <= 40rem) {
+			top: calc(11.25rem + var(--dropdown-offset, 0px));
+		}
+	}
 
-    :global(.maplibregl-ctrl-group) {
-        @apply cursor-pointer bg-white rounded-2xl w-10 h-10 border-1 border-gray-200 transition-all flex items-center justify-center;
-        margin: 0 0 0.5rem 0 !important;
-    }
+	:global(.maplibregl-ctrl-group) {
+		@apply cursor-pointer bg-white rounded-2xl w-10 h-10 border-1 border-gray-200 transition-all flex items-center justify-center;
+		margin: 0 0 0.5rem 0 !important;
+	}
 
-    :global(.maplibregl-ctrl-group) {
-        @media (width <= 40rem) {
-            @apply w-11 h-11;
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-            opacity: var(--controls-opacity, 1);
-            transform: scale(var(--controls-scale, 1));
-            transform-origin: center;
-            pointer-events: var(--controls-pointer, auto);
-        }
-    }
+	:global(.maplibregl-ctrl-group) {
+		@media (width <= 40rem) {
+			@apply w-11 h-11;
+			transition:
+				opacity 0.2s ease-out,
+				transform 0.2s ease-out;
+			opacity: var(--controls-opacity, 1);
+			transform: scale(var(--controls-scale, 1));
+			transform-origin: center;
+			pointer-events: var(--controls-pointer, auto);
+		}
+	}
 
-    :global(.maplibregl-ctrl-group button) {
-        @apply w-full h-full rounded-2xl;
-    }
+	:global(.maplibregl-ctrl-group button) {
+		@apply w-full h-full rounded-2xl;
+	}
 
-    :global(.maplibregl-ctrl-group:not(:empty)) {
-        @apply shadow-md;
-    }
+	:global(.maplibregl-ctrl-group:not(:empty)) {
+		@apply shadow-md;
+	}
 
-    :global(.maplibregl-ctrl-bottom-right) {
-        @apply bottom-2 right-2;
-    }
+	:global(.maplibregl-ctrl-bottom-right) {
+		@apply bottom-2 right-2;
+	}
 
-    :global(.maplibregl-ctrl-bottom-right) {
-        @media (width <= 40rem) {
-            @apply left-2 right-auto;
-            bottom: 4.5rem;
-        }
-    }
+	:global(.maplibregl-ctrl-bottom-right) {
+		@media (width <= 40rem) {
+			@apply left-2 right-auto;
+			bottom: 4.5rem;
+		}
+	}
 
-    :global(.maplibregl-ctrl-top-right) {
-        @apply fixed left-15 right-auto z-[1000] !m-0;
-        top: calc(5rem + var(--dropdown-offset, 0px));
-    }
+	:global(.maplibregl-ctrl-top-right) {
+		@apply fixed left-15 right-auto z-[1000] !m-0;
+		top: calc(5rem + var(--dropdown-offset, 0px));
+	}
 
-    :global(.maplibregl-ctrl-top-right) {
-        @media (width <= 40rem) {
-            @apply left-auto right-4 top-auto;
-            top: calc(4.75rem + var(--dropdown-offset, 0px));
-            bottom: auto;
-            transition: top 0.2s ease-out;
-        }
-    }
+	:global(.maplibregl-ctrl-top-right) {
+		@media (width <= 40rem) {
+			@apply left-auto right-4 top-auto;
+			top: calc(4.75rem + var(--dropdown-offset, 0px));
+			bottom: auto;
+			transition: top 0.2s ease-out;
+		}
+	}
 
-    :global(.has-filter .maplibregl-ctrl-top-right) {
-        @media (width <= 40rem) {
-            top: calc(8rem + var(--dropdown-offset, 0px));
-        }
-    }
+	:global(.has-filter .maplibregl-ctrl-top-right) {
+		@media (width <= 40rem) {
+			top: calc(8rem + var(--dropdown-offset, 0px));
+		}
+	}
 
-    :global(.maplibregl-ctrl-top-right) {
-        @media (width > 40rem) {
-            top: calc(5.75rem + var(--dropdown-offset, 0px));
-        }
-    }
+	:global(.maplibregl-ctrl-top-right) {
+		@media (width > 40rem) {
+			top: calc(5.75rem + var(--dropdown-offset, 0px));
+		}
+	}
 
-    :global(.maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
-        @media (width <= 40rem) {
-            position: fixed;
-            right: 1rem;
-            bottom: 5rem;
-            top: auto !important;
-            margin: 0 !important;
-            transition: var(--info-panel-transition, bottom 0.2s ease-out), opacity 0.2s ease-out, transform 0.2s ease-out;
-        }
-    }
+	:global(.maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
+		@media (width <= 40rem) {
+			position: fixed;
+			right: 1rem;
+			bottom: 5rem;
+			top: auto !important;
+			margin: 0 !important;
+			transition:
+				var(--info-panel-transition, bottom 0.2s ease-out),
+				opacity 0.2s ease-out,
+				transform 0.2s ease-out;
+		}
+	}
 
-    :global(.details-shown .maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
-        @media (width <= 40rem) {
-            bottom: calc(var(--info-panel-height, 50vh) + 16px) !important;
-        }
-    }
+	:global(.details-shown .maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
+		@media (width <= 40rem) {
+			bottom: calc(var(--info-panel-height, 50vh) + 16px) !important;
+		}
+	}
 
-    /* Blends white out of the raster tile container */
-    :global(.maplibregl-style-layer-regional-imagery) {
-        mix-blend-mode: multiply;
-    }
+	/* Blends white out of the raster tile container */
+	:global(.maplibregl-style-layer-regional-imagery) {
+		mix-blend-mode: multiply;
+	}
 
-    /* Lock MapLibre attribution font size to prevent automatic browser upscaling on all devices (desktop and mobile) */
-    :global(.maplibregl-ctrl-attrib), :global(.maplibregl-ctrl-attrib a) {
-        font-size: 12px !important;
-        line-height: 1.5 !important;
-        -webkit-text-size-adjust: 100% !important;
-        text-size-adjust: 100% !important;
-    }
+	/* Lock MapLibre attribution font size to prevent automatic browser upscaling on all devices (desktop and mobile) */
+	:global(.maplibregl-ctrl-attrib),
+	:global(.maplibregl-ctrl-attrib a) {
+		font-size: 12px !important;
+		line-height: 1.5 !important;
+		-webkit-text-size-adjust: 100% !important;
+		text-size-adjust: 100% !important;
+	}
 </style>

@@ -20,18 +20,20 @@ export default defineConfig({
 			provider: 'v8',
 			reporter: ['text', 'html', 'lcov'],
 			include: [
+				'src/lib/assets/js/climbing-map-utils.js',
 				'src/lib/assets/js/fetchCrags.js',
 				'src/lib/assets/js/grades.js',
 				'src/lib/assets/js/id-utils.js',
 				'src/lib/assets/js/storage-utils.js',
 				'src/lib/assets/js/topo-paths.js',
-				'src/lib/assets/js/topo-loader-utils.js'
+				'src/lib/assets/js/topo-loader-utils.js',
+				'src/lib/components/topo/Topo2DViewer.svelte'
 			],
 			thresholds: {
-				lines: 70,
-				functions: 70,
-				branches: 70,
-				statements: 70
+				lines: 80,
+				functions: 80,
+				branches: 80,
+				statements: 80
 			}
 		}
 	}

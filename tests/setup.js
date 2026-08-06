@@ -7,6 +7,8 @@ vi.mock('$app/paths', () => ({ base: '' }));
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 vi.mock('$app/stores', () => ({
 	page: readable({
+		url: new URL('http://localhost/map'),
+		params: {},
 		data: {
 			allLocations: [
 				{
@@ -30,3 +32,9 @@ globalThis.ResizeObserver = class {
 	unobserve() {}
 	disconnect() {}
 };
+Element.prototype.animate =
+	Element.prototype.animate ||
+	(() => ({
+		finished: Promise.resolve(),
+		cancel() {}
+	}));

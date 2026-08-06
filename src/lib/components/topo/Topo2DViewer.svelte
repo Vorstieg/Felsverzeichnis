@@ -49,11 +49,12 @@
 			.selectAll('rect.viewer-blank-background')
 			.data(hasBackgroundImage ? [] : [null])
 			.join('rect')
-			.attr('class', 'viewer-blank-background')
-			.attr('width', baseWidth)
-			.attr('height', baseHeight)
-			.attr('fill', `url(#${gridId})`)
-			.lower();
+				.attr('class', 'viewer-blank-background')
+				.attr('width', baseWidth)
+				.attr('height', baseHeight)
+				.attr('fill', `url(#${gridId})`)
+				.attr('pointer-events', 'none')
+				.lower();
 
 		// Text labels are authored by Felsstudio but are not yet part of the
 		// shared renderer's public API. Render them in their own stable layer so
