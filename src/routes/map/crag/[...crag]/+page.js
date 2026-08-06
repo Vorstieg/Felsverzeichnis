@@ -275,6 +275,27 @@ export async function load({ params, url, parent, fetch }) {
 		};
 
 		const accessData = await fetchJson(currentLocation.getAccessPath());
+		const topoDocument = await fetchJson(currentLocation.getTopoPath());
+		const pathRoles = new Map(
+			(topoDocument?.routes || []).flatMap((route) =>
+				(route.pathRefs || []).map((reference) => [String(reference.pathId), {
+					...reference,
+					routeType: Array.isArray(route.type) ? route.type[0] : route.type
+				}])
+			)
+		);
+		const topoPaths = (topoDocument?.paths?.features || []).map((feature) => {
+			const reference = pathRoles.get(String(feature.id));
+			return {
+				...feature,
+				properties: {
+					...(feature.properties || {}),
+					role: reference?.role || feature.properties?.role || 'main',
+					routeType: reference?.routeType || feature.properties?.routeType || '',
+					label: reference?.label || feature.properties?.label || feature.properties?.name || ''
+				}
+			};
+		});
 
 		return {
 			currentLocation: currentLocation,
@@ -282,6 +303,7 @@ export async function load({ params, url, parent, fetch }) {
 			cragData: cragData,
 			locations: parentData.allLocations,
 			access: accessData,
+			topoPaths,
 			cameraTarget: (() => {
 				const center = getGeometryCenter(currentData.geometry || openCrag.geometry);
 				return center ? { type: 'center', center, zoom: 16 } : null;

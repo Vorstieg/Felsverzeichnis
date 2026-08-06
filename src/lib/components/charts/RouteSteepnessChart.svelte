@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Chart from 'chart.js/auto';
 	import { createEventDispatcher } from 'svelte';
+	import { colors } from '$lib/colors.js';
 	import { _ } from 'svelte-i18n';
 
 	let { route } = $props();
@@ -153,11 +154,11 @@
 			data: {
 				datasets: [{
 					label: translations.steepness + ' (°)',
-					backgroundColor: 'rgb(255, 99, 132)',
+					backgroundColor: colors.chart.danger,
 					borderColor: (context: any) => {
 						const chart = context.chart;
 						const { ctx, chartArea, scales } = chart;
-						if (!chartArea || !scales.y) return '#999';
+						if (!chartArea || !scales.y) return colors.text.muted;
 
 						const y = scales.y;
 						const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
@@ -167,12 +168,12 @@
 							return Math.max(0, Math.min(1, (pixel - chartArea.top) / (chartArea.bottom - chartArea.top)));
 						};
 
-						gradient.addColorStop(0, '#ef4444');
-						gradient.addColorStop(getOffset(110), '#ef4444');
-						gradient.addColorStop(getOffset(100), '#facc15');
-						gradient.addColorStop(getOffset(80), '#facc15');
-						gradient.addColorStop(getOffset(70), '#2dd4bf');
-						gradient.addColorStop(1, '#2dd4bf');
+						gradient.addColorStop(0, colors.chart.steep);
+						gradient.addColorStop(getOffset(110), colors.chart.steep);
+						gradient.addColorStop(getOffset(100), colors.chart.moderate);
+						gradient.addColorStop(getOffset(80), colors.chart.moderate);
+						gradient.addColorStop(getOffset(70), colors.chart.gentle);
+						gradient.addColorStop(1, colors.chart.gentle);
 
 						return gradient;
 					},
@@ -193,13 +194,13 @@
 						title: { display: true, text: translations.distance + ' (m)' },
 						ticks: { maxTicksLimit: 10 },
 						max: data.length,
-						grid: { lineWidth: 0.5, color: 'rgb(240, 240, 240)' }
+						grid: { lineWidth: 0.5, color: colors.ui.border }
 					},
 					y: {
 						title: { display: true, text: translations.steepness + ' (°)' },
 						suggestedMin: 0,
 						suggestedMax: 120,
-						grid: { lineWidth: 0.5, color: 'rgb(240, 240, 240)' }
+						grid: { lineWidth: 0.5, color: colors.ui.border }
 					}
 				},
 				plugins: {

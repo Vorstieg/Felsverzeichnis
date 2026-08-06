@@ -9,6 +9,7 @@
 <ClimbingMap
 	locations={$page.data.locations}
 	access={$page.data.access}
+	topoPaths={$page.data.topoPaths}
 	accessKey={$page.url.pathname + ':' + (($page.data.access?.features || []).map((feature) => feature.id || '').join(','))}
 	cameraTarget={$page.data.cameraTarget}
 ></ClimbingMap>

@@ -7,6 +7,7 @@
 	import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
 	import { _, locale } from 'svelte-i18n';
 	import { securityRatings } from '$lib/config.js';
+	import { colors } from '$lib/colors.js';
 	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
 	import TopoButton from '$lib/components/ui/TopoButton.svelte';
 
@@ -151,14 +152,14 @@
 		let gradient = [];
 		let currentPercent = 0;
 		const colorMap = {
-			'bg-green-500': '#22c55e',
-			'bg-yellow-400': '#facc15',
-			'bg-red-500': '#ef4444',
-			'bg-purple-600': '#9333ea'
+			'bg-green-500': colors.chart.gradeGreen,
+			'bg-yellow-400': colors.topo.gradeMedium,
+			'bg-red-500': colors.chart.danger,
+			'bg-purple-600': colors.chart.gradePurple
 		};
 		for (const bucket of buckets) {
 			const nextPercent = currentPercent + bucket.percent;
-			const color = colorMap[bucket.colorClass] || '#ccc';
+			const color = colorMap[bucket.colorClass] || colors.topo.gradeUnknown;
 			gradient.push(`${color} ${currentPercent}% ${nextPercent}%`);
 			currentPercent = nextPercent;
 		}

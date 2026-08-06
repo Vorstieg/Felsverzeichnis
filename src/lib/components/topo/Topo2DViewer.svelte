@@ -3,7 +3,8 @@
 	import { zoom as d3Zoom } from 'd3-zoom';
 	import { select } from 'd3-selection';
 	import { getHitAreaSize } from '$lib/assets/js/mobile-utils.js';
-import { renderTopoSvg, topoSymbols } from '@vorstieg/topo-renderer';
+	import { renderTopoSvg, topoSymbols } from '@vorstieg/topo-renderer';
+	import { colors } from '$lib/colors.js';
 
 	let {
 		topo,
@@ -39,7 +40,7 @@ import { renderTopoSvg, topoSymbols } from '@vorstieg/topo-renderer';
 			.join('path')
 			.attr('d', 'M 50 0 L 0 0 0 50')
 			.attr('fill', 'none')
-			.attr('stroke', '#e5e7eb')
+			.attr('stroke', colors.ui.grid)
 			.attr('stroke-width', 1);
 
 		// A route-only topo has the same neutral drawing surface as the editor.
@@ -79,7 +80,7 @@ import { renderTopoSvg, topoSymbols } from '@vorstieg/topo-renderer';
 			.attr('text-anchor', 'middle')
 			.attr('font-size', (label) => (label.fontSize2D || 0.025) * baseHeight)
 			.attr('font-weight', (label) => label.fontWeight || 700)
-			.attr('fill', (label) => label.color || '#23201d')
+			.attr('fill', (label) => label.color || colors.text.ink)
 			.style('pointer-events', 'none')
 			.text((label) => label.text || '');
 	}

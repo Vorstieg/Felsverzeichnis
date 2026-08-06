@@ -4,13 +4,14 @@
 	import { CatmullRomCurve3, Vector3, TubeGeometry } from 'three';
 	import CssObject from './CssObject.svelte';
 	import { goto } from '$app/navigation';
+	import { colors } from '$lib/colors.js';
 
 	const { hovering, onPointerEnter, onPointerLeave } = useCursor();
 	const { camera } = useThrelte();
 
 	let {
 		points = [],
-		color = '#ffdf12',
+		color = colors.topo.route,
 		width = 0.07,
 		name = '',
 		grade = '',
@@ -26,7 +27,7 @@
 	const CLOSE_DISTANCE = 15;
 	const VISIBLE_DISTANCE = 40;
 
-	const hoverColor = '#ff0000';
+	const hoverColor = colors.topo.routeHover;
 	const hoverWidth = 0.2;
 	
 	let isHovered = $derived(($hovering || isHoveredExternally) && !isCameraMoving);

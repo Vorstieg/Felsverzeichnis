@@ -1,4 +1,5 @@
 import { env } from '$env/dynamic/public';
+import { colors } from '$lib/colors.js';
 
 /**
  * All of these values are used throughout the site – for example,
@@ -30,42 +31,35 @@ export const gpxRoles = ['main', 'approach', 'descent', 'variant'];
 
 export const routeTypeMeta = {
 	'sports-climbing': {
-		color: '#3b82f6',
+		color: colors.routeTypes['sports-climbing'],
 		dotClass: 'bg-blue-500',
 		badgeClass: 'bg-blue-100 text-blue-700 border-blue-200'
 	},
 	bouldering: {
-		color: '#f97316',
+		color: colors.routeTypes.bouldering,
 		dotClass: 'bg-orange-500',
 		badgeClass: 'bg-orange-100 text-orange-700 border-orange-200'
 	},
 	'multi-pitch': {
-		color: '#10b981',
+		color: colors.routeTypes['multi-pitch'],
 		dotClass: 'bg-emerald-500',
 		badgeClass: 'bg-emerald-100 text-emerald-700 border-emerald-200'
 	},
 	trad: {
-		color: '#eab308',
+		color: colors.routeTypes.trad,
 		dotClass: 'bg-yellow-500',
 		badgeClass: 'bg-yellow-100 text-yellow-700 border-yellow-200'
 	},
 	'alpine-tour': {
-		color: '#8b5cf6',
+		color: colors.routeTypes['alpine-tour'],
 		dotClass: 'bg-violet-500',
 		badgeClass: 'bg-violet-100 text-violet-700 border-violet-200'
 	},
 	'via-ferrata': {
-		color: '#ec4899',
+		color: colors.routeTypes['via-ferrata'],
 		dotClass: 'bg-pink-500',
 		badgeClass: 'bg-pink-100 text-pink-700 border-pink-200'
 	}
-};
-
-export const gpxRoleColors = {
-	main: '#3b82f6',
-	approach: '#10b981',
-	descent: '#f97316',
-	variant: '#8b5cf6'
 };
 
 export const securityRatings = new Map([

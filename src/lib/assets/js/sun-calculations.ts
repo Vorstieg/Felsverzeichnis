@@ -1,4 +1,5 @@
 import SunCalc from 'suncalc';
+import { colors as appColors } from '$lib/colors.js';
 
 // Helper: Calculate general heading of the wall/route
 function calculateWallHeading(topo: any, route: any) {
@@ -109,14 +110,14 @@ export function calculateSunInfo(topo: any, route: any) {
 		altitudes.push(Math.max(0, altDeg));
 
 		if (isInSun) {
-			colors.push('#fbbf24'); // Sunny Yellow
+			colors.push(appColors.chart.sunny);
 			conditions.push('sun.sunny');
 			sunnyIntervals++;
 		} else if (isUp) {
-			colors.push('#9ca3af'); // Shady Gray
+			colors.push(appColors.chart.shade);
 			conditions.push('sun.shadow');
 		} else {
-			colors.push('#e5e7eb'); // Night/Low Light
+			colors.push(appColors.chart.lowSun);
 			conditions.push('sun.low_sun');
 		}
 		totalIntervals++;

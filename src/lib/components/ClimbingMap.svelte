@@ -6,11 +6,14 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
+	import { colors } from '$lib/colors.js';
 
-	/** @type {{locations?: any, access?: any, accessKey?: string, tracks?: any, pitch?: number}} */
+	/** @typedef {import('@vorstieg/fels-data/types').TopoPathFeature} TopoPathFeature */
+	/** @type {{locations?: any, access?: any, topoPaths?: TopoPathFeature[], accessKey?: string, tracks?: any, pitch?: number}} */
 	let {
 		locations = [],
 		access = null,
+		topoPaths = [],
 		accessKey = '',
 		cameraTarget = null
 	} = $props();
@@ -19,9 +22,12 @@
 	let map;
 	let tileLayerMenuOpen = $state(false);
 	const placeTypeColor = ['match', ['get', 'type'],
-		'sports-climbing', '#3b82f6', 'multi-pitch', '#10b981', 'bouldering', '#f97316',
-		'trad', '#eab308', 'alpine-tour', '#8b5cf6', 'via-ferrata', '#ec4899',
-		'bus', '#6366f1', 'train', '#8b5cf6', 'parking-space', '#6b7280', '#3b82f6'];
+		'sports-climbing', colors.routeTypes['sports-climbing'],
+		'multi-pitch', colors.routeTypes['multi-pitch'], 'bouldering', colors.routeTypes.bouldering,
+		'trad', colors.routeTypes.trad, 'alpine-tour', colors.routeTypes['alpine-tour'],
+		'via-ferrata', colors.routeTypes['via-ferrata'], 'bus', colors.map.bus,
+		'train', colors.map.train, 'parking-space', colors.map.parking,
+		colors.routeTypes['sports-climbing']];
 
 	const placesLayer = {
 		id: 'places', type: 'symbol', source: 'places', minzoom: 11.5,
@@ -37,8 +43,8 @@
 			'visibility': 'visible', 'text-max-width': 8
 		},
 		paint: {
-			'text-color': 'rgba(47,57,72,1)', 'text-halo-blur': 0,
-			'text-halo-color': 'rgba(255,255,255,1)', 'text-halo-width': 3,
+			'text-color': colors.text.ink, 'text-halo-blur': 0,
+			'text-halo-color': colors.text.white, 'text-halo-width': 3,
 			'icon-opacity': ['step', ['zoom'], 0, 13.5, 1],
 			'icon-opacity-transition': { duration: 400 },
 			'text-opacity': ['step', ['zoom'], 0, 13.5, 1],
@@ -53,7 +59,7 @@
 			'circle-color': placeTypeColor,
 			'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5],
 			'circle-radius-transition': { duration: 400 }, 'circle-stroke-width': 0,
-			'circle-stroke-color': '#ffffff', 'circle-opacity': ['step', ['zoom'], 1, 13.5, 0],
+			'circle-stroke-color': colors.text.white, 'circle-opacity': ['step', ['zoom'], 1, 13.5, 0],
 			'circle-opacity-transition': { duration: 400 },
 			'circle-stroke-opacity': ['step', ['zoom'], 1, 13.5, 0],
 			'circle-stroke-opacity-transition': { duration: 400 }
@@ -95,8 +101,8 @@
 			'text-allow-overlap': false
 		},
 		paint: {
-			'text-color': '#000',
-			'text-halo-color': '#ffffff',
+			'text-color': colors.map.sectorText,
+			'text-halo-color': colors.map.sectorTextHalo,
 			'text-halo-width': 2
 		}
 	};
@@ -107,7 +113,7 @@
 		source: 'access',
 		filter: ['==', ['get', 'kind'], 'approach'],
 		paint: {
-			'line-color': '#10b981',
+			'line-color': colors.gpxRoles.approach,
 			'line-width': 4,
 			'line-opacity': 0.9
 		}
@@ -117,13 +123,27 @@
 		id: 'access-points',
 		type: 'symbol',
 		source: 'access',
+		minzoom: 0,
 		filter: ['==', ['geometry-type'], 'Point'],
 		layout: {
 			'icon-image': [
 				'match',
 				['get', 'kind'],
 				'parking', 'parking',
-				['coalesce', ['get', 'mode'], 'bus']
+				'hut', 'access-hut',
+				'transit', [
+					'match',
+					['coalesce', ['get', 'mode'], 'bus'],
+					'train', 'train',
+					'rail', 'train',
+					'bus', 'bus',
+					'bus_stop', 'bus',
+					'bus-stop', 'bus',
+					'bus_station', 'bus',
+					'bus-station', 'bus',
+					'bus'
+				],
+				'bus'
 			],
 			'icon-size': 0.65,
 			'icon-allow-overlap': true,
@@ -143,9 +163,44 @@
 			'text-max-width': 8
 		},
 		paint: {
-			'text-color': '#2f3948',
-			'text-halo-color': '#fff',
+			'text-color': colors.text.ink,
+			'text-halo-color': colors.text.white,
 			'text-halo-width': 3
+		}
+	};
+
+	const topoPathsLayer = {
+		id: 'topo-paths',
+		type: 'line',
+		source: 'topo-paths',
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': [
+				'case',
+				['==', ['get', 'role'], 'main'],
+				[
+					'match',
+					['get', 'routeType'],
+					'sports-climbing', colors.routeTypes['sports-climbing'],
+					'multi-pitch', colors.routeTypes['multi-pitch'],
+					'bouldering', colors.routeTypes.bouldering,
+					'trad', colors.routeTypes.trad,
+					'alpine-tour', colors.routeTypes['alpine-tour'],
+					'via-ferrata', colors.routeTypes['via-ferrata'],
+					colors.topoPaths.main
+				],
+				[
+					'match',
+					['get', 'role'],
+					'approach', colors.topoPaths.approach,
+					'descent', colors.topoPaths.descent,
+					'variant', colors.topoPaths.variant,
+					'fixedRope', colors.topoPaths.fixedRope,
+					colors.topoPaths.main
+				]
+			],
+			'line-width': 4,
+			'line-opacity': 0.85,
 		}
 	};
 
@@ -178,12 +233,14 @@
 		});
 
 		map.on('load', async () => {
+			syncTopoPathLayers();
 			await drawLayers();
 			applyCameraTarget();
 			slowRasterTileDecay(map);
 		});
 		map.on('style.load', async () => {
 			slowRasterTileDecay(map);
+			syncTopoPathLayers();
 			map.once('idle', async () => {
 				await drawLayers();
 				applyCameraTarget();
@@ -237,6 +294,7 @@
 	async function drawLayers() {
 		if (!map || !map.isStyleLoaded()) return;
 		try {
+			syncTopoPathLayers();
 			await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
 			await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
 			await addMapImage('bouldering', base + '/icons/bouldering.png');
@@ -246,7 +304,9 @@
 			await addMapImage('bus', base + '/icons/bus.png');
 			await addMapImage('parking', base + '/icons/parking.png');
 			await addMapImage('parking-space', base + '/icons/parking.png');
+			await addMapImage('access-hut', base + '/icons/hut.png');
 			if (access?.features?.length) addAccessLayers();
+			addTopoPathLayers();
 			addPlacesLayers();
 		} catch (error) {
 			console.error('Failed to restore map layers after style change', error);
@@ -294,6 +354,43 @@
 		};
 	}
 
+	function getTopoPathsData() {
+		return {
+			type: 'FeatureCollection',
+			features: topoPaths.filter(
+				(feature) =>
+					feature?.type === 'Feature' &&
+					feature.geometry?.type === 'LineString' &&
+					Array.isArray(feature.geometry.coordinates) &&
+					feature.geometry.coordinates.length >= 2
+			)
+		};
+	}
+
+	function addTopoPathLayers() {
+		if (!map?.isStyleLoaded()) return;
+		if (!map.getSource('topo-paths')) {
+			map.addSource('topo-paths', { type: 'geojson', data: getTopoPathsData() });
+		}
+		if (!map.getLayer('topo-paths')) map.addLayer(topoPathsLayer);
+	}
+
+	function syncTopoPathLayers() {
+		if (!map?.isStyleLoaded()) return;
+		if (topoPaths?.length) {
+			addTopoPathLayers();
+			map.getSource('topo-paths')?.setData(getTopoPathsData());
+		} else {
+			removeTopoPathLayers();
+		}
+	}
+
+	function removeTopoPathLayers() {
+		if (!map?.isStyleLoaded()) return;
+		if (map.getLayer('topo-paths')) map.removeLayer('topo-paths');
+		if (map.getSource('topo-paths')) map.removeSource('topo-paths');
+	}
+
 	function addAccessLayers() {
 		if (!map?.isStyleLoaded() || !access?.features?.length) return;
 		if (!map.getSource('access')) map.addSource('access', { type: 'geojson', data: getAccessData() });
@@ -311,6 +408,12 @@
 	$effect(() => {
 		const source = map?.getSource('places');
 		if (source && Array.isArray(locations)) source.setData(getPlacesData());
+	});
+
+	$effect(() => {
+		const lifecycleKey = topoPaths;
+		if (!lifecycleKey) return;
+		syncTopoPathLayers();
 	});
 
 	$effect(() => {
@@ -375,10 +478,13 @@
 ></div>
 <div
 	class="fixed sm:left-15 sm:right-auto right-4 sm:top-37 z-[1000] flex sm:flex-col flex-col-reverse items-center style-selector-btn"
+	role="group"
+	aria-label="Map style selector"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
 >
-	<button
-		class="cursor-pointer bg-white w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md text-gray-600"
+		<button
+			aria-label="Choose map style"
+			class="cursor-pointer bg-white w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink rounded-full border-1 border-gray-200 transition-all shadow-md text-gray-600"
 		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
 		class:sm:rounded-b-none={tileLayerMenuOpen}
 		class:max-sm:rounded-t-none={tileLayerMenuOpen}
@@ -390,20 +496,23 @@
 			in:slide={{ duration: 200 }}
 			out:slide={{ duration: 200 }}
 		>
-			<button
-				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-t-none max-sm:rounded-t-full text-gray-600"
+				<button
+					aria-label="Show transport map"
+					class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-t-none max-sm:rounded-t-full text-gray-600"
 				onclick={setTransportTileLayer}
 			>
 				<i class="fa-solid fa-bus-simple"></i>
 			</button>
-			<button
-				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 text-gray-600"
+				<button
+					aria-label="Show satellite map"
+					class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 text-gray-600"
 				onclick={setSatelliteTileLayer}
 			>
 				<i class="fa-solid fa-satellite"></i>
 			</button>
-			<button
-				class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-b-full max-sm:rounded-b-none text-gray-600"
+				<button
+					aria-label="Show terrain map"
+					class="cursor-pointer w-12 h-12 max-sm:w-13 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 sm:rounded-b-full max-sm:rounded-b-none text-gray-600"
 				onclick={setTerrainTileLayer}
 			>
 				<i class="fa-solid fa-mountain"></i>

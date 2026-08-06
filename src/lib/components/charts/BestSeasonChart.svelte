@@ -1,6 +1,7 @@
 <script lang="ts">
     import Chart from 'chart.js/auto';
     import { _ } from 'svelte-i18n';
+    import { colors } from '$lib/colors.js';
 
 	let { data } = $props();
 	let canvas: HTMLCanvasElement;
@@ -56,7 +57,7 @@
 						type: 'bar',
 						label: translations.ideal_month,
 						data: idealMonths,
-						backgroundColor: 'rgba(16, 185, 129, 0.1)',
+						backgroundColor: `${colors.chart.good}1a`,
 						barPercentage: 1.0,
 						categoryPercentage: 1.0,
 						borderWidth: 0,
@@ -76,7 +77,7 @@
 						label: 'Ideal Zone',
 						data: idealHigh,
 						fill: '-1',
-						backgroundColor: 'rgba(16, 185, 129, 0.1)',
+						backgroundColor: `${colors.chart.good}1a`,
 						borderColor: 'transparent',
 						radius: 0,
 						pointRadius: 0,
@@ -86,23 +87,23 @@
 					{
 						label: translations.feels_like + ' (°C)',
 						data: [...data.feelsLikeTemps],
-						borderColor: 'rgb(251, 191, 36)',
-						backgroundColor: 'rgba(251, 191, 36, 0.4)',
+						borderColor: colors.chart.temperature,
+						backgroundColor: `${colors.chart.temperature}66`,
 						borderWidth: 3,
 						tension: 0.4,
 						fill: false,
 						pointBackgroundColor: (ctx) => {
 							const v = ctx.raw as number;
-							if (v >= 15 && v <= 25) return '#10b981';
-							if (v < 5 || v > 35) return '#ef4444';
-							return '#f59e0b';
+							if (v >= 15 && v <= 25) return colors.chart.good;
+							if (v < 5 || v > 35) return colors.chart.danger;
+							return colors.chart.warning;
 						},
 						order: 1
 					},
 					{
 						label: translations.air_temp + ' (°C)',
 						data: [...data.baseTemps],
-						borderColor: 'rgb(156, 163, 175)',
+						borderColor: colors.text.muted,
 						borderWidth: 2,
 						borderDash: [5, 5],
 						tension: 0.4,
@@ -148,7 +149,7 @@
 				scales: {
 					y: {
 						beginAtZero: false,
-						grid: { color: '#f3f4f6' },
+						grid: { color: colors.chart.grid },
 						title: { display: true, text: translations.temp_scale + ' (°C)' },
 						suggestedMax: 35
 					},

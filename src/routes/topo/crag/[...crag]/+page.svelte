@@ -31,6 +31,7 @@
 	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
 	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
+	import { colors } from '$lib/colors.js';
 
 	let { data } = $props();
 	let currentSectorName = $derived(data.sector?.name || data.sectorId);
@@ -503,13 +504,13 @@
 	}
 
 	function getGradeColor(grade: string) {
-		if (!grade) return '#cccccc';
+		if (!grade) return colors.topo.gradeUnknown;
 		const g = grade.toLowerCase();
-		if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) return '#4ade80';
-		if (g.startsWith('6')) return '#facc15';
-		if (g.startsWith('7')) return '#f97316';
-		if (g.startsWith('8') || g.startsWith('9')) return '#d946ef';
-		return '#cccccc';
+		if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) return colors.topo.gradeEasy;
+		if (g.startsWith('6')) return colors.topo.gradeMedium;
+		if (g.startsWith('7')) return colors.topo.gradeHard;
+		if (g.startsWith('8') || g.startsWith('9')) return colors.topo.gradeVeryHard;
+		return colors.topo.gradeUnknown;
 	}
 
 	function getSectorRouteCount(sector: any) {
@@ -665,7 +666,7 @@
 						grade={route.grade}
 						id={route.id}
 						color={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)
-							? '#ff0000'
+							? colors.topo.routeHover
 							: getGradeColor(route.grade)}
 						width={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId) ? 0.1 : 0.08}
 						isSelected={!!activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)}

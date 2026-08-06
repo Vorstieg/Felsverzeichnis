@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Chart from 'chart.js/auto';
 	import { _ } from 'svelte-i18n';
+	import { colors } from '$lib/colors.js';
 
 	let { routes } = $props();
 	let canvas: HTMLCanvasElement;
@@ -113,7 +114,7 @@
 
 		const labels = [];
 		const dataCounts = [];
-		const colors = [];
+		const segmentColors = [];
 
 		for (let i = minIdx; i <= maxIdx; i++) {
 			const grade = gradeOrder[i];
@@ -122,14 +123,13 @@
 
 			let hue = 130 - i * 5.5;
 			if (hue < 0) hue = 0;
-
-			colors.push(`hsl(${hue}, 85%, 45%)`);
+			segmentColors.push(`hsl(${hue}, 85%, 45%)`);
 		}
 
 		return {
 			labels: labels,
 			counts: dataCounts,
-			colors: colors
+			colors: segmentColors
 		};
 
 		function extractRouteGrades(route: any): any[] {
@@ -179,7 +179,7 @@
 				plugins: {
 					legend: { display: false },
 					tooltip: {
-						backgroundColor: 'rgba(0,0,0,0.8)',
+					backgroundColor: colors.ui.overlay,
 						padding: 10,
 						cornerRadius: 8,
 						displayColors: true,
@@ -192,7 +192,7 @@
 					y: {
 						beginAtZero: true,
 						ticks: { stepSize: 1 },
-						grid: { color: '#f3f4f6' }
+					grid: { color: colors.chart.grid }
 					},
 					x: {
 						grid: { display: false }
