@@ -5,7 +5,6 @@
 	import { goto } from '$app/navigation';
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import CragList from '$lib/components/CragList.svelte';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
 	import { getTypeDotClass } from '$lib/assets/js/route-types.js';
 
@@ -36,10 +35,7 @@
 	<title>{$_('site.title')}</title>
 </svelte:head>
 
-<div
-	class="fixed h-fit overflow-visible sm:w-auto sm:left-26 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
-	<SearchBar actionBase="/map" bind:searchTerm showClear={true} onClear={resetSearch} />
-</div>
+
 <div class="fixed h-fit no-scrollbar overflow-x-auto flex sm:w-auto sm:left-26 left-0 right-0 py-2 transition-all duration-300 ease-out z-[1000] fade filter-wrapper" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
 	<div class="max-sm:w-4 sm:w-8 shrink-0"></div>
 	{#each types as type}
@@ -70,7 +66,7 @@
 </style>
 
 {#if data.locations && data.locations.length > 1}
-	<InfoPanel closeUrl="{base}/map" onShare={share}>
+	<main class="z-[500]">
 		<div class="px-5 pt-6 pb-2">
 			<h2 class="text-xl font-bold text-slate-800">
 				{data.locations.length} {$_('ui.results', { default: 'Results' })}
@@ -79,5 +75,5 @@
 		<div class="flex-1 overflow-y-auto px-5 pb-4">
 			<CragList crags={data.locations} isCompact={true} />
 		</div>
-	</InfoPanel>
+	</main>
 {/if}

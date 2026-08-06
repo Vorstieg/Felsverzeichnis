@@ -2,9 +2,8 @@
 	import { base } from '$app/paths';
 	import { types } from '$lib/config';
 	import { _ } from 'svelte-i18n';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
-	import { searchSuggestionsActive } from '$lib/stores/search.js';
 	import { getTypeDotClass } from '$lib/assets/js/route-types.js';
+	import { searchSuggestionsActive } from '$lib/stores/search.js';
 
 	let searchTerm = $state('');
 </script>
@@ -13,10 +12,6 @@
 	<title>{$_('site.title')}</title>
 </svelte:head>
 
-<div
-	class="fixed h-fit overflow-visible sm:w-auto sm:left-26 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
-	<SearchBar actionBase="/map" bind:searchTerm />
-</div>
 <div class="fixed h-fit no-scrollbar overflow-x-auto flex sm:w-auto sm:left-26 left-0 right-0 py-2 transition-all duration-300 ease-out z-[1000] fade filter-wrapper" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
 	<div class="max-sm:w-4 sm:w-8 shrink-0"></div>
 	{#each types as type}

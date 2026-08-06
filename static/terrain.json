@@ -5980,6 +5980,2512 @@
 			}
 		},
 		{
+			"id": "Other POI",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 17,
+			"layout": {
+				"icon-image": [
+					"coalesce",
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"dot"
+					]
+				],
+				"icon-size": 1,
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"!in",
+				"class",
+				"railway",
+				"aerialway",
+				"bicycle",
+				"bicycle_parking",
+				"bicycle_rental",
+				"bicycle_share",
+				"bus",
+				"car",
+				"ferry_terminal",
+				"harbor",
+				"motorcycle_parking",
+				"parking",
+				"dentist",
+				"doctors",
+				"hospital",
+				"pharmacy",
+				"alcohol_shop",
+				"butcher",
+				"clothing_store",
+				"florist",
+				"grocery",
+				"shop",
+				"fitness_centre",
+				"golf",
+				"sports_centre",
+				"stadium",
+				"swimming",
+				"swimming_pool",
+				"water_park",
+				"college",
+				"school",
+				"attraction",
+				"campsite",
+				"castle",
+				"entrance",
+				"lodging",
+				"information",
+				"monument",
+				"place_of_worship",
+				"reservoir",
+				"theme_park",
+				"zoo",
+				"bakery",
+				"fast_food",
+				"ice_cream",
+				"restaurant",
+				"bar",
+				"beer",
+				"cafe",
+				"theatre",
+				"art_gallery",
+				"artwork",
+				"cinema",
+				"museum",
+				"music",
+				"opera",
+				"atm",
+				"bank",
+				"cemetery",
+				"charging_station",
+				"fuel",
+				"hairdresser",
+				"laundry",
+				"library",
+				"park",
+				"post",
+				"town_hall",
+				"toilets",
+				"basin",
+				"bollard",
+				"brownfield",
+				"chess",
+				"cycle_barrier",
+				"garden",
+				"gate",
+				"lift_gate",
+				"motocross",
+				"pitch",
+				"running",
+				"sally_port",
+				"waste_basket"
+			]
+		},
+		{
+			"id": "Amenity",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"atm",
+						"bank",
+						"cemetery",
+						"charging_station",
+						"fuel",
+						"hairdresser",
+						"laundry",
+						"library",
+						"park",
+						"post",
+						"toilets",
+						"town_hall"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"in",
+				"class",
+				"atm",
+				"bank",
+				"cemetery",
+				"charging_station",
+				"fuel",
+				"hairdresser",
+				"laundry",
+				"library",
+				"park",
+				"post",
+				"town_hall",
+				"toilets"
+			]
+		},
+		{
+			"id": "Culture",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"art_gallery",
+						"cinema",
+						"museum",
+						"music",
+						"theatre"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"all",
+				[
+					"in",
+					"class",
+					"art_gallery",
+					"cinema",
+					"museum",
+					"music",
+					"theatre"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
+		},
+		{
+			"id": "Drink",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"bar",
+						"beer",
+						"cafe"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"in",
+				"class",
+				"bar",
+				"beer",
+				"cafe"
+			]
+		},
+		{
+			"id": "Food",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"bakery",
+						"fast_food",
+						"ice_cream",
+						"restaurant"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"in",
+				"class",
+				"fast_food",
+				"ice_cream",
+				"restaurant",
+				"bakery"
+			]
+		},
+		{
+			"id": "Tourism",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"coalesce",
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"dot"
+					]
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"in",
+				"class",
+				"attraction",
+				"campsite",
+				"castle",
+				"entrance",
+				"lodging",
+				"information",
+				"monument",
+				"place_of_worship",
+				"reservoir",
+				"theme_park",
+				"zoo"
+			]
+		},
+		{
+			"id": "Education",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"college",
+						"school"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"all",
+				[
+					"in",
+					"class",
+					"college",
+					"school"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
+		},
+		{
+			"id": "Sport",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"coalesce",
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"dot"
+					]
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"all",
+				[
+					"in",
+					"class",
+					"athletics",
+					"fitness_centre",
+					"golf",
+					"pitch",
+					"playground",
+					"sports_centre",
+					"stadium",
+					"swimming",
+					"swimming_pool",
+					"water_park"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
+		},
+		{
+			"id": "Shopping",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"coalesce",
+					[
+						"image",
+						[
+							"get",
+							"subclass"
+						]
+					],
+					[
+						"image",
+						[
+							"get",
+							"class"
+						]
+					],
+					[
+						"image",
+						"shop"
+					]
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"in",
+				"class",
+				"alcohol_shop",
+				"butcher",
+				"clothing_store",
+				"florist",
+				"grocery",
+				"shop"
+			]
+		},
+		{
+			"id": "Healthcare",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"dentist",
+						"doctors",
+						"hospital",
+						"pharmacy"
+					],
+					[
+						"get",
+						"class"
+					],
+					""
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"in",
+				"class",
+				"dentist",
+				"doctors",
+				"hospital",
+				"pharmacy"
+			]
+		},
+		{
+			"id": "Transport",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"class"
+					],
+					[
+						"aerialway",
+						"bicycle",
+						"bicycle_parking",
+						"bicycle_rental",
+						"bicycle_share",
+						"car",
+						"ferry_terminal",
+						"harbor",
+						"motorcycle_parking",
+						"parking"
+					],
+					[
+						"get",
+						"class"
+					],
+					"bus",
+					"bus_stop",
+					""
+				],
+				"icon-size": {
+					"stops": [
+						[
+							14,
+							0.7
+						],
+						[
+							22,
+							1
+						]
+					]
+				},
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"icon-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				],
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5,
+				"text-opacity": [
+					"step",
+					[
+						"zoom"
+					],
+					0,
+					14,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							14
+						],
+						1,
+						0
+					],
+					15,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							25
+						],
+						1,
+						0
+					],
+					16,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							99
+						],
+						1,
+						0
+					],
+					17,
+					[
+						"case",
+						[
+							"<=",
+							[
+								"get",
+								"rank"
+							],
+							999
+						],
+						1,
+						0
+					],
+					18,
+					1
+				]
+			},
+			"filter": [
+				"in",
+				"class",
+				"aerialway",
+				"bicycle",
+				"bicycle_parking",
+				"bicycle_rental",
+				"bicycle_share",
+				"bus",
+				"car",
+				"ferry_terminal",
+				"harbor",
+				"motorcycle_parking",
+				"parking"
+			]
+		},
+		{
+			"id": "Station",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "poi",
+			"minzoom": 13,
+			"layout": {
+				"icon-image": [
+					"match",
+					[
+						"get",
+						"subclass"
+					],
+					[
+						"subway"
+					],
+					[
+						"get",
+						"subclass"
+					],
+					"station",
+					"railway",
+					[
+						"case",
+						[
+							"has",
+							"subclass"
+						],
+						"tramway",
+						""
+					]
+				],
+				"symbol-sort-key": [
+					"to-number",
+					[
+						"get",
+						"rank"
+					]
+				],
+				"text-anchor": "top",
+				"text-field": "{name}",
+				"text-font": [
+					"Noto Sans Regular"
+				],
+				"text-max-width": 9,
+				"text-offset": [
+					0,
+					0.6
+				],
+				"text-optional": true,
+				"text-padding": 2,
+				"text-size": 12,
+				"visibility": "visible"
+			},
+			"paint": {
+				"icon-color": "hsl(0, 0%, 0%)",
+				"icon-halo-blur": 0.5,
+				"icon-halo-color": "hsl(0, 0%, 100%)",
+				"icon-halo-width": 1.5,
+				"text-color": "hsl(0, 0%, 0%)",
+				"text-halo-blur": 0.5,
+				"text-halo-color": "hsl(0, 0%, 100%)",
+				"text-halo-width": 1.5
+			},
+			"filter": [
+				"all",
+				[
+					"==",
+					"class",
+					"railway"
+				],
+				[
+					"has",
+					"name"
+				]
+			]
+		},
+		{
 			"id": "Mountain hut dot",
 			"type": "circle",
 			"source": "maptiler_planet",

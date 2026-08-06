@@ -717,120 +717,78 @@
 </div>
 
 <main class="z-[500] h-24">
-	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)}
-	           hideCloseOnDesktop={true}>
-		{#snippet controls()}
-			{#if displayMode === '3d' && data.lowResModelUrl}
-				{#if progress < 1 && (forceHighRes || (!isSlowNetwork && modelLoaded))}
-					<div
-						class="pointer-events-auto flex items-center justify-center relative sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 rounded-full border-1 border-gray-200 bg-white max-sm:shadow-md">
-						<div
-							class="absolute sm:w-6 sm:h-6 max-sm:w-10 max-sm:h-10 border-2 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-						<span class="text-[10px] max-sm:text-[14px] font-bold text-blue-600 z-10">HD</span>
+	{#snippet hdButton()}
+		{#if displayMode === '3d' && data.lowResModelUrl}
+			{#if progress < 1 && (forceHighRes || (!isSlowNetwork && modelLoaded))}
+				<div class="pointer-events-auto flex items-center justify-center relative w-10 h-10 max-sm:w-11 max-sm:h-11 rounded-2xl border-1 border-gray-200 bg-white shadow-md">
+					<div class="absolute w-6 h-6 max-sm:w-7 max-sm:h-7 border-2 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+					<span class="text-[10px] max-sm:text-[12px] font-bold text-blue-600 z-10">HD</span>
+				</div>
+			{:else if !forceHighRes && isSlowNetwork}
+				<button class="pointer-events-auto cursor-pointer flex items-center justify-center w-10 h-10 max-sm:w-11 max-sm:h-11 text-lg hover:text-white hover:bg-ink bg-white rounded-2xl border-1 text-center border-gray-200 transition-all shadow-md" onclick={() => (forceHighRes = true)} title={$_('topo.load_high_res_title') || 'Load High-Res 3D Model'}>
+					<i class="fa-solid fa-download text-gray-600 hover:text-white"></i>
+				</button>
+			{/if}
+		{/if}
+	{/snippet}
+
+	{#snippet sunButton()}
+		{#if displayMode === '3d'}
+			<div class="flex flex-row max-sm:flex-row-reverse items-center justify-start max-sm:w-full gap-2">
+				<button class="pointer-events-auto cursor-pointer flex items-center justify-center w-10 h-10 max-sm:w-11 max-sm:h-11 text-lg hover:text-white hover:bg-ink rounded-2xl border-1 text-center border-gray-200 transition-all shadow-md shrink-0 {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white text-gray-600'}" onclick={() => (isDaylightSimulation = !isDaylightSimulation)} aria-label="Toggle daylight simulator" title="Daylight Simulator">
+					<i class="fa-solid fa-sun"></i>
+				</button>
+				{#if isDaylightSimulation}
+					<div transition:slide={{ axis: 'x', duration: 300 }} class="bg-white/90 backdrop-blur max-sm:p-3 sm:px-2 sm:py-1 rounded-2xl max-sm:shadow-lg sm:shadow-sm border-1 border-gray-200 flex flex-row items-center pointer-events-auto sm:h-10 flex-1 min-w-[200px]">
+						<input type="date" value={simulationDate} oninput={(e) => (simulationDate = e.currentTarget.value)} class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono text-center shrink-0" />
+						<div class="w-px h-6 bg-gray-300 mx-2 shrink-0"></div>
+						<div class="flex items-center gap-2 flex-1 min-w-0">
+							<span class="text-xs font-bold text-gray-500 w-10 text-right font-mono shrink-0">
+								{Math.floor(simulationTime)}:{Math.floor((simulationTime % 1) * 60).toString().padStart(2, '0')}
+							</span>
+							<input type="range" min="0" max="24" step="0.25" value={simulationTime} oninput={(e) => (simulationTime = parseFloat(e.currentTarget.value))} class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500 min-w-0" />
+						</div>
 					</div>
-				{:else if !forceHighRes && isSlowNetwork}
-					<button
-						class="pointer-events-auto cursor-pointer flex items-center justify-center sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 sm:pt-0.5 text-sm max-sm:text-xl hover:text-white hover:bg-ink bg-white rounded-full border-1 text-center border-gray-200 transition-all max-sm:shadow-md"
-						onclick={() => (forceHighRes = true)}
-						title={$_('topo.load_high_res_title') || 'Load High-Res 3D Model'}
-					>
-						<i class="fa-solid fa-download text-gray-600 hover:text-white"></i>
-					</button>
 				{/if}
-			{/if}
+			</div>
+		{/if}
+	{/snippet}
 
-			{#if has2D && has3D}
-				<div
-					class="relative flex items-center justify-center pointer-events-auto w-8 h-8 max-sm:w-13 max-sm:h-13"
-					onmouseleave={() => (displayModeMenuOpen = false)}
-				>
-					<button
-						class="cursor-pointer bg-white w-full h-full flex items-center justify-center hover:text-white hover:bg-ink rounded-full border border-gray-200 transition-all shadow-md text-gray-600 z-10"
-						class:sm:rounded-b-none={displayModeMenuOpen}
-						class:max-sm:rounded-t-none={displayModeMenuOpen}
-						onmouseenter={() => (displayModeMenuOpen = !displayModeMenuOpen)}
-					>
-						<i class="fa-solid fa-map text-sm max-sm:text-lg"></i>
-					</button>
-					{#if displayModeMenuOpen}
-						<div
-							class="absolute flex flex-col justify-center sm:top-full max-sm:bottom-full w-full left-0 z-0"
-							transition:slide={{ duration: 200, axis: 'y' }}
-						>
-							<button
-								class="cursor-pointer w-full h-8 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border border-gray-200 sm:border-t-0 max-sm:rounded-t-full font-bold text-gray-500 text-[12px] max-sm:text-[14px] {displayMode === '3d' ? 'bg-blue-50 text-blue-600' : ''}"
-								onclick={() => {
-									displayMode = '3d';
-									displayModeMenuOpen = false;
-								}}
-							>
-								3D
-							</button>
-							<button
-								class="cursor-pointer w-full h-8 max-sm:h-13 flex items-center justify-center hover:text-white hover:bg-ink bg-white border border-gray-200 sm:border-t-0 max-sm:border-b-0 sm:rounded-b-full font-bold text-gray-500 text-[12px] max-sm:text-[14px] {displayMode === '2d' ? 'bg-blue-50 text-blue-600' : ''}"
-								onclick={() => {
-									displayMode = '2d';
-									displayModeMenuOpen = false;
-								}}
-							>
-								2D
-							</button>
-						</div>
-					{/if}
-				</div>
-			{/if}
+	<div class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-end sm:items-start style-selector-btn gap-2 pointer-events-none">
+		{#if has2D && has3D}
+			<div class="flex flex-col items-end sm:items-start pointer-events-auto gap-2" onmouseleave={() => (displayModeMenuOpen = false)}>
+				<button class="cursor-pointer bg-white w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink rounded-2xl border-1 border-gray-200 transition-all shadow-md text-gray-600 z-10" onmouseenter={() => (displayModeMenuOpen = !displayModeMenuOpen)} onclick={() => (displayModeMenuOpen = !displayModeMenuOpen)}>
+					<i class="fa-solid fa-map text-lg"></i>
+				</button>
+				{#if displayModeMenuOpen}
+					<div class="flex flex-col justify-center gap-2 z-0" transition:slide={{ duration: 200, axis: 'y' }}>
+						<button class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600 font-bold text-[12px] max-sm:text-[14px] {displayMode === '3d' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}" onclick={() => { displayMode = '3d'; displayModeMenuOpen = false; }}>
+							3D
+						</button>
+						<button class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600 font-bold text-[12px] max-sm:text-[14px] {displayMode === '2d' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}" onclick={() => { displayMode = '2d'; displayModeMenuOpen = false; }}>
+							2D
+						</button>
+					</div>
+				{/if}
+			</div>
+		{/if}
 
-			{#if displayMode === '3d'}
-				<div class="flex flex-row items-center justify-end max-sm:w-full">
-					{#if isDaylightSimulation}
-						<div
-							transition:slide={{ axis: 'x', duration: 300 }}
-							class="bg-white/90 backdrop-blur max-sm:p-3 sm:px-2 sm:py-1 max-sm:rounded-full sm:rounded-l-full sm:rounded-r-none max-sm:shadow-lg sm:shadow-sm border border-gray-200 flex flex-row items-center pointer-events-auto sm:h-8 flex-1 max-sm:mr-2"
-						>
-							<input
-								type="date"
-								value={simulationDate}
-								oninput={(e) => (simulationDate = e.currentTarget.value)}
-								class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono text-center shrink-0"
-							/>
-							<div class="w-px h-6 bg-gray-300 mx-1 shrink-0"></div>
-							<div class="flex items-center gap-2 flex-1 min-w-0">
-								<span class="text-xs font-bold text-gray-500 w-10 text-right font-mono shrink-0">
-									{Math.floor(simulationTime)}
-									:{Math.floor((simulationTime % 1) * 60)
-									.toString()
-									.padStart(2, '0')}
-								</span>
-								<input
-									type="range"
-									min="0"
-									max="24"
-									step="0.25"
-									value={simulationTime}
-									oninput={(e) => (simulationTime = parseFloat(e.currentTarget.value))}
-									class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500 min-w-0"
-								/>
-							</div>
-						</div>
-					{/if}
+		<div class="hidden sm:flex flex-col items-start gap-2 pointer-events-auto">
+			{@render hdButton()}
+			{@render sunButton()}
+		</div>
+	</div>
 
-					<button
-						class="shrink-0 pointer-events-auto cursor-pointer sm:w-8 sm:h-8 max-sm:w-13 max-sm:h-13 sm:pt-0.5 text-sm max-sm:text-xl hover:text-white hover:bg-ink border-1 text-center border-gray-200 transition-all max-sm:shadow-md {isDaylightSimulation
-							? 'sm:rounded-r-full sm:rounded-l-none max-sm:rounded-full max-sm:bg-yellow-100 max-sm:border-yellow-300'
-							: 'rounded-full'} {isDaylightSimulation
-							? 'sm:bg-yellow-100 sm:text-yellow-600 sm:border-yellow-300 max-sm:text-yellow-600'
-							: 'bg-white text-gray-600'}"
-						onclick={() => (isDaylightSimulation = !isDaylightSimulation)}
-						aria-label="Toggle daylight simulator"
-						title="Daylight Simulator"
-					>
-						<i class="fa-solid fa-sun {isDaylightSimulation ? 'text-yellow-600' : ''}"></i>
-					</button>
-				</div>
-			{/if}
+	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)} hideCloseOnDesktop={true}>
+		{#snippet controls()}
+			<div class="sm:hidden flex flex-col items-end gap-2 w-full">
+				{@render hdButton()}
+				{@render sunButton()}
+			</div>
 		{/snippet}
 
-		{#if $navigating && $navigating.to?.url.pathname.startsWith(base + '/topo/crag/')}
+		<div class="flex flex-col h-full flex-1 min-h-0 w-full">
+			{#if $navigating && $navigating.to?.url.pathname.startsWith(base + '/topo/crag/')}
 			<div class="flex-1 overflow-y-auto w-full px-5 mb-4 mt-6 overflow-x-hidden min-h-0">
 				<div class="animate-pulse flex flex-col space-y-4 pt-4">
 					<div class="h-8 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
@@ -1217,6 +1175,7 @@
 				</div>
 			</div>
 		{/if}
+		</div>
 	</InfoPanel>
 </main>
 
@@ -1262,5 +1221,20 @@
 
     .transition-transform {
         transition: transform 0.3s ease-in-out;
+    }
+
+    .style-selector-btn {
+        @media (width > 40rem) {
+            top: 5.75rem;
+        }
+        @media (width <= 40rem) {
+            top: 1.25rem;
+            bottom: auto;
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out, top 0.2s ease-out;
+            opacity: var(--controls-opacity, 1);
+            transform: scale(var(--controls-scale, 1));
+            transform-origin: center;
+            pointer-events: var(--controls-pointer, auto);
+        }
     }
 </style>

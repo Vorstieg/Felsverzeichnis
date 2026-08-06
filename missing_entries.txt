@@ -1,8 +1,0 @@
-europe/bosnia-and-herzegovina/sarajevo/orlovača/orlovača.json
-europe/germany/bavaria/königsstein/steinberg/steinberg.json
-europe/germany/bavaria/königsstein/steinerne-stadt/steinerne-stadt.json
-europe/italy/south-tyrol/bruneck/villa-santa-caterina-aufhofen/villa-santa-caterina-aufhofen.json
-europe/italy/south-tyrol/hochpustertal/landro-höhle/landro-höhle.json
-europe/italy/south-tyrol/hochpustertal/landro/landro.json
-europe/italy/south-tyrol/hochpustertal/militärklettergarten/militärklettergarten.json
-europe/sweden/lapland/kebnekaise-fjällstation/kebnekaise-fjällstation.json
