@@ -2,6 +2,8 @@ import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
 import { Topo } from '$lib/assets/js/topo-paths.js';
+import { getGeometryCenter } from '$lib/assets/js/topo-loader-utils.js';
+import { createCragCache } from '$lib/assets/js/crag-cache.js';
 
 /** @typedef {import('@vorstieg/fels-data/types').CragFeature} CragFeature */
 /** @typedef {import('@vorstieg/fels-data/types').SectorFeature} SectorFeature */
@@ -12,107 +14,15 @@ export async function load({ params, url, parent, fetch }) {
 		const parentData = await parent();
 
 		const API_URL = fsApiUrl;
-
-		const _fetchJson = async (p) => {
-			const url = `${API_URL}/${p}`;
-			try {
-				const res = await fetch(url);
-				if (res.ok) return await res.json();
-			} catch (e) {
-				// Offline, fall back below
-			}
-			try {
-				if (browser) {
-					const cache = await caches.open('felslager-crags');
-					const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
-					if (cached) return await cached.json();
-				}
-			} catch (e) {
-			}
-			return null;
-		};
-
-		const cacheCragFolder = async (cragPath) => {
-			try {
-				const hashRes = await fetch(`${API_URL}/${cragPath}/hash.txt`);
-				if (!hashRes.ok) return;
-				const currentHash = (await hashRes.text()).trim();
-
-				const cache = await caches.open('felslager-crags');
-				const cachedHashRes = await cache.match(`${API_URL}/${cragPath}/hash.txt`);
-				const cachedHash = cachedHashRes ? (await cachedHashRes.text()).trim() : null;
-
-				const baseDirCached = await cache.match(`${API_URL}/${cragPath}`);
-
-				if (currentHash !== cachedHash || !baseDirCached) {
-					const indexRes = await fetch(`${API_URL}/${cragPath}/?recursive=true`);
-					const files = await indexRes.json();
-
-					const jsonFiles = files.filter((f) => f.type === 'file' && f.name.endsWith('.json'));
-					const otherFiles = files.filter((f) => f.type === 'file' && !f.name.endsWith('.json'));
-
-					await Promise.all(
-						jsonFiles.map(async (file) => {
-							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-							const fileRes = await fetch(fileUrl);
-							if (fileRes.ok) await cache.put(fileUrl, fileRes);
-						})
-					);
-
-					const dirsToCache = [
-						cragPath,
-						...files.filter((f) => f.type === 'dir').map((d) => `${cragPath}/${d.path}`)
-					];
-					await Promise.all(
-						dirsToCache.map(async (dir) => {
-							const dRes = await fetch(`${API_URL}/${dir}`);
-							if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
-						})
-					);
-
-					await cache.put(`${API_URL}/${cragPath}/hash.txt`, new Response(currentHash));
-
-					Promise.all(
-						otherFiles.map(async (file) => {
-							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-							const fileRes = await fetch(fileUrl);
-							if (fileRes.ok) await cache.put(fileUrl, fileRes);
-						})
-					).catch(() => {
-					});
-				}
-			} catch (e) {
-			}
-		};
-		const getGeometryCenter = (geometry) => {
-			if (!geometry?.coordinates) return null;
-			if (geometry.type === 'Point') return geometry.coordinates;
-
-			const coordinates =
-				geometry.type === 'Polygon'
-					? geometry.coordinates?.[0]
-					: geometry.type === 'MultiPolygon'
-						? geometry.coordinates?.flatMap((polygon) => polygon[0])
-						: geometry.coordinates;
-
-			if (!Array.isArray(coordinates) || coordinates.length === 0) return null;
-
-			const usableCoordinates =
-				coordinates.length > 1 &&
-				coordinates[0][0] === coordinates[coordinates.length - 1][0] &&
-				coordinates[0][1] === coordinates[coordinates.length - 1][1]
-					? coordinates.slice(0, -1)
-					: coordinates;
-
-			const sums = usableCoordinates.reduce(
-				(acc, coordinate) => [acc[0] + coordinate[0], acc[1] + coordinate[1]],
-				[0, 0]
-			);
-
-			return [sums[0] / usableCoordinates.length, sums[1] / usableCoordinates.length];
-		};
-		const isLineGeometry = (geometry) =>
-			geometry?.type === 'LineString' || geometry?.type === 'MultiLineString';
+		const {
+			fetchJson: _fetchJson,
+			cacheCragFolder,
+			normalizePath
+		} = createCragCache({
+			apiUrl: API_URL,
+			fetch,
+			useCache: browser
+		});
 		const openCrag = parentData.locations
 			?.filter((it) => params.crag.startsWith(`${it.properties?.path}`))
 			?.sort((a, b) => b.properties.path.length - a.properties.path.length)
@@ -126,11 +36,12 @@ export async function load({ params, url, parent, fetch }) {
 			.filter(Boolean);
 		const sectorId = sectorIds.at(-1) || null;
 
-		const cragPath = openCrag.properties.path
-			.slice(0, - (openCrag.properties.id.length + 1))
+		const cragPath = openCrag.properties.path.slice(0, -(openCrag.properties.id.length + 1));
 
-		const currentLocation = openCrag.properties.path === params.crag ? new Topo(cragPath, openCrag.properties.id) :
-			new Topo(cragPath, openCrag.properties.id, sectorId);
+		const currentLocation =
+			openCrag.properties.path === params.crag
+				? new Topo(cragPath, openCrag.properties.id)
+				: new Topo(cragPath, openCrag.properties.id, sectorId);
 
 		/** @type {CragFeature | null} */
 		const cragData = await _fetchJson(currentLocation.getCragPath());
@@ -146,11 +57,12 @@ export async function load({ params, url, parent, fetch }) {
 			cacheCragFolder(currentLocation.getFolder());
 		}
 
-		let allFilesPromise = _fetchJson(`${currentLocation.getFolder()}/?recursive=true`);
+		const currentFolder = normalizePath(currentLocation.getFolder());
+		let allFilesPromise = _fetchJson(`${currentFolder}/?recursive=true`);
 		const fetchJson = async (p) => {
 			const allFiles = await allFilesPromise;
-			if (allFiles && p.startsWith(`${currentLocation.getFolder()}/`)) {
-				const relPath = p.slice(currentLocation.getFolder().length + 1);
+			if (allFiles && p.startsWith(`${currentFolder}/`)) {
+				const relPath = p.slice(currentFolder.length + 1);
 				if (!allFiles.some((f) => f.type === 'file' && f.path === relPath)) {
 					return null;
 				}
@@ -253,7 +165,9 @@ export async function load({ params, url, parent, fetch }) {
 				try {
 					const dirRes = await fetch(`${API_URL}/${currentLocation.getFolder()}`);
 					const files = await dirRes.json();
-					if (files.some((file) => file.type === 'file' && file.name === currentLocation.getGlbName())) {
+					if (
+						files.some((file) => file.type === 'file' && file.name === currentLocation.getGlbName())
+					) {
 						has3DTopo = true;
 					}
 				} catch (e) {
@@ -278,10 +192,13 @@ export async function load({ params, url, parent, fetch }) {
 		const topoDocument = await fetchJson(currentLocation.getTopoPath());
 		const pathRoles = new Map(
 			(topoDocument?.routes || []).flatMap((route) =>
-				(route.pathRefs || []).map((reference) => [String(reference.pathId), {
-					...reference,
-					routeType: Array.isArray(route.type) ? route.type[0] : route.type
-				}])
+				(route.pathRefs || []).map((reference) => [
+					String(reference.pathId),
+					{
+						...reference,
+						routeType: Array.isArray(route.type) ? route.type[0] : route.type
+					}
+				])
 			)
 		);
 		const topoPaths = (topoDocument?.paths?.features || []).map((feature) => {

@@ -23,6 +23,15 @@
 		goto(`${base}/map`);
 	}
 
+	function portal(node) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node.parentNode) node.parentNode.removeChild(node);
+			}
+		};
+	}
+
 	async function share() {
 		await navigator.share({
 			title: 'Search Results',
@@ -36,7 +45,7 @@
 </svelte:head>
 
 
-<div class="fixed h-fit no-scrollbar overflow-x-auto flex sm:w-auto sm:left-26 left-0 right-0 py-2 transition-all duration-300 ease-out z-[1000] fade filter-wrapper" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
+	<div use:portal class="fixed h-fit no-scrollbar overflow-x-auto flex sm:w-auto sm:left-26 left-0 right-0 py-2 transition-all duration-300 ease-out z-[1000] fade filter-wrapper" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
 	<div class="max-sm:w-4 sm:w-8 shrink-0"></div>
 	{#each types as type}
 		<a href="{base}/map/{type}"

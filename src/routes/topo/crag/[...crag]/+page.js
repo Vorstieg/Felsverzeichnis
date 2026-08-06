@@ -3,6 +3,7 @@ import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
 import { Topo } from '$lib/assets/js/topo-paths.js';
 import { findRouteOrChild, normalizeSectorData } from '$lib/assets/js/topo-loader-utils.js';
+import { createCragCache } from '$lib/assets/js/crag-cache.js';
 
 /** @typedef {import('@vorstieg/fels-data/types').CragFeature} CragFeature */
 /** @typedef {import('@vorstieg/fels-data/types').TopoDocument} TopoDocument */
@@ -20,77 +21,11 @@ export const load = async ({ params, url, fetch }) => {
 		let isSectorPath = false;
 
 		const API_URL = fsApiUrl;
-		const fetchJson = async (p) => {
-			const url = `${API_URL}/${p}`;
-			try {
-				const res = await fetch(url);
-				if (res.ok) return await res.json();
-			} catch (e) {
-				// Offline, fall back below
-			}
-			try {
-				if (browser) {
-					const cache = await caches.open('felslager-crags');
-					const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
-					if (cached) return await cached.json();
-				}
-			} catch (e) {}
-			return null;
-		};
-
-		const cacheCragFolder = async (cragPath) => {
-			try {
-				const hashRes = await fetch(`${API_URL}/${cragPath}/hash.txt`);
-				if (!hashRes.ok) return;
-				const currentHash = (await hashRes.text()).trim();
-
-				const cache = await caches.open('felslager-crags');
-				const cachedHashRes = await cache.match(`${API_URL}/${cragPath}/hash.txt`);
-				const cachedHash = cachedHashRes ? (await cachedHashRes.text()).trim() : null;
-
-				// Verify if the directory was cached previously
-				const baseDirCached = await cache.match(`${API_URL}/${cragPath}`);
-
-				if (currentHash !== cachedHash || !baseDirCached) {
-					const indexRes = await fetch(`${API_URL}/${cragPath}/?recursive=true`);
-					const files = await indexRes.json();
-
-					const jsonFiles = files.filter((f) => f.type === 'file' && f.name.endsWith('.json'));
-					const otherFiles = files.filter((f) => f.type === 'file' && !f.name.endsWith('.json'));
-
-					await Promise.all(
-						jsonFiles.map(async (file) => {
-							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-							const fileRes = await fetch(fileUrl);
-							if (fileRes.ok) await cache.put(fileUrl, fileRes);
-						})
-					);
-
-					const dirsToCache = [
-						cragPath,
-						...files.filter((f) => f.type === 'dir').map((d) => `${cragPath}/${d.path}`)
-					];
-					await Promise.all(
-						dirsToCache.map(async (dir) => {
-							const dRes = await fetch(`${API_URL}/${dir}`);
-							if (dRes.ok) await cache.put(`${API_URL}/${dir}`, dRes);
-						})
-					);
-
-					// Cache the new hash as soon as the critical JSON is safe
-					await cache.put(`${API_URL}/${cragPath}/hash.txt`, new Response(currentHash));
-
-					// Cache heavy images and 3D models in the background (fire and forget)
-					Promise.all(
-						otherFiles.map(async (file) => {
-							const fileUrl = `${API_URL}/${cragPath}/${file.path}`;
-							const fileRes = await fetch(fileUrl);
-							if (fileRes.ok) await cache.put(fileUrl, fileRes);
-						})
-					).catch(() => {});
-				}
-			} catch (e) {}
-		};
+		const { fetchJson, cacheCragFolder } = createCragCache({
+			apiUrl: API_URL,
+			fetch,
+			useCache: browser
+		});
 		const pathParts = params.crag.split('/');
 		const lastPart = pathParts.at(-1);
 		const cragPath = pathParts.slice(0, -1).join('/');
