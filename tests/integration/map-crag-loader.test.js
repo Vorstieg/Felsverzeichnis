@@ -68,13 +68,13 @@ function makeCache() {
 	};
 }
 
-function makeFetch({ offlineCrag = false } = {}) {
+function makeFetch({ offlineCrag = false, topoDocument = topo } = {}) {
 	return vi.fn(async (url) => {
 		if (offlineCrag && url.endsWith('/areas/alpine-crag/alpine-crag.json'))
 			throw new Error('offline');
 		if (url.endsWith('/areas/alpine-crag/alpine-crag.json')) return response(crag);
 		if (url.endsWith('/areas/alpine-crag/alpine-crag-access.json')) return response(access);
-		if (url.endsWith('/areas/alpine-crag/alpine-crag-topo.json')) return response(topo);
+		if (url.endsWith('/areas/alpine-crag/alpine-crag-topo.json')) return response(topoDocument);
 		if (url.endsWith('/areas/alpine-crag/')) return response([]);
 		if (url.endsWith('/areas/alpine-crag')) return response([]);
 		if (url.endsWith('/areas/alpine-crag/hash.txt')) return response('hash-1');
@@ -122,6 +122,23 @@ describe('map crag loader', () => {
 		expect(details.parking).toEqual([16.2, 48.2]);
 		expect(details.has2DTopo).toBe(true);
 		expect(details.has3DTopo).toBe(false);
+	});
+
+	it('detects a 2D topo when points exist only on multi-pitch pitches', async () => {
+		const pitchOnlyTopo = {
+			...topo,
+			routes: [
+				{
+					...topo.routes[0],
+					points2D: [],
+					pitches: [{ id: 'pitch-1', points2D: [[0.1, 0.9], [0.9, 0.1]] }]
+				}
+			]
+		};
+
+		const result = await load(makeArgs(makeFetch({ topoDocument: pitchOnlyTopo })));
+
+		expect((await result.streamed.details).has2DTopo).toBe(true);
 	});
 
 	it('uses cached JSON when the crag request is unavailable', async () => {

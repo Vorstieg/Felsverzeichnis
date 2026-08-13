@@ -174,7 +174,11 @@ export async function load({ params, url, parent, fetch }) {
 					// Ignore
 				}
 			}
-			let has2DTopo = topoJson?.routes?.some((r) => r.points2D?.length > 0);
+				let has2DTopo = topoJson?.routes?.some(
+					(route) =>
+						route.points2D?.length > 0 ||
+						route.pitches?.some((pitch) => pitch.points2D?.length > 0)
+				);
 			return {
 				images,
 				access: accessData,
