@@ -3,6 +3,7 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
+	import RouteList from '$lib/components/topo/RouteList.svelte';
 	import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
 	import { _, locale } from 'svelte-i18n';
 	import { securityRatings } from '$lib/config.js';
@@ -488,9 +489,15 @@
 						<span>{description}</span>
 
 						{#if gradeRoutes?.length}
-							<div class="not-prose mt-5 mb-5 h-40 w-full">
-								<GradeChart routes={gradeRoutes} />
-							</div>
+							{#if gradeRoutes.length < 8}
+								<div class="not-prose mt-5 mb-5 w-full">
+									<RouteList routes={gradeRoutes} />
+								</div>
+							{:else}
+								<div class="not-prose mt-5 mb-5 h-40 w-full">
+									<GradeChart routes={gradeRoutes} />
+								</div>
+							{/if}
 						{/if}
 
 						{#if sectors.length > 0 && !activeSectorId}

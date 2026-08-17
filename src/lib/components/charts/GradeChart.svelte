@@ -20,6 +20,12 @@
 
 		// Standard ordered grades (French scale)
 		const gradeOrder = [
+			'1a',
+			'1b',
+			'1c',
+			'2a',
+			'2b',
+			'2c',
 			'3a',
 			'3a+',
 			'3b',
@@ -89,7 +95,10 @@
 			XI: '8b+',
 			'XI+': '9a'
 		};
-		const grades = routes.flatMap(extractRouteGrades).map(normalizeGrade).filter(Boolean);
+		const grades = routes
+			.map(extractRouteGrade)
+			.map(normalizeGrade)
+			.filter((grade): grade is string => getGradeIndex(grade) !== -1);
 
 		const counts: Record<string, number> = {};
 		let minIdx = gradeOrder.length;
@@ -97,10 +106,7 @@
 		let hasData = false;
 
 		grades.forEach((g) => {
-			let idx = gradeOrder.indexOf(g);
-			if (idx === -1) {
-				if (gradeOrder.includes(g + 'a')) idx = gradeOrder.indexOf(g + 'a');
-			}
+			const idx = getGradeIndex(g);
 
 			if (idx !== -1) {
 				counts[gradeOrder[idx]] = (counts[gradeOrder[idx]] || 0) + 1;
@@ -132,16 +138,29 @@
 			colors: segmentColors
 		};
 
-		function extractRouteGrades(route: any): any[] {
-			if (!route) return [];
-			const routeGrades = [];
-			if (route.grade) routeGrades.push(route.grade);
-			if (Array.isArray(route.pitches)) {
-				route.pitches.forEach((pitch: any) => {
-					if (pitch?.grade) routeGrades.push(pitch.grade);
-				});
-			}
-			return routeGrades;
+		function extractRouteGrade(route: any): string | null {
+			if (!route) return null;
+
+			const pitchGrades = Array.isArray(route.pitches)
+				? route.pitches.map((pitch: any) => pitch?.grade)
+				: [];
+			const grades = [route.grade, ...pitchGrades].filter(Boolean);
+			if (grades.length === 0) return null;
+
+			// Each multi-pitch route contributes only its hardest recognised climbing grade.
+			return grades.reduce((hardest, grade) =>
+				getGradeIndex(normalizeGrade(grade)) > getGradeIndex(normalizeGrade(hardest))
+					? grade
+					: hardest
+			);
+		}
+
+		function getGradeIndex(grade: string | null): number {
+			if (!grade) return -1;
+			const index = gradeOrder.indexOf(grade);
+			return index === -1 && gradeOrder.includes(grade + 'a')
+				? gradeOrder.indexOf(grade + 'a')
+				: index;
 		}
 
 		function normalizeGrade(grade: any): string | null {

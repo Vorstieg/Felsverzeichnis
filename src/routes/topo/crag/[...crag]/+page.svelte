@@ -31,6 +31,7 @@
 	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
 	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
+	import RouteList from '$lib/components/topo/RouteList.svelte';
 	import { colors } from '$lib/colors.js';
 
 	let { data } = $props();
@@ -981,7 +982,7 @@
 
 					{#if data.gradeRoutes?.length || sunInfo.chartData}
 						<div class="mb-8 w-full">
-							{#if data.gradeRoutes?.length}
+							{#if data.gradeRoutes?.length >= 8}
 								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
 									{$_('topo.grade_distribution')}
 								</h3>
@@ -1111,68 +1112,16 @@
 					{/if}
 
 					<!-- Route List -->
-					<div class="w-full">
-						<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
-							{$_('topo.routes')} ({data.topo.routes.length})
-						</h3>
-						<div class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white">
-							<table class="min-w-full divide-y divide-gray-200 !m-0">
-								<thead class="bg-gray-50">
-								<tr>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-									>
-										{$_('topo.table.name')}
-									</th>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-									>
-										{$_('topo.table.grade')}
-									</th>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"
-									>
-										{$_('topo.table.length')}
-									</th>
-								</tr>
-								</thead>
-								<tbody class="bg-white divide-y divide-gray-200">
-								{#each data.topo.routes as route}
-									<tr
-										class="{activeRouteId === route.id ? 'bg-blue-50' : 'hover:bg-blue-50'} cursor-pointer transition-colors"
-										onmouseenter={() => (hoveredRouteId = route.id)}
-										onmouseleave={() => (hoveredRouteId = null)}
-										onclick={() => {
-												hoveredRouteId = null;
-												goto(base + '/topo/crag/' + data.path + '/' + route.id);
-											}}
-									>
-										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
-											{route.name}
-											{#if pendingRouteId === route.id}
-												<i class="fa-solid fa-circle-notch fa-spin text-blue-500 ml-2"></i>
-											{/if}
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap text-sm">
-												<span
-													class="px-2 py-1 rounded-md font-bold text-xs bg-gray-100 text-gray-700 shadow-sm"
-													style="border-left: 5px solid {getGradeColor(route.grade)};"
-												>
-													{route.grade}
-												</span>
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{route.length}m
-										</td>
-									</tr>
-								{/each}
-								</tbody>
-							</table>
-						</div>
-					</div>
+					<RouteList
+						routes={data.topo.routes}
+						activeRouteId={activeRouteId}
+						pendingRouteId={pendingRouteId}
+						onRouteHover={(route) => (hoveredRouteId = route?.id || null)}
+						onRouteSelect={(route) => {
+							hoveredRouteId = null;
+							goto(base + '/topo/crag/' + data.path + '/' + route.id);
+						}}
+					/>
 				</div>
 			</div>
 		{/if}
