@@ -5,6 +5,7 @@ node_modules
 /package
 .idea
 .env
+.npmrc
 __pycache__/
 *.py[cod]
 /coverage

@@ -2,21 +2,77 @@ name: Deploy Felsverzeichnis
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+
+concurrency:
+  group: production
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    runs-on: self-hosted
+  build:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
     steps:
-      - name: Deploy to production
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@vorstieg'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+
+      - name: Build application
+        run: npm run build
+
+      # adapter-node leaves some server dependencies external. Include only the
+      # production dependency tree so the server never has to run npm install.
+      - name: Assemble deployment artifact
+        run: |
+          npm prune --omit=dev
+          tar -czf felsverzeichnis-${GITHUB_SHA}.tar.gz build node_modules package.json package-lock.json
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: felsverzeichnis-${{ github.sha }}
+          path: felsverzeichnis-${{ github.sha }}.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    permissions:
+      contents: read
+    steps:
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: felsverzeichnis-${{ github.sha }}
+          path: ${{ runner.temp }}/felsverzeichnis-${{ github.sha }}
+
+      - name: Deploy artifact to production
+        env:
+          PM2_HOME: /home/vorstieg/.pm2
         run: |
           set -euo pipefail
-          cd /home/vorstieg/felsverzeichnis_prod
-          git pull origin main
-          rm -rf node_modules/@vorstieg
-          NODE_AUTH_TOKEN="${{ github.token }}" npm install --package-lock=false --prefer-online
-          npm run build
-          PM2_HOME=/home/vorstieg/.pm2 pm2 restart felsverzeichnis_prod
+
+          deploy_dir=/home/vorstieg/felsverzeichnis_prod
+          artifact="${RUNNER_TEMP}/felsverzeichnis-${GITHUB_SHA}/felsverzeichnis-${GITHUB_SHA}.tar.gz"
+
+          pm2 stop felsverzeichnis_prod
+          rm -rf "${deploy_dir}/build" "${deploy_dir}/node_modules"
+          tar -xzf "${artifact}" -C "${deploy_dir}"
+          pm2 restart felsverzeichnis_prod --update-env
