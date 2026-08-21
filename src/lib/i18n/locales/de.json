@@ -197,6 +197,18 @@
 		"Drahtseil": "Drahtseil",
 		"Wandflucht": "Wandflucht"
 	},
+	"validation": {
+		"title": "Hilf mit, diesen Felsen zu verbessern",
+		"improve": "In Felsstudio verbessern",
+		"dismiss": "Diesen Hinweis 30 Tage ausblenden",
+		"rules": {
+			"access": "Ergänze Informationen zu Anreise, Parkplatz, öffentlichen Verkehrsmitteln oder Zugang.",
+			"core": "Ergänze eine Beschreibung, Kletterart oder einen gültigen Kartenstandort.",
+			"topo": "Ergänze ein nutzbares 2D-Topo oder 3D-Modell.",
+			"routes": "Vervollständige die Angaben zu einer bestehenden Route.",
+			"visual": "Ergänze ein Foto oder Vorschaubild zur besseren Orientierung."
+		}
+	},
 	"ui": {
 		"remove": "Entfernen",
 		"tag": "Tag",

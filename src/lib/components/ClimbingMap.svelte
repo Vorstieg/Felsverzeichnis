@@ -404,8 +404,8 @@
 			await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
 			await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
 			await addMapImage('bouldering', base + '/icons/bouldering.png');
-			await addMapImage('alpine-tour', '/icons/alpine-tour.png');
-			await addMapImage('via-ferrata', '/icons/via-ferrata.png');
+			await addMapImage('alpine-tour', base + '/icons/alpine-tour.png');
+			await addMapImage('via-ferrata', base + '/icons/via-ferrata.png');
 			await addMapImage('train', base + '/icons/train.png');
 			await addMapImage('bus', base + '/icons/bus.png');
 			await addMapImage('parking', base + '/icons/parking.png');

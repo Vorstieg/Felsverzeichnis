@@ -30,7 +30,7 @@
 <div class="bg-gray-100 border-1 border-gray-200 fixed h-36 sm:h-50 left-0 right-0 top-0 shadow-md z-[500]"></div>
 <div
 	class="fixed h-fit overflow-visible sm:w-auto sm:left-8 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
-	<SearchBar actionBase="/list" bind:searchTerm showClear={true} onClear={resetSearch} containerClass="mx-8 sm:max-w-120" />
+	<SearchBar actionBase={`${base}/list`} bind:searchTerm showClear={true} onClear={resetSearch} containerClass="mx-8 sm:max-w-120" />
 </div>
 <div
 	class="fixed h-fit no-scrollbar flex overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 transition-all duration-300 ease-out z-[1000] fade filter-wrapper" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">

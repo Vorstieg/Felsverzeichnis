@@ -126,21 +126,28 @@ export async function load({ params, url, parent, fetch }) {
 
 			if (!currentLocation.sectorId) {
 				const sectors = cragData?.properties?.sectors || [];
+				const allFiles = await allFilesPromise;
 
 				const sectorResults = await Promise.all(
 					sectors.map(async (sector) => {
 						if (!sector?.id) return null;
 
-						const sectorTopo = await fetchJson(
-							new Topo(cragPath, openCrag.properties.id, sector.id).getTopoPath()
+						const sectorLocation = new Topo(cragPath, openCrag.properties.id, sector.id);
+						const sectorTopo = await fetchJson(sectorLocation.getTopoPath());
+						const hasSector3DTopo = allFiles?.some(
+							(file) =>
+								file.type === 'file' &&
+								(file.path === `${sector.id}/${sectorLocation.getGlbName()}` ||
+									file.name === sectorLocation.getGlbName())
 						);
 
-						if (!sectorTopo) return null;
+						if (!sectorTopo && !hasSector3DTopo) return null;
 
 						return {
 							sectorId: sector.id,
 							sectorName: sector.name,
-							topo: sectorTopo
+							topo: sectorTopo,
+							has3DTopo: hasSector3DTopo
 						};
 					})
 				);
@@ -174,10 +181,16 @@ export async function load({ params, url, parent, fetch }) {
 					// Ignore
 				}
 			}
-				let has2DTopo = topoJson?.routes?.some(
+			let has2DTopo =
+				topoJson?.image2D ||
+				topoJson?.outlines?.length > 0 ||
+				topoJson?.fixPoints?.some((point) => point.position2D) ||
+				topoJson?.textLabels?.some((label) => label.position2D) ||
+				topoJson?.routes?.some(
 					(route) =>
 						route.points2D?.length > 0 ||
-						route.pitches?.some((pitch) => pitch.points2D?.length > 0)
+						route.pitches?.some((pitch) => pitch.points2D?.length > 0) ||
+						route.variants?.some((variant) => variant.points2D?.length > 0)
 				);
 			return {
 				images,

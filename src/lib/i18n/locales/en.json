@@ -190,6 +190,18 @@
 		"Drahtseil": "Steel Cable",
 		"Wandflucht": "Wall Traverse"
 	},
+	"validation": {
+		"title": "Help improve this crag",
+		"improve": "Improve in Felsstudio",
+		"dismiss": "Hide this suggestion for 30 days",
+		"rules": {
+			"access": "Add arrival, parking, public transport, or access information.",
+			"core": "Add a description, climbing type, or a valid map location.",
+			"topo": "Add a usable 2D topo or 3D model.",
+			"routes": "Complete the details for an existing route.",
+			"visual": "Add a photo or preview image to give climbers visual context."
+		}
+	},
 	"ui": {
 		"remove": "Remove",
 		"tag": "Tag",
