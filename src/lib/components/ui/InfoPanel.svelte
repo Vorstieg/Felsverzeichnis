@@ -223,17 +223,20 @@
 {#snippet panelContent()}
     {#if onClose}
         <button class="absolute top-4 right-4 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000] shrink-0 text-gray-600 {hideCloseOnDesktop ? 'sm:hidden' : ''}"
+                aria-label="Close panel"
                 onclick={onClose}>
             <i class="fa-lg fa-solid fa-xmark"></i>
         </button>
     {:else}
         <a class="absolute top-4 right-4 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000] shrink-0 text-gray-600 {hideCloseOnDesktop ? 'sm:hidden' : ''}"
+           aria-label="Close panel"
            href={closeUrl}>
             <i class="fa-lg fa-solid fa-xmark"></i>
         </a>
     {/if}
 
     <button class="absolute top-4 right-14 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000]"
+            aria-label="Share"
             onclick={onShare}>
         <i class="fa-solid fa-share-nodes"></i>
     </button>

@@ -348,29 +348,35 @@ function portal(node) {
 				returnTo={data.meta.url}
 			/>
 			{#if images?.length === 1}
-				<img
+				<button
+					type="button"
 					onclick={() => (fullscreenImage = images[0])}
-					class="h-71 w-full cursor-pointer rounded-2xl object-cover"
-					src={images[0]}
-					alt="Crag"
-				/>
+					class="block h-71 w-full cursor-pointer border-0 bg-transparent p-0"
+					aria-label="View crag image fullscreen"
+				>
+					<img class="h-full w-full rounded-2xl object-cover" src={images[0]} alt="Crag" />
+				</button>
 			{:else if images?.length >= 1}
 				<div class="no-scrollbar flex h-73 flex-col flex-wrap content-start overflow-x-auto">
 					{#each images as image, i}
 						{#if i === 0}
-							<img
+							<button
+								type="button"
 								onclick={() => (fullscreenImage = image)}
-								class="mr-1.5 mb-1.5 h-71 w-60 cursor-pointer rounded-2xl object-cover"
-								src={image}
-								alt="Crag"
-							/>
+								class="mr-1.5 mb-1.5 block h-71 w-60 cursor-pointer border-0 bg-transparent p-0"
+								aria-label="View crag image {i + 1} fullscreen"
+							>
+								<img class="h-full w-full rounded-2xl object-cover" src={image} alt="Crag" />
+							</button>
 						{:else}
-							<img
+							<button
+								type="button"
 								onclick={() => (fullscreenImage = image)}
-								class="mr-1.5 mb-1.5 h-34.5 w-34.5 cursor-pointer rounded-2xl object-cover"
-								src={image}
-								alt="Crag"
-							/>
+								class="mr-1.5 mb-1.5 block h-34.5 w-34.5 cursor-pointer border-0 bg-transparent p-0"
+								aria-label="View crag image {i + 1} fullscreen"
+							>
+								<img class="h-full w-full rounded-2xl object-cover" src={image} alt="Crag" />
+							</button>
 						{/if}
 					{/each}
 				</div>

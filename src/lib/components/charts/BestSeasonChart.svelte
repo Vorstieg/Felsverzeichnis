@@ -216,6 +216,7 @@
 			<!-- Use button for better mobile interaction -->
 			<button
 				class="text-gray-400 hover:text-gray-600 focus:text-gray-600 cursor-help text-xs bg-transparent border-none p-1"
+				aria-label="Show calculation information"
 				onclick={toggleTooltip}
 				onmouseenter={() => showTooltip = true}
 				onmouseleave={() => showTooltip = false}

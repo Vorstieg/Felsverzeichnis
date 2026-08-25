@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
 	// Use WeakMap to associate cache with the specific Renderer instance.
 	// When the Renderer is destroyed (e.g. navigation away from Topo view), 
 	// the cache is automatically garbage collected, preventing memory leaks.
@@ -92,7 +92,7 @@
 
 	let scene = $state(); // Holds the loaded (and potentially cached) GLTF scene
 	let error = $state(); // Stores any error during model loading
-	let modelRef; // Reference to the mounted Three.js object in the scene
+	let modelRef = $state(); // Reference to the mounted Three.js object in the scene
 
 	/**
 	 * $effect hook to handle model loading based on `modelUrl` and `renderer`.

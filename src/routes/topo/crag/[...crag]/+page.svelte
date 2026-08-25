@@ -758,8 +758,8 @@
 
 	<div class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-end sm:items-start style-selector-btn gap-2 pointer-events-none">
 		{#if has2D && has3D}
-			<div class="flex flex-col items-end sm:items-start pointer-events-auto gap-2" onmouseleave={() => (displayModeMenuOpen = false)}>
-				<button class="cursor-pointer bg-white w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink rounded-2xl border-1 border-gray-200 transition-all shadow-md text-gray-600 z-10" onmouseenter={() => (displayModeMenuOpen = !displayModeMenuOpen)} onclick={() => (displayModeMenuOpen = !displayModeMenuOpen)}>
+			<div class="flex flex-col items-end sm:items-start pointer-events-auto gap-2" role="group" aria-label="Topo display mode" onmouseleave={() => (displayModeMenuOpen = false)}>
+				<button class="cursor-pointer bg-white w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink rounded-2xl border-1 border-gray-200 transition-all shadow-md text-gray-600 z-10" aria-label="Choose topo display mode" title="Choose topo display mode" onmouseenter={() => (displayModeMenuOpen = true)} onfocus={() => (displayModeMenuOpen = true)} onclick={() => (displayModeMenuOpen = !displayModeMenuOpen)}>
 					<i class="fa-solid fa-map text-lg"></i>
 				</button>
 				{#if displayModeMenuOpen}

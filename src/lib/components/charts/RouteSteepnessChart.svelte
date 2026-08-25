@@ -7,7 +7,7 @@
 	let { route } = $props();
 	const dispatch = createEventDispatcher();
 
-	let canvas: HTMLCanvasElement;
+	let canvas: HTMLCanvasElement = $state();
 
 	let t_steepness = $derived($_('charts.steepness'));
 	let t_distance = $derived($_('charts.distance'));

@@ -59,6 +59,12 @@
 
 	const labelClass = 'route-label';
 
+	function openRoute(event) {
+		event?.stopPropagation();
+		goto(link);
+		if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('route-clicked'));
+	}
+
 </script>
 
 {#if vectorPoints.length >= 2}
@@ -100,11 +106,7 @@
 	<T.Mesh
 		onpointerenter={onPointerEnter}
 		onpointerleave={onPointerLeave}
-		onclick={(e) => {
-				e?.stopPropagation();
-				goto(link);
-				if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('route-clicked'));
-  }}>
+					onclick={openRoute}>
 		{#if pathCurve}
 			<T is={TubeGeometry} args={[
 					pathCurve,
@@ -120,14 +122,19 @@
 	{#if (name || grade) && (isVisible || isHovered || isSelected)}
 		<CssObject position={labelPosition} pointerEvents={true}>
 			<div class={labelClass}
-					 style:border-left="5px solid {color}"
-					 onpointerenter={onPointerEnter}
-					 onpointerleave={onPointerLeave}
-		onclick={(e) => {
-				e?.stopPropagation();
-				goto(link);
-				if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('route-clicked'));
-  }}>
+					 role="link"
+					 tabindex="0"
+					 aria-label={`Open ${name || grade}`}
+						 style:border-left="5px solid {color}"
+						 onpointerenter={onPointerEnter}
+						 onpointerleave={onPointerLeave}
+						 onclick={openRoute}
+						 onkeydown={(event) => {
+							if (event.key === 'Enter' || event.key === ' ') {
+								event.preventDefault();
+								openRoute(event);
+							}
+						}}>
 				{#if isHovered || isSelected || isClose}
 					{name} - {grade}
 				{:else}

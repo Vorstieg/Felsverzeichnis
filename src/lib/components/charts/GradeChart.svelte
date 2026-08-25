@@ -4,7 +4,7 @@
 	import { colors } from '$lib/colors.js';
 
 	let { routes } = $props();
-	let canvas: HTMLCanvasElement;
+	let canvas: HTMLCanvasElement = $state();
 	let gradeChartData = $derived(calculateGradeStats(routes));
 
 	let t_routes_label = $derived($_('charts.routes'));
