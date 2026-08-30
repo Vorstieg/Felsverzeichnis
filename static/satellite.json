@@ -57,5 +57,9 @@
 			}
 		}
 	],
+	"terrain": {
+		"source": "globalTerrainSource",
+		"exaggeration": 1
+	},
 	"sky": {}
 }

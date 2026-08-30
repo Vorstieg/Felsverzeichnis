@@ -30,12 +30,13 @@
 	let map;
 	let tileLayerMenuOpen = $state(false);
 	let styleLoaded = $state(false);
-	let hasFilter = $derived(
-		!(
-			$page.url.pathname.startsWith(`${base}/map/crag`) ||
-			$navigating?.to?.url?.pathname?.startsWith(`${base}/map/crag`)
-		)
+	let detailsShown = $derived(
+		$page.url.pathname.startsWith(base + '/map/crag') ||
+		($page.url.pathname !== base + '/map' &&
+		$page.url.pathname !== base + '/map/' &&
+		$page.data.locations && $page.data.locations.length > 1)
 	);
+
 	const placeTypeColor = [
 		'match',
 		['get', 'type'],
@@ -297,9 +298,6 @@
 			await generateSelectedMarker();
 			await drawLayers();
 			applyCameraTarget();
-			if (is3D) {
-				map.setTerrain({ source: 'globalTerrainSource', exaggeration: 1 });
-			}
 			updateSelectionStyle($page.params.crag || '');
 			slowRasterTileDecay(map);
 		});
@@ -309,9 +307,7 @@
 			}
 			await generateSelectedMarker();
 			await drawLayers();
-			if (is3D) {
-				map.setTerrain({ source: 'globalTerrainSource', exaggeration: 1 });
-			}
+
 			slowRasterTileDecay(map);
 			syncTopoPathLayers();
 			map.once('idle', async () => {
@@ -659,31 +655,15 @@
 		tileLayerMenuOpen = false;
 	}
 
-	let is3D = $state(false);
-
-	function toggle3D() {
-		is3D = !is3D;
-		if (is3D) {
-			map.setTerrain({ source: 'globalTerrainSource', exaggeration: 1 });
-			map.easeTo({ pitch: 60 });
-		} else {
-			map.setTerrain(null);
-			map.easeTo({ pitch: 0 });
-		}
-	}
 </script>
 
 <div
-	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full {hasFilter
-		? 'has-filter'
-		: 'details-shown'}"
+	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full {detailsShown ? 'details-shown' : ''}"
 	bind:this={mapElement}
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 ></div>
 <div
-	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center style-selector-btn gap-2 {hasFilter
-		? 'has-filter'
-		: ''}"
+	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center style-selector-btn gap-2"
 	role="group"
 	aria-label="Map style selector"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
@@ -726,19 +706,6 @@
 	{/if}
 </div>
 
-<div
-	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center btn-3d-toggle gap-2 {hasFilter
-		? 'has-filter'
-		: ''}"
-	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
->
-	<button
-		class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center rounded-2xl border-1 transition-all shadow-md {is3D
-			? 'text-white bg-ink border-ink hover:opacity-90'
-			: 'text-gray-600 bg-white border-gray-200 hover:bg-gray-50'}"
-		onclick={toggle3D}><span class="font-bold text-sm">{is3D ? '3D' : '2D'}</span></button
-	>
-</div>
 
 <style>
 	@import 'leaflet/dist/leaflet.css';
@@ -747,34 +714,10 @@
 
 	.style-selector-btn {
 		@media (width > 40rem) {
-			top: calc(14.75rem + var(--dropdown-offset, 0px));
-		}
-		@media (width <= 40rem) {
-			top: calc(11.25rem + var(--dropdown-offset, 0px));
-			bottom: auto;
-			transition:
-				opacity 0.2s ease-out,
-				transform 0.2s ease-out,
-				top 0.2s ease-out;
-			opacity: var(--controls-opacity, 1);
-			transform: scale(var(--controls-scale, 1));
-			transform-origin: center;
-			pointer-events: var(--controls-pointer, auto);
-		}
-	}
-
-	.style-selector-btn.has-filter {
-		@media (width <= 40rem) {
-			top: calc(14.5rem + var(--dropdown-offset, 0px));
-		}
-	}
-
-	.btn-3d-toggle {
-		@media (width > 40rem) {
 			top: calc(11.75rem + var(--dropdown-offset, 0px));
 		}
 		@media (width <= 40rem) {
-			top: calc(8rem + var(--dropdown-offset, 0px));
+			top: calc(11.25rem + var(--dropdown-offset, 0px));
 			bottom: auto;
 			transition:
 				opacity 0.2s ease-out,
@@ -787,11 +730,12 @@
 		}
 	}
 
-	.btn-3d-toggle.has-filter {
+	:global(.details-shown) ~ .style-selector-btn {
 		@media (width <= 40rem) {
-			top: calc(11.25rem + var(--dropdown-offset, 0px));
+			top: calc(8rem + var(--dropdown-offset, 0px));
 		}
 	}
+
 
 	:global(.maplibregl-ctrl-group) {
 		@apply cursor-pointer bg-white rounded-2xl w-10 h-10 border-1 border-gray-200 transition-all flex items-center justify-center;
@@ -838,17 +782,19 @@
 	:global(.maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
 			@apply left-auto right-4 top-auto;
-			top: calc(4.75rem + var(--dropdown-offset, 0px));
+			top: calc(8rem + var(--dropdown-offset, 0px));
 			bottom: auto;
 			transition: top 0.2s ease-out;
 		}
 	}
 
-	:global(.has-filter .maplibregl-ctrl-top-right) {
+	:global(.details-shown .maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
-			top: calc(8rem + var(--dropdown-offset, 0px));
+			top: calc(4.75rem + var(--dropdown-offset, 0px));
 		}
 	}
+
+
 
 	:global(.maplibregl-ctrl-top-right) {
 		@media (width > 40rem) {
@@ -860,7 +806,7 @@
 		@media (width <= 40rem) {
 			position: fixed;
 			right: 1rem;
-			bottom: 5rem;
+			bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
 			top: auto !important;
 			margin: 0 !important;
 			transition:
@@ -870,7 +816,7 @@
 		}
 	}
 
-	:global(.details-shown .maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
+	:global(.details-shown ~ :global(.maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)), .details-shown .maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
 		@media (width <= 40rem) {
 			bottom: calc(var(--info-panel-height, 50vh) + 16px) !important;
 		}
