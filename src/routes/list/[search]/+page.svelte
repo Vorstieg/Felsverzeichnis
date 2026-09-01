@@ -29,31 +29,28 @@
 
 <div class="bg-gray-100 border-1 border-gray-200 fixed h-36 sm:h-50 left-0 right-0 top-0 shadow-md z-[500]"></div>
 <div
-	class="fixed h-fit overflow-visible sm:w-auto sm:left-8 left-0 right-0 py-2 top-2 sm:top-21 z-[1000]">
-	<SearchBar actionBase={`${base}/list`} bind:searchTerm showClear={true} onClear={resetSearch} containerClass="mx-8 sm:max-w-120" />
-</div>
-<div
-	class="fixed h-fit no-scrollbar flex overflow-x-auto sm:w-auto sm:left-8 left-0 right-0 py-2 transition-all duration-300 ease-out z-[1000] fade filter-wrapper" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
-	<div class="max-sm:w-8 sm:w-8 shrink-0"></div>
-	{#each types as type}
-		<a href="{base}/list/{type}"
-			 class="cursor-pointer {search === type ? 'bg-ink text-white' : 'bg-white text-slate-800'} font-semibold hover:bg-ink hover:text-white mb-2 text-sm me-2 p-2 px-4 rounded-full shadow-md flex items-center justify-center shrink-0 transition-colors">
-			 <span class="w-2.5 h-2.5 rounded-full mr-2 {getTypeDotClass(type)}"></span>
-			 {$_('types.' + type)}
-		</a>
-	{/each}
-	<div class="max-sm:w-8 sm:w-8 shrink-0"></div>
+	class="fixed left-0 right-0 top-2 z-[1000] h-fit overflow-visible px-4 py-2 sm:top-21 sm:flex sm:items-center sm:gap-3 sm:px-8">
+	<div class="sm:w-120 sm:shrink-0">
+		<SearchBar actionBase={`${base}/list`} bind:searchTerm showClear={true} onClear={resetSearch} containerClass="w-full" />
+	</div>
+	<div class="filter-wrapper fade no-scrollbar fixed left-0 right-0 flex overflow-x-auto py-2 sm:static sm:min-w-0 sm:flex-1 sm:items-center sm:py-0" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
+		<div class="w-4 shrink-0 sm:hidden"></div>
+		{#each types as type}
+			<a href="{base}/list/{type}"
+				 class="me-2 flex shrink-0 cursor-pointer items-center justify-center rounded-full p-2 px-4 text-sm font-semibold shadow-md transition-colors hover:bg-ink hover:text-white {search === type ? 'bg-ink text-white' : 'bg-white text-slate-800'}">
+				 <span class="mr-2 h-2.5 w-2.5 rounded-full {getTypeDotClass(type)}"></span>
+				 {$_('types.' + type)}
+			</a>
+		{/each}
+		<div class="w-4 shrink-0 sm:hidden"></div>
+	</div>
 </div>
 
 <style>
 	.filter-wrapper {
 		top: calc(4.5rem + var(--dropdown-offset, 0px));
 	}
-	@media (min-width: 640px) {
-		.filter-wrapper {
-			top: calc(9rem + var(--dropdown-offset, 0px));
-		}
-	}
+
     @media (width <= 40rem) {
         .fade {
             -webkit-mask: linear-gradient(to right, transparent 0px, #fff 32px, #fff calc(100% - 32px), transparent 100%);

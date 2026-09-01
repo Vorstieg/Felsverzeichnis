@@ -694,7 +694,7 @@
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 ></div>
 <div
-	class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-center style-selector-btn gap-2"
+	class="fixed right-4 sm:left-8 sm:right-auto z-[1000] flex flex-col items-center style-selector-btn gap-2"
 	role="group"
 	aria-label="Map style selector"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
@@ -744,11 +744,11 @@
 	@import 'tailwindcss';
 
 	.style-selector-btn {
+		top: 11.25rem;
 		@media (width > 40rem) {
-			top: calc(11.75rem + var(--dropdown-offset, 0px));
+			top: calc(11rem + var(--dropdown-offset, 0px));
 		}
 		@media (width <= 40rem) {
-			top: calc(11.25rem + var(--dropdown-offset, 0px));
 			bottom: auto;
 			transition:
 				opacity 0.2s ease-out,
@@ -763,7 +763,7 @@
 
 	:global(.details-shown) ~ .style-selector-btn {
 		@media (width <= 40rem) {
-			top: calc(8rem + var(--dropdown-offset, 0px));
+			top: 8rem;
 		}
 	}
 
@@ -806,14 +806,14 @@
 	}
 
 	:global(.maplibregl-ctrl-top-right) {
-		@apply fixed left-15 right-auto z-[1000] !m-0;
+		@apply fixed left-8 right-auto z-[1000] !m-0;
 		top: calc(5rem + var(--dropdown-offset, 0px));
 	}
 
 	:global(.maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
 			@apply left-auto right-4 top-auto;
-			top: calc(8rem + var(--dropdown-offset, 0px));
+			top: 8rem;
 			bottom: auto;
 			transition: top 0.2s ease-out;
 		}
@@ -821,15 +821,7 @@
 
 	:global(.details-shown .maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
-			top: calc(4.75rem + var(--dropdown-offset, 0px));
-		}
-	}
-
-
-
-	:global(.maplibregl-ctrl-top-right) {
-		@media (width > 40rem) {
-			top: calc(5.75rem + var(--dropdown-offset, 0px));
+			top: 4.75rem;
 		}
 	}
 

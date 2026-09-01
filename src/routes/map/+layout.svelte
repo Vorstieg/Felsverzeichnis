@@ -36,9 +36,9 @@
 	cameraTarget={$page.data.cameraTarget}
 ></ClimbingMap>
 
-<div class="fixed top-2 right-0 left-0 z-[1000] h-fit overflow-visible py-2 sm:top-21 sm:left-26 sm:w-auto pointer-events-none">
-	<div class="pointer-events-auto">
-		<SearchBar actionBase={`${base}/map`} searchTerm={currentSearchTerm} showClear={isSearchRoute} onClear={resetSearch} />
+<div class="pointer-events-none fixed left-0 right-0 top-2 z-[1000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto">
+	<div class="pointer-events-auto mx-4 sm:mx-0 sm:ml-8 sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80">
+		<SearchBar actionBase={`${base}/map`} searchTerm={currentSearchTerm} showClear={isSearchRoute} onClear={resetSearch} containerClass="w-full" />
 	</div>
 </div>
 

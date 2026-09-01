@@ -16,7 +16,6 @@
 	"devDependencies": {
 		"@playwright/test": "^1.62.1",
 		"@sveltejs/adapter-node": "^5.5.5",
-		"@sveltejs/enhanced-img": "^0.4.4",
 		"@sveltejs/kit": "^2.5.27",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@tailwindcss/postcss": "^4.0.12",

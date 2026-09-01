@@ -252,7 +252,7 @@
 {/if}
 
 {#if isDesktop}
-    <div class="box flex flex-col border-1 border-gray-200 fixed sm:left-auto left-0 right-0 sm:!right-10 sm:!h-auto top-1/2 lg:!top-30 sm:!top-25 bottom-0 lg:!bottom-20 sm:!bottom-10 w-full sm:w-[25rem] lg:w-[40rem] max-w-[100vw] bg-white rounded-t-3xl rounded-b-none sm:!rounded-3xl shadow-md z-[20000] overflow-hidden transition-transform duration-300 {isOpen ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-y-0 sm:translate-x-[150%]'}">
+    <div class="box flex flex-col border-1 border-gray-200 fixed sm:left-auto left-0 right-0 sm:!right-5 sm:!h-auto top-1/2 sm:!top-5 bottom-0 sm:!bottom-5 w-full sm:w-[25rem] lg:w-[40rem] max-w-[100vw] bg-white rounded-t-3xl rounded-b-none sm:!rounded-3xl shadow-md z-[20000] overflow-hidden transition-transform duration-300 {isOpen ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-y-0 sm:translate-x-[150%]'}">
         {@render panelContent()}
     </div>
 {:else}
