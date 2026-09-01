@@ -9,10 +9,9 @@
 	/** @type {{children?: import('svelte').Snippet}} */
 	let { children } = $props();
 
+	let currentPathname = $derived($navigating?.to?.url?.pathname ?? $page.url.pathname);
 	let showPanel = $derived(
-		$page.url.pathname.startsWith(`${base}/map/crag/`) || 
-		$page.url.pathname.match(/\/map\/.+/) !== null || // any other map subroute like /map/[search]
-		$navigating?.to?.url?.pathname?.startsWith(`${base}/map/crag/`)
+		currentPathname !== `${base}/map` && currentPathname !== `${base}/map/`
 	);
 
 	let isSearchRoute = $derived(!!$page.params.search);
@@ -43,7 +42,7 @@
 	</div>
 </div>
 
-{#if showPanel && ($page.url.pathname !== `${base}/map` || $navigating?.to?.url?.pathname !== `${base}/map`)}
+{#if showPanel}
 	<InfoPanel closeUrl="{base}/map" onShare={share}>
 		{#if $navigating && $navigating.to?.url?.pathname?.startsWith(`${base}/map/crag/`)}
 			<div class="px-5 pt-6 pb-2">

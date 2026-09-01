@@ -30,11 +30,9 @@
 	let map;
 	let tileLayerMenuOpen = $state(false);
 	let styleLoaded = $state(false);
+	let currentPathname = $derived($navigating?.to?.url?.pathname ?? $page.url.pathname);
 	let detailsShown = $derived(
-		$page.url.pathname.startsWith(base + '/map/crag') ||
-		($page.url.pathname !== base + '/map' &&
-		$page.url.pathname !== base + '/map/' &&
-		$page.data.locations && $page.data.locations.length > 1)
+		currentPathname !== base + '/map' && currentPathname !== base + '/map/'
 	);
 
 	const placeTypeColor = [
@@ -371,11 +369,11 @@
 		if (!map || !map.isStyleLoaded()) return;
 		const target = e.detail;
 		if (target && target.center) {
-			map.easeTo({
+			map.flyTo({
 				center: target.center,
 				zoom: target.zoom ?? 18,
 				padding: getMapPadding(),
-				duration: 900
+				duration: 1200
 			});
 		}
 		if (target && target.path) {
@@ -391,6 +389,19 @@
 
 	function openPlace(path, coordinates) {
 		goto(`${base}/map/crag/${path}`);
+		
+		if (!map || !coordinates) return;
+		const uiPadding = getMapPadding();
+		if (!isTargetVisibleAndZoomed(coordinates, uiPadding, 16)) {
+			isManuallyPanning = true;
+			map.flyTo({
+				center: coordinates,
+				zoom: Math.max(map.getZoom(), 16),
+				padding: uiPadding,
+				duration: 1200
+			});
+			map.once('moveend', () => { isManuallyPanning = false; });
+		}
 	}
 
 	async function drawLayers() {
@@ -590,7 +601,7 @@
 
 	async function generateSelectedMarker() {
 		if (map && !map.hasImage('selected-marker')) {
-			const svg = `<svg width="48" height="72" viewBox="0 0 48 72" xmlns="http://www.w3.org/2000/svg"><path d="M24 2C13 2 4 11 4 22C4 37 24 48 24 48C24 48 44 37 44 22C44 11 35 2 24 2Z" fill="#dc2626" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="22" r="8" fill="#ffffff" /></svg>`;
+			const svg = `<svg width="48" height="48" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg"><path fill="#ffffff" d="M930.3,392.4c0,175.5-234.9,487.9-337.9,616.8-24.7,30.7-70.5,30.7-95.2,0-103-128.9-337.9-441.3-337.9-616.8S332,6.9,544.9,6.9s385.5,172.7,385.5,385.5h-.1Z"/><path fill="#dc2626" d="M894.1,393.9c0,158.3-212.2,440.1-305.2,556.4-22.3,27.7-63.6,27.7-85.9,0-93-116.3-305.2-398.1-305.2-556.4S353.7,46.1,546,46.1s348.1,155.8,348.1,347.7h0v.1Z"/><circle cx="546" cy="385" r="100" fill="#ffffff" /></svg>`;
 			const img = new Image();
 			await new Promise((resolve) => {
 				img.onload = resolve;
@@ -602,8 +613,25 @@
 		}
 	}
 
+	let isManuallyPanning = false;
+
+	function isTargetVisibleAndZoomed(centerLngLat, padding, targetZoom = 15) {
+		if (!map) return false;
+		if (map.getZoom() < targetZoom - 0.5) return false;
+		const point = map.project(centerLngLat);
+		const container = map.getContainer();
+		const width = container.clientWidth;
+		const height = container.clientHeight;
+		const marginX = 40;
+		const marginY = 60;
+		return point.x >= padding.left + marginX &&
+			   point.x <= width - padding.right - marginX &&
+			   point.y >= padding.top + marginY &&
+			   point.y <= height - padding.bottom - marginY;
+	}
+
 	function applyCameraTarget() {
-		if (!map || !map.isStyleLoaded() || !cameraTarget) return;
+		if (!map || !map.isStyleLoaded() || !cameraTarget || isManuallyPanning) return;
 
 		const uiPadding = getMapPadding();
 
@@ -620,11 +648,14 @@
 				duration: 900
 			});
 		} else if (cameraTarget.center) {
-			map.easeTo({
+			if (isTargetVisibleAndZoomed(cameraTarget.center, uiPadding, cameraTarget.zoom)) {
+				return;
+			}
+			map.flyTo({
 				center: cameraTarget.center,
-				zoom: cameraTarget.zoom,
+				zoom: Math.max(map.getZoom(), cameraTarget.zoom),
 				padding: uiPadding,
-				duration: 900
+				duration: 1200
 			});
 		}
 	}
@@ -816,7 +847,7 @@
 		}
 	}
 
-	:global(.details-shown ~ :global(.maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)), .details-shown .maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
+	:global(.details-shown .maplibregl-ctrl-group:has(.maplibregl-ctrl-geolocate)) {
 		@media (width <= 40rem) {
 			bottom: calc(var(--info-panel-height, 50vh) + 16px) !important;
 		}

@@ -102,6 +102,7 @@
 			{#each suggestions as suggestion, i}
 				<a 
 					 href={cragUrl(suggestion)}
+					 onmousedown={(e) => e.preventDefault()}
 					 onclick={() => {
 						const center = getBoundsCenter(getGeometryBounds(suggestion?.geometry));
 						if (center) {
@@ -111,6 +112,8 @@
 								})
 							);
 						}
+						isFocused = false;
+						searchTerm = '';
 					 }}
 					class="block px-6 py-3.5 text-slate-800 text-sm font-medium border-b border-slate-100 last:border-b-0 no-underline transition-colors {i === activeIndex ? 'bg-ink text-white' : 'hover:bg-gray-50'}"
 				>
