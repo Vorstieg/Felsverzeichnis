@@ -71,9 +71,9 @@
 
 <form action="{actionBase}/{searchTerm}" class="relative">
 	<div class="flex items-stretch shadow-md rounded-full bg-white relative z-[2010] {containerClass} border-3 border-white focus-within:border-ink transition-colors overflow-hidden">
-		<div class="flex items-center justify-center pl-4 shrink-0 text-slate-800">
+		<a href="{base}/map/about" class="flex items-center justify-center pl-4 shrink-0 text-slate-800 hover:text-ink transition-colors cursor-pointer" title="Info & Impressum">
 			<Logo class="w-6 h-6" />
-		</div>
+		</a>
 		<input 
 			bind:value={searchTerm}
 			onfocus={() => isFocused = true}

@@ -1,9 +1,13 @@
 <svelte:head>
 <title>Impressum</title>
 </svelte:head>
-<div class="prose lg:prose-xl mt-25 sm:mt-30 sm:px-17 px-7 pb-24 sm:pb-8 max-w-none sm:max-w-4xl mx-auto">
 
-# Über das Felsverzeichnis
+<main class="z-[500] flex h-full min-h-0 w-full flex-1 flex-col">
+<div class="px-5 pt-6 pb-2">
+	<h1 class="my-0 text-2xl font-bold text-slate-800">Info</h1>
+</div>
+<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-5 sm:px-10 pb-24" overflow-y>
+<div class="prose lg:prose-xl mt-2 max-w-none sm:max-w-4xl mx-auto">
 
 Diese Plattform bietet eine umfassende Sammlung von Klettergebieten mit detaillierten Informationen, insbesondere zur öffentlichen Anreise.  
 Egal ob Anfänger&#42;in oder erfahrene&#42;r Kletterer&#42;in – hier findest du die passenden Felsen für dein nächstes Kletterabenteuer!
@@ -32,3 +36,5 @@ Ein Projekt von [Vorstieg Software](https://www.vorstieg.eu)
 Email: [office@vorstieg.eu](mailto:office@vorstieg.eu)
 
 </div>
+</div>
+</main>

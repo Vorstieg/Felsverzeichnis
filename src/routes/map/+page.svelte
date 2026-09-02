@@ -10,7 +10,8 @@
 	<title>{$_('site.title')}</title>
 </svelte:head>
 
-<div class="filter-wrapper fade no-scrollbar fixed right-0 z-[1000] flex items-center overflow-x-auto py-2 pl-0 transition-all duration-300 ease-out sm:top-5 sm:h-[50px] sm:py-0" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
+<div class="pointer-events-auto filter-wrapper fade no-scrollbar fixed right-0 z-[1000] flex items-center overflow-x-auto py-2 pl-0 transition-all duration-300 ease-out sm:top-5 sm:h-[50px] sm:py-0" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
+	<div class="w-4 shrink-0 sm:hidden"></div>
 	{#each types as type}
 		<a href="{base}/map/{type}"
 			 class="me-2 flex shrink-0 cursor-pointer items-center justify-center rounded-full bg-white p-2 px-4 text-sm font-semibold shadow-md transition-colors hover:bg-ink hover:text-white">
@@ -18,6 +19,7 @@
 			 {$_('types.' + type)}
 		</a>
 	{/each}
+	<div class="w-4 shrink-0 sm:hidden"></div>
 </div>
 
 <style>

@@ -9,7 +9,9 @@
         children,
         controls,
         isOpen = true,
-        hideCloseOnDesktop = false
+        hideCloseOnDesktop = false,
+        paneZIndex = 4000,
+        initialBreak = 'middle'
     } = $props();
 
     let paneElement: HTMLElement | undefined = $state();
@@ -104,9 +106,26 @@
         
         setTimeout(() => {
             if (pane && pane.paneEl) {
+                let activeScrollContainer = null;
+                
                 pane.paneEl.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
                 pane.paneEl.addEventListener('touchmove', handleTouchMove, { passive: true, capture: true });
                 pane.paneEl.addEventListener('touchend', handleTouchEnd, { capture: true });
+                
+                pane.paneEl.addEventListener('touchstart', (e) => {
+                    let target = e.target;
+                    if (target && target.nodeType === 3) target = target.parentNode;
+                    activeScrollContainer = target && (target.closest('.overflow-y-auto') || target.closest('[overflow-y]'));
+                }, { passive: true, capture: true });
+                
+                if (pane.contentEl && !pane.contentEl.__scrollTopProxied) {
+                    Object.defineProperty(pane.contentEl, 'scrollTop', {
+                        get: () => activeScrollContainer ? activeScrollContainer.scrollTop : 0,
+                        set: (val) => { if (activeScrollContainer) activeScrollContainer.scrollTop = val; },
+                        configurable: true
+                    });
+                    pane.contentEl.__scrollTopProxied = true;
+                }
                 
                 if (!observer) {
                     const syncState = () => {
@@ -141,11 +160,22 @@
                                 controlsElement.style.pointerEvents = isHigh ? 'none' : ''; 
                                 controlsElement.style.transform = isHigh ? 'scale(0)' : 'scale(1)'; 
                             }
+
+                            if (pane.paneEl) {
+                                if (isHigh) {
+                                    pane.paneEl.classList.add('is-high');
+                                } else {
+                                    pane.paneEl.classList.remove('is-high');
+                                }
+                            }
                         }
                     };
                     observer = new MutationObserver(syncState);
                     observer.observe(pane.paneEl, { attributes: true, attributeFilter: ['style'] });
                     syncState(); // run once immediately
+                    
+                    // Force the pane to the correct break if it was initialized with a different one
+                    pane.moveToBreak(initialBreak);
                 }
             }
         }, 50);
@@ -154,7 +184,7 @@
     };
 
     $effect(() => {
-        if (!isDesktop && paneElement && !pane && CupertinoPaneClass) {
+        if (!isDesktop && paneElement && !pane && CupertinoPaneClass && isOpen) {
             pane = new CupertinoPaneClass(paneElement, {
                 parentElement: 'body',
                 breaks: {
@@ -162,7 +192,7 @@
                     middle: { enabled: true, height: window.innerHeight * 0.5, bounce: true },
                     bottom: { enabled: true, height: window.innerHeight * 0.14, bounce: true },
                 },
-                initialBreak: 'middle',
+                initialBreak: initialBreak,
                 bottomClose: false,
                 buttonDestroy: false,
                 showDraggable: true,
@@ -171,9 +201,14 @@
                 }
             });
             
-            if (isOpen) {
-                presentPaneAndSetup();
+            presentPaneAndSetup();
+        } else if (!isDesktop && pane && !isOpen) {
+            if (observer) {
+                observer.disconnect();
+                observer = null;
             }
+            pane.destroy({ animate: true });
+            pane = null;
         } else if (isDesktop && pane) {
             document.body.style.overscrollBehaviorY = 'auto';
             if (observer) {
@@ -203,6 +238,9 @@
             if (isOpen) {
                 if (pane.isHidden()) {
                     presentPaneAndSetup();
+                }
+                if (!pane.isHidden()) {
+                    pane.moveToBreak(initialBreak);
                 }
             } else {
                 if (!pane.isHidden()) {
@@ -252,7 +290,7 @@
 {/if}
 
 {#if isDesktop}
-    <div class="box flex flex-col border-1 border-gray-200 fixed sm:left-auto left-0 right-0 sm:!right-5 sm:!h-auto top-1/2 sm:!top-5 bottom-0 sm:!bottom-5 w-full sm:w-[25rem] lg:w-[40rem] max-w-[100vw] bg-white rounded-t-3xl rounded-b-none sm:!rounded-3xl shadow-md z-[20000] overflow-hidden transition-transform duration-300 {isOpen ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-y-0 sm:translate-x-[150%]'}">
+    <div class="box pointer-events-auto flex flex-col border-1 border-gray-200 fixed sm:left-auto left-0 right-0 sm:!right-5 sm:!h-auto top-1/2 sm:!top-5 bottom-0 sm:!bottom-5 w-full sm:w-[25rem] lg:w-[40rem] max-w-[100vw] bg-white rounded-t-3xl rounded-b-none sm:!rounded-3xl shadow-md z-[20000] overflow-hidden transition-transform duration-300 {isOpen ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-y-0 sm:translate-x-[150%]'}">
         {@render panelContent()}
     </div>
 {:else}
@@ -276,6 +314,10 @@
         overflow: hidden !important;
         height: 100% !important;
         padding: 0 !important;
+    }
+    :global(.cupertino-pane-wrapper .pane:not(.is-high) [overflow-y]) {
+        overflow-y: hidden !important;
+        touch-action: none !important;
     }
 
     .floating-controls {

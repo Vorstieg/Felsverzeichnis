@@ -1,5 +1,6 @@
 <script>
 import { base } from '$app/paths';
+import { page } from '$app/stores';
 import { afterNavigate, goto } from '$app/navigation';
 import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 import GradeChart from '$lib/components/charts/GradeChart.svelte';
@@ -318,7 +319,7 @@ function portal(node) {
 				{#each breadcrumbParts as part, i}
 					{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
 					<a
-						href="{base}/list/{encodeURIComponent(subpath)}"
+						href="{base}/map/{encodeURIComponent(subpath)}"
 						class="-mx-0.5 rounded px-0.5 text-slate-500 transition-colors hover:text-slate-700 hover:underline focus:ring-2 focus:ring-slate-400 focus:outline-none"
 					>
 						{part}
@@ -464,10 +465,10 @@ function portal(node) {
 						{#if has3DTopo || has2DTopo}
 							<div class="grid {has3DTopo && has2DTopo ? 'grid-cols-2' : 'grid-cols-1'} mb-4 gap-3">
 								{#if has3DTopo}
-									<TopoButton mode="3d" path={data.currentLocation._getPath()}></TopoButton>
+									<TopoButton mode="3d" path={$page.params.crag}></TopoButton>
 								{/if}
 								{#if has2DTopo}
-									<TopoButton mode="2d" path={data.currentLocation._getPath()}></TopoButton>
+									<TopoButton mode="2d" path={$page.params.crag}></TopoButton>
 								{/if}
 							</div>
 						{/if}

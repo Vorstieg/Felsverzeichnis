@@ -160,6 +160,84 @@
 		);
 	}
 
+	function getCameraOffset(radius: number) {
+		const offset = new Vector3();
+		if (typeof window === 'undefined') return offset;
+		if (window.innerWidth < 768) {
+			offset.set(0, -Math.max(radius * 0.4, 2), 0); // Mobile: Move camera down relative to size
+		} else {
+			offset.set(Math.max(radius * 0.6, 3), 0, 0); // Desktop: Move camera right relative to size
+		}
+		return offset;
+	}
+	
+	function applyOffsetToTarget(targetPos: Vector3, center: Vector3, radius: number) {
+		if (!camera) return { newPos: targetPos, newCenter: center };
+		const tempCamera = camera.clone();
+		tempCamera.position.copy(targetPos);
+		tempCamera.lookAt(center);
+		tempCamera.updateMatrixWorld();
+		
+		const offset = getCameraOffset(radius);
+		tempCamera.translateX(offset.x);
+		tempCamera.translateY(offset.y);
+		
+		const worldOffset = tempCamera.position.clone().sub(targetPos);
+		
+		return {
+			newPos: tempCamera.position.clone(),
+			newCenter: center.clone().add(worldOffset)
+		};
+	}
+
+	function focusOverview() {
+		if (!controls || !camera || !data.topo || !data.topo.routes || data.topo.routes.length === 0) return;
+
+		let points: number[][] = [];
+		let orientations: Vector3[] = [];
+		
+		data.topo.routes.forEach(r => {
+			if (r.type?.includes('multi-pitch') && r.pitches) {
+				r.pitches.forEach((p: any) => {
+					if (p.points) points.push(...p.points);
+					if (p.orientation) orientations.push(new Vector3(p.orientation[0], p.orientation[1], p.orientation[2]));
+				});
+			} else if (r.points) {
+				points.push(...r.points);
+				if (r.orientation) orientations.push(new Vector3(r.orientation[0], r.orientation[1], r.orientation[2]));
+			}
+		});
+
+		if (points.length === 0) return;
+
+		const box = new Box3();
+		points.forEach(p => box.expandByPoint(new Vector3(p[0], p[1], p[2])));
+		const center = new Vector3();
+		box.getCenter(center);
+		
+		const sphere = new Sphere();
+		box.getBoundingSphere(sphere);
+
+		let avgOrientation = new Vector3(0, 0, 1);
+		if (orientations.length > 0) {
+			avgOrientation.set(0, 0, 0);
+			orientations.forEach(o => avgOrientation.add(o));
+			avgOrientation.normalize();
+		}
+		if (avgOrientation.lengthSq() === 0) avgOrientation.set(0, 0, 1);
+
+		const fov = 75 * (Math.PI / 180);
+		const dist = (sphere.radius * 1.4) / Math.sin(fov / 2);
+		const finalDist = Math.max(dist, 10);
+
+		const baseTargetPos = center.clone().add(avgOrientation.multiplyScalar(finalDist));
+		const { newPos, newCenter } = applyOffsetToTarget(baseTargetPos, center, sphere.radius);
+
+		camera.position.copy(newPos);
+		controls.target.copy(newCenter);
+		controls.update();
+	}
+
 	function focusRoute(route: any) {
 		if (!route || !controls || !camera) return;
 
@@ -199,23 +277,21 @@
 		orientation.normalize();
 
 		// 4. Calculate Distance
-		// FOV 75 deg
 		const fov = 75 * (Math.PI / 180);
-		// distance to fit sphere: radius / sin(fov/2)
-		// We use a slight padding factor
-		const dist = (sphere.radius * 1.5) / Math.sin(fov / 2);
-		const finalDist = Math.max(dist, 5); // Minimum distance
+		const dist = (sphere.radius * 1.2) / Math.sin(fov / 2);
+		const finalDist = Math.max(dist, 5);
 
-		const targetPos = center.clone().add(orientation.multiplyScalar(finalDist));
+		const baseTargetPos = center.clone().add(orientation.multiplyScalar(finalDist));
+		const { newPos, newCenter } = applyOffsetToTarget(baseTargetPos, center, sphere.radius);
 
 		// 5. Start Animation
 		if (camera) {
 			isProgrammaticAnimationRunning = true;
 			animationState = {
 				startPos: camera.position.clone(),
-				endPos: targetPos,
+				endPos: newPos,
 				startTarget: controls.target.clone(),
-				endTarget: center,
+				endTarget: newCenter,
 				startTime: Date.now(),
 				duration: 1000
 			};
@@ -294,6 +370,10 @@
 		$navigating?.to?.url.pathname.startsWith(base + '/topo/crag/')
 			? $navigating.to.url.pathname.split('/').pop()
 			: null
+	);
+
+	let isNavigatingAway = $derived(
+		!!($navigating && $navigating.to && !$navigating.to.url.pathname.startsWith(base + '/topo/crag/'))
 	);
 
 	let activeRouteId = $derived(pendingRouteId || data.route?.id);
@@ -402,21 +482,45 @@
 			wallDirection = calculateWallDirection(data.topo, data.route);
 		}
 	});
+	let hasInitializedCamera = $state(false);
+
 	$effect(() => {
-		if (!controls) return;
+		if (!camera) {
+			hasInitializedCamera = false;
+			modelLoaded = false;
+		}
+	});
 
-		const updateTarget = () => {
-			if (window.innerWidth < 768) {
-				controls.target.set(0, -1.5, 0); // Mobile: Move model up
-			} else {
-				controls.target.set(1, 0, 0); // Desktop: Move model left
+	$effect(() => {
+		if (modelLoaded && camera && controls && !hasInitializedCamera) {
+			hasInitializedCamera = true;
+			if (!activeRouteId) {
+				focusOverview();
 			}
-			controls.update();
-		};
-		window.addEventListener('resize', updateTarget);
-		updateTarget();
+		}
+	});
 
-		return () => window.removeEventListener('resize', updateTarget);
+	$effect(() => {
+		if (!controls || !camera || !hasInitializedCamera) return;
+
+		let resizeTimeout: ReturnType<typeof setTimeout>;
+		const handleResize = () => {
+			clearTimeout(resizeTimeout);
+			resizeTimeout = setTimeout(() => {
+				if (activeRouteId) {
+					const r = data.topo.routes?.find((route: any) => route.id === activeRouteId);
+					if (r) focusRoute(r);
+				} else {
+					focusOverview();
+				}
+			}, 100);
+		};
+		
+		window.addEventListener('resize', handleResize);
+		return () => {
+			window.removeEventListener('resize', handleResize);
+			clearTimeout(resizeTimeout);
+		};
 	});
 
 	async function share() {
@@ -589,7 +693,7 @@
 
 <svelte:window onroute-clicked={handleRouteClicked} />
 
-<div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden">
+<div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden pointer-events-auto">
 	{#if displayMode === '2d' && has2D}
 		<Topo2DViewer
 			topo={data.topo}
@@ -781,9 +885,18 @@
 		</div>
 	</div>
 
-	<InfoPanel onShare={share} isOpen={isInfoPanelOpen} onClose={() => (isInfoPanelOpen = false)} hideCloseOnDesktop={true}>
+	{#snippet legendButtonMobile()}
+		{#if displayMode === '2d' && !isTopoLegendOpen}
+			<button class="pointer-events-auto cursor-pointer flex items-center justify-center w-10 h-10 max-sm:w-11 max-sm:h-11 text-lg hover:text-white hover:bg-ink rounded-2xl border-1 text-center border-gray-200 transition-all shadow-md shrink-0 bg-white text-gray-600" onclick={() => (isTopoLegendOpen = true)} aria-label="Open topo legend" title="Topo legend">
+				<i class="fa-solid fa-map-signs"></i>
+			</button>
+		{/if}
+	{/snippet}
+
+	<InfoPanel onShare={share} isOpen={isInfoPanelOpen && !isNavigatingAway} onClose={() => (isInfoPanelOpen = false)} hideCloseOnDesktop={true}>
 		{#snippet controls()}
-			<div class="sm:hidden flex flex-col items-end gap-2 w-full">
+			<div class="sm:hidden flex flex-col items-end gap-2 w-full transition-opacity duration-300 {isNavigatingAway ? 'opacity-0' : 'opacity-100'}">
+				{@render legendButtonMobile()}
 				{@render hdButton()}
 				{@render sunButton()}
 			</div>
@@ -1132,7 +1245,7 @@
 {#if !isTopoLegendOpen && displayMode === '2d'}
 	<button
 		type="button"
-		class="fixed right-4 top-5 z-[30000] grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white text-sm text-black shadow-sm transition-transform hover:scale-105 sm:bottom-7 sm:left-7 sm:right-auto sm:top-auto"
+		class="fixed z-[30000] hidden sm:grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white text-sm text-black shadow-sm transition-transform hover:scale-105 bottom-7 left-7"
 		onclick={() => (isTopoLegendOpen = true)}
 		aria-label="Open topo legend"
 		title="Topo legend"

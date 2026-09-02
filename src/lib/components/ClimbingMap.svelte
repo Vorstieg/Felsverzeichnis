@@ -17,13 +17,14 @@
 	} from '$lib/assets/js/climbing-map-utils.js';
 
 	/** @typedef {import('@vorstieg/fels-data/types').TopoPathFeature} TopoPathFeature */
-	/** @type {{locations?: any, access?: any, topoPaths?: TopoPathFeature[], accessKey?: string, tracks?: any, pitch?: number}} */
+	/** @type {{locations?: any, access?: any, topoPaths?: TopoPathFeature[], accessKey?: string, tracks?: any, pitch?: number, isHidden?: boolean}} */
 	let {
 		locations = [],
 		access = null,
 		topoPaths = [],
 		accessKey = '',
-		cameraTarget = null
+		cameraTarget = null,
+		isHidden = false
 	} = $props();
 
 	let mapElement = $state();
@@ -651,8 +652,9 @@
 			if (isTargetVisibleAndZoomed(cameraTarget.center, uiPadding, cameraTarget.zoom)) {
 				return;
 			}
+			
 			map.flyTo({
-				center: cameraTarget.center,
+				center: [cameraTarget.center[0] + 0.00001, cameraTarget.center[1]],
 				zoom: Math.max(map.getZoom(), cameraTarget.zoom),
 				padding: uiPadding,
 				duration: 1200
@@ -689,16 +691,16 @@
 </script>
 
 <div
-	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full {detailsShown ? 'details-shown' : ''}"
+	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full transition-opacity duration-300 {detailsShown ? 'details-shown' : ''} {isHidden ? 'opacity-0 pointer-events-none z-[-1]' : 'opacity-100'}"
 	bind:this={mapElement}
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 ></div>
 <div
-	class="fixed right-4 sm:left-8 sm:right-auto z-[1000] flex flex-col items-center style-selector-btn gap-2"
+	class="fixed right-4 sm:left-8 sm:right-auto z-[1000] flex flex-col items-center style-selector-btn gap-2 transition-opacity duration-300 {isHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'}"
 	role="group"
 	aria-label="Map style selector"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
-	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
+	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px; {isHidden ? '--controls-opacity: 0; --controls-pointer: none;' : ''}"
 >
 	<button
 		aria-label="Choose map style"
@@ -801,7 +803,7 @@
 	:global(.maplibregl-ctrl-bottom-right) {
 		@media (width <= 40rem) {
 			@apply left-2 right-auto;
-			bottom: 4.5rem;
+			bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
 		}
 	}
 
@@ -829,7 +831,7 @@
 		@media (width <= 40rem) {
 			position: fixed;
 			right: 1rem;
-			bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
+			bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
 			top: auto !important;
 			margin: 0 !important;
 			transition:
