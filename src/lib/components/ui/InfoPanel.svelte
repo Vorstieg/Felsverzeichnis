@@ -7,7 +7,7 @@
         onClose = null,
         onShare, 
         children,
-        controls,
+        controls = undefined,
         isOpen = true,
         hideCloseOnDesktop = false,
         paneZIndex = 4000,
@@ -209,6 +209,15 @@
             }
             pane.destroy({ animate: true });
             pane = null;
+            document.body.style.setProperty('--info-panel-height', '0px');
+            document.body.style.setProperty('--controls-opacity', '1');
+            document.body.style.setProperty('--controls-pointer', 'auto');
+            document.body.style.setProperty('--controls-scale', '1');
+            if (controlsElement) { 
+                controlsElement.style.opacity = '1'; 
+                controlsElement.style.pointerEvents = ''; 
+                controlsElement.style.transform = ''; 
+            }
         } else if (isDesktop && pane) {
             document.body.style.overscrollBehaviorY = 'auto';
             if (observer) {
@@ -217,6 +226,15 @@
             }
             pane.destroy({ animate: false });
             pane = null;
+            document.body.style.setProperty('--info-panel-height', '0px');
+            document.body.style.setProperty('--controls-opacity', '1');
+            document.body.style.setProperty('--controls-pointer', 'auto');
+            document.body.style.setProperty('--controls-scale', '1');
+            if (controlsElement) { 
+                controlsElement.style.opacity = '1'; 
+                controlsElement.style.pointerEvents = ''; 
+                controlsElement.style.transform = ''; 
+            }
         }
 
         return () => {
@@ -230,6 +248,15 @@
                 paneElement.removeEventListener('touchend', handleTouchEnd);
             }
             document.body.style.overscrollBehaviorY = 'auto';
+            document.body.style.setProperty('--info-panel-height', '0px');
+            document.body.style.setProperty('--controls-opacity', '1');
+            document.body.style.setProperty('--controls-pointer', 'auto');
+            document.body.style.setProperty('--controls-scale', '1');
+            if (controlsElement) { 
+                controlsElement.style.opacity = '1'; 
+                controlsElement.style.pointerEvents = ''; 
+                controlsElement.style.transform = ''; 
+            }
         };
     });
 
@@ -284,7 +311,7 @@
 
 {#if controls}
      <div bind:this={controlsElement} class="floating-controls fixed left-4 right-4 sm:left-auto sm:bottom-auto {isOpen ? 'sm:right-15' : 'sm:right-5'} sm:top-25 lg:top-30 sm:mt-2 z-[30000] flex flex-col sm:flex-row items-end sm:items-center justify-end pointer-events-none gap-2 sm:transition-all sm:duration-300"
-          style="--dynamic-bottom: {isOpen ? 'calc(var(--info-panel-height, 50vh) + 16px)' : 'calc(env(safe-area-inset-bottom, 0px) + 5.5rem)'};">
+          style="--dynamic-bottom: {isOpen ? 'calc(var(--info-panel-height, 50vh) + 16px)' : 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)'};">
         {@render controls()}
      </div>
 {/if}

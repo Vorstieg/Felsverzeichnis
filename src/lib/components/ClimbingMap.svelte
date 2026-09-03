@@ -831,7 +831,7 @@
 		@media (width <= 40rem) {
 			position: fixed;
 			right: 1rem;
-			bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+			bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
 			top: auto !important;
 			margin: 0 !important;
 			transition:

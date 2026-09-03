@@ -72,7 +72,7 @@ import { topoSymbols } from '@vorstieg/topo-renderer';
 
 {#if open}
 	<aside
-		class="topo-legend fixed right-4 top-5 z-[30000] max-h-[58vh] max-w-[calc(100vw-2rem)] overflow-hidden sm:bottom-7 sm:left-7 sm:right-auto sm:top-auto sm:max-h-[min(70vh,42rem)] sm:w-auto sm:max-w-[19rem]"
+		class="topo-legend bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 p-4 pointer-events-auto z-[30000] flex flex-col max-h-[58vh] max-w-[calc(100vw-2rem)] overflow-hidden sm:max-h-[min(70vh,42rem)] sm:w-auto sm:max-w-[19rem]"
 		aria-label="Topo legend"
 		transition:fly={{ y: 18, duration: 180 }}
 	>

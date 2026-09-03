@@ -32,6 +32,9 @@
 	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
 	import RouteList from '$lib/components/topo/RouteList.svelte';
+	import FloatingButton from '$lib/components/topo/FloatingButton.svelte';
+	import FloatingControlsTop from '$lib/components/topo/FloatingControlsTop.svelte';
+	import FloatingControlsBottom from '$lib/components/topo/FloatingControlsBottom.svelte';
 	import { colors } from '$lib/colors.js';
 
 	let { data } = $props();
@@ -422,7 +425,7 @@
 		return Math.max(0, Math.min(5.0, 0.1 + (y / 20) * 5));
 	});
 
-	let visualRoutes = $state([]);
+	let visualRoutes = $state<any[]>([]);
 	let lastTopoPath = '';
 
 	$effect(() => {
@@ -699,7 +702,7 @@
 			topo={data.topo}
 			routes={data.topo.routes || []}
 			selectedRouteId={getParentRoute(activeRouteId)?.id || activeRouteId}
-			onRouteSelect={(route) => goto(base + '/topo/crag/' + data.path + '/' + route.id)}
+			onRouteSelect={(route) => goto(base + '/topo/crag/' + data.path + '/' + route.id + $page.url.search)}
 			bind:hoveredRouteId
 		/>
 	{:else}
@@ -765,7 +768,7 @@
 			{#if visualRoutes && initialLoadComplete}
 				{#each visualRoutes as route (route.id)}
 					<RouteLine
-						link={base + '/topo/crag/' + data.path + '/' + (route.parentId || route.id)}
+						link={base + '/topo/crag/' + data.path + '/' + (route.parentId || route.id) + $page.url.search}
 						points={route.points}
 						name={route.name}
 						grade={route.grade}
@@ -831,9 +834,11 @@
 					<span class="text-[10px] max-sm:text-[12px] font-bold text-blue-600 z-10">HD</span>
 				</div>
 			{:else if !forceHighRes && isSlowNetwork}
-				<button class="pointer-events-auto cursor-pointer flex items-center justify-center w-10 h-10 max-sm:w-11 max-sm:h-11 text-lg hover:text-white hover:bg-ink bg-white rounded-2xl border-1 text-center border-gray-200 transition-all shadow-md" onclick={() => (forceHighRes = true)} title={$_('topo.load_high_res_title') || 'Load High-Res 3D Model'}>
-					<i class="fa-solid fa-download text-gray-600 hover:text-white"></i>
-				</button>
+				<FloatingButton
+					icon="fa-download"
+					title={$_('topo.load_high_res_title') || 'Load High-Res 3D Model'}
+					onclick={() => (forceHighRes = true)}
+				/>
 			{/if}
 		{/if}
 	{/snippet}
@@ -841,9 +846,13 @@
 	{#snippet sunButton()}
 		{#if displayMode === '3d'}
 			<div class="flex flex-row max-sm:flex-row-reverse items-center justify-start max-sm:w-full gap-2">
-				<button class="pointer-events-auto cursor-pointer flex items-center justify-center w-10 h-10 max-sm:w-11 max-sm:h-11 text-lg hover:text-white hover:bg-ink rounded-2xl border-1 text-center border-gray-200 transition-all shadow-md shrink-0 {isDaylightSimulation ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : 'bg-white text-gray-600'}" onclick={() => (isDaylightSimulation = !isDaylightSimulation)} aria-label="Toggle daylight simulator" title="Daylight Simulator">
-					<i class="fa-solid fa-sun"></i>
-				</button>
+				<FloatingButton
+					icon="fa-sun"
+					title="Daylight Simulator"
+					active={isDaylightSimulation}
+					activeClasses="bg-yellow-100 text-yellow-600 border-yellow-300"
+					onclick={() => (isDaylightSimulation = !isDaylightSimulation)}
+				/>
 				{#if isDaylightSimulation}
 					<div transition:slide={{ axis: 'x', duration: 300 }} class="bg-white/90 backdrop-blur max-sm:p-3 sm:px-2 sm:py-1 rounded-2xl max-sm:shadow-lg sm:shadow-sm border-1 border-gray-200 flex flex-row items-center pointer-events-auto sm:h-10 flex-1 min-w-[200px]">
 						<input type="date" value={simulationDate} oninput={(e) => (simulationDate = e.currentTarget.value)} class="text-xs font-bold text-gray-500 bg-transparent border-none outline-none w-24 cursor-pointer font-mono text-center shrink-0" />
@@ -860,18 +869,42 @@
 		{/if}
 	{/snippet}
 
-	<div class="fixed sm:left-15 sm:right-auto right-4 z-[1000] flex flex-col items-end sm:items-start style-selector-btn gap-2 pointer-events-none">
+	<div class="pointer-events-none fixed left-0 right-0 top-2 z-[1000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto">
+		<div class="pointer-events-auto mx-4 sm:mx-0 sm:ml-8 sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80">
+			<div class="flex items-center h-[50px] sm:h-[40px] pointer-events-auto">
+				<FloatingButton class="w-auto px-4 gap-2 font-bold text-sm" icon="fa-arrow-left" title={$_('ui.to_map')} href="{base}/map/crag/{data.path}">
+					<span>{$_('ui.to_map')}</span>
+				</FloatingButton>
+			</div>
+		</div>
+	</div>
+
+	<FloatingControlsTop>
 		{#if has2D && has3D}
 			<div class="flex flex-col items-end sm:items-start pointer-events-auto gap-2" role="group" aria-label="Topo display mode" onmouseleave={() => (displayModeMenuOpen = false)}>
-				<button class="cursor-pointer bg-white w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink rounded-2xl border-1 border-gray-200 transition-all shadow-md text-gray-600 z-10" aria-label="Choose topo display mode" title="Choose topo display mode" onmouseenter={() => (displayModeMenuOpen = true)} onfocus={() => (displayModeMenuOpen = true)} onclick={() => (displayModeMenuOpen = !displayModeMenuOpen)}>
-					<i class="fa-solid fa-map text-lg"></i>
-				</button>
+				<FloatingButton
+					icon="fa-map"
+					title="Choose topo display mode"
+					onmouseenter={() => (displayModeMenuOpen = true)}
+					onfocus={() => (displayModeMenuOpen = true)}
+					onclick={() => (displayModeMenuOpen = !displayModeMenuOpen)}
+				/>
 				{#if displayModeMenuOpen}
 					<div class="flex flex-col justify-center gap-2 z-0" transition:slide={{ duration: 200, axis: 'y' }}>
-						<button class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600 font-bold text-[12px] max-sm:text-[14px] {displayMode === '3d' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}" onclick={() => { displayMode = '3d'; displayModeMenuOpen = false; }}>
+						<button class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600 font-bold text-[12px] max-sm:text-[14px] {displayMode === '3d' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}" onclick={() => { 
+							displayModeMenuOpen = false; 
+							const url = new URL($page.url.href); 
+							url.searchParams.set('mode', '3d'); 
+							goto(url.pathname + url.search, { replaceState: true, keepFocus: true }); 
+						}}>
 							3D
 						</button>
-						<button class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600 font-bold text-[12px] max-sm:text-[14px] {displayMode === '2d' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}" onclick={() => { displayMode = '2d'; displayModeMenuOpen = false; }}>
+						<button class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600 font-bold text-[12px] max-sm:text-[14px] {displayMode === '2d' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}" onclick={() => { 
+							displayModeMenuOpen = false; 
+							const url = new URL($page.url.href); 
+							url.searchParams.set('mode', '2d'); 
+							goto(url.pathname + url.search, { replaceState: true, keepFocus: true }); 
+						}}>
 							2D
 						</button>
 					</div>
@@ -880,28 +913,39 @@
 		{/if}
 
 		<div class="hidden sm:flex flex-col items-start gap-2 pointer-events-auto">
+			{#if displayMode === '2d' && !isTopoLegendOpen}
+				<FloatingButton icon="fa-map-signs" title="Topo legend" onclick={() => (isTopoLegendOpen = true)} />
+			{/if}
 			{@render hdButton()}
 			{@render sunButton()}
 		</div>
-	</div>
+		<div class="hidden sm:flex pointer-events-auto">
+			<TopoLegend
+				open={isTopoLegendOpen}
+				usedTypes={usedTopoSymbolTypes}
+				onClose={() => (isTopoLegendOpen = false)}
+			/>
+		</div>
+	</FloatingControlsTop>
 
-	{#snippet legendButtonMobile()}
-		{#if displayMode === '2d' && !isTopoLegendOpen}
-			<button class="pointer-events-auto cursor-pointer flex items-center justify-center w-10 h-10 max-sm:w-11 max-sm:h-11 text-lg hover:text-white hover:bg-ink rounded-2xl border-1 text-center border-gray-200 transition-all shadow-md shrink-0 bg-white text-gray-600" onclick={() => (isTopoLegendOpen = true)} aria-label="Open topo legend" title="Topo legend">
-				<i class="fa-solid fa-map-signs"></i>
-			</button>
-		{/if}
-	{/snippet}
+	<FloatingControlsBottom>
+		<div class="sm:hidden flex flex-col items-end gap-2 w-full transition-opacity duration-300 {isNavigatingAway ? 'opacity-0' : 'opacity-100'}">
+			{#if displayMode === '2d' && !isTopoLegendOpen}
+				<FloatingButton icon="fa-map-signs" title="Topo legend" onclick={() => (isTopoLegendOpen = true)} />
+			{/if}
+			{@render hdButton()}
+			{@render sunButton()}
+		</div>
+		<div class="sm:hidden w-full flex justify-end pointer-events-auto">
+			<TopoLegend
+				open={isTopoLegendOpen}
+				usedTypes={usedTopoSymbolTypes}
+				onClose={() => (isTopoLegendOpen = false)}
+			/>
+		</div>
+	</FloatingControlsBottom>
 
-	<InfoPanel onShare={share} isOpen={isInfoPanelOpen && !isNavigatingAway} onClose={() => (isInfoPanelOpen = false)} hideCloseOnDesktop={true}>
-		{#snippet controls()}
-			<div class="sm:hidden flex flex-col items-end gap-2 w-full transition-opacity duration-300 {isNavigatingAway ? 'opacity-0' : 'opacity-100'}">
-				{@render legendButtonMobile()}
-				{@render hdButton()}
-				{@render sunButton()}
-			</div>
-		{/snippet}
-
+	<InfoPanel onShare={share} isOpen={isInfoPanelOpen && !isNavigatingAway} onClose={() => (isInfoPanelOpen = false)}>
 		<div class="flex flex-col h-full flex-1 min-h-0 w-full">
 			{#if $navigating && $navigating.to?.url.pathname.startsWith(base + '/topo/crag/')}
 			<div class="flex-1 overflow-y-auto w-full px-5 mb-4 mt-6 overflow-x-hidden min-h-0">
@@ -923,7 +967,7 @@
 				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
 			>
 				<a
-					href="{base}/topo/crag/{data.path}"
+					href="{base}/topo/crag/{data.path}{$page.url.search}"
 					class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
 					aria-label={$_('ui.back_to_topo')}
 				>
@@ -1044,13 +1088,6 @@
 			<div
 				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
 			>
-				<a
-					href="{base}/map/crag/{data.path}"
-					class="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
-					aria-label={$_('ui.back_to_map')}
-				>
-					<i class="fa-solid fa-arrow-left text-gray-600"></i>
-				</a>
 				<div class="min-w-0">
 					<h1
 						class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.sectorId ? `${data.cragName} - ${currentSectorName}` : data.cragName}</h1>
@@ -1171,7 +1208,7 @@
 									{#each availableSectors as sector}
 										<tr
 											class="hover:bg-blue-50 cursor-pointer transition-colors"
-											onclick={() => goto(`${base}/topo/crag/${data.baseCragPath || data.path}/${sector.id}`)}
+											onclick={() => goto(`${base}/topo/crag/${data.baseCragPath || data.path}/${sector.id}` + $page.url.search)}
 										>
 											<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 												<span>{sector.name}</span>
@@ -1232,7 +1269,7 @@
 						onRouteHover={(route) => (hoveredRouteId = route?.id || null)}
 						onRouteSelect={(route) => {
 							hoveredRouteId = null;
-							goto(base + '/topo/crag/' + data.path + '/' + route.id);
+							goto(base + '/topo/crag/' + data.path + '/' + route.id + $page.url.search);
 						}}
 					/>
 				</div>
@@ -1241,24 +1278,6 @@
 		</div>
 	</InfoPanel>
 </main>
-
-{#if !isTopoLegendOpen && displayMode === '2d'}
-	<button
-		type="button"
-		class="fixed z-[30000] hidden sm:grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white text-sm text-black shadow-sm transition-transform hover:scale-105 bottom-7 left-7"
-		onclick={() => (isTopoLegendOpen = true)}
-		aria-label="Open topo legend"
-		title="Topo legend"
-	>
-		<i class="fa-solid fa-map-signs"></i>
-	</button>
-{/if}
-
-<TopoLegend
-	open={isTopoLegendOpen}
-	usedTypes={usedTopoSymbolTypes}
-	onClose={() => (isTopoLegendOpen = false)}
-/>
 
 <style>
     :global(.route-label) {
@@ -1279,25 +1298,6 @@
         .topo-container {
             -webkit-mask-image: linear-gradient(to right, black 98%, transparent 100%);
             mask-image: linear-gradient(to right, black 98%, transparent 100%);
-        }
-    }
-
-    .transition-transform {
-        transition: transform 0.3s ease-in-out;
-    }
-
-    .style-selector-btn {
-        @media (width > 40rem) {
-            top: 5.75rem;
-        }
-        @media (width <= 40rem) {
-            top: 1.25rem;
-            bottom: auto;
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out, top 0.2s ease-out;
-            opacity: var(--controls-opacity, 1);
-            transform: scale(var(--controls-scale, 1));
-            transform-origin: center;
-            pointer-events: var(--controls-pointer, auto);
         }
     }
 </style>
