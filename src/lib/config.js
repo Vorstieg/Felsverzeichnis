@@ -34,32 +34,32 @@ export const routeTypeMeta = {
 	'sports-climbing': {
 		color: colors.routeTypes['sports-climbing'],
 		dotClass: 'bg-blue-500',
-		badgeClass: 'bg-blue-100 text-blue-700 border-blue-200'
+		badgeClass: 'bg-blue-500 text-white border-transparent'
 	},
 	bouldering: {
 		color: colors.routeTypes.bouldering,
 		dotClass: 'bg-orange-500',
-		badgeClass: 'bg-orange-100 text-orange-700 border-orange-200'
+		badgeClass: 'bg-orange-500 text-white border-transparent'
 	},
 	'multi-pitch': {
 		color: colors.routeTypes['multi-pitch'],
 		dotClass: 'bg-emerald-500',
-		badgeClass: 'bg-emerald-100 text-emerald-700 border-emerald-200'
+		badgeClass: 'bg-emerald-500 text-white border-transparent'
 	},
 	trad: {
 		color: colors.routeTypes.trad,
 		dotClass: 'bg-red-500',
-		badgeClass: 'bg-red-100 text-red-700 border-red-200'
+		badgeClass: 'bg-red-500 text-white border-transparent'
 	},
 	'alpine-tour': {
 		color: colors.routeTypes['alpine-tour'],
 		dotClass: 'bg-violet-500',
-		badgeClass: 'bg-violet-100 text-violet-700 border-violet-200'
+		badgeClass: 'bg-violet-500 text-white border-transparent'
 	},
 	'via-ferrata': {
 		color: colors.routeTypes['via-ferrata'],
 		dotClass: 'bg-pink-500',
-		badgeClass: 'bg-pink-100 text-pink-700 border-pink-200'
+		badgeClass: 'bg-pink-500 text-white border-transparent'
 	}
 };
 

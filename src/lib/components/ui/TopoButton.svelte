@@ -10,14 +10,14 @@
 	<a
 		href="{base}/topo/crag/{path}?mode={mode}"
 		onclick={() => loading = true}
-		class="group inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-300 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-200 hover:shadow-md whitespace-nowrap"
+		class="group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-bold text-blue-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
 	>
 		{#if loading}
-			<i class="fa-solid fa-spinner fa-spin"></i>
+			<i class="fa-solid fa-spinner fa-spin text-blue-600 group-hover:text-white transition-colors"></i>
 		{:else if mode === '3d'}
-			<i class="fa-solid fa-cube"></i>
+			<i class="fa-solid fa-cube text-blue-600 group-hover:text-white transition-colors"></i>
 		{:else}
-			<i class="fa-solid fa-image"></i>
+			<i class="fa-solid fa-image text-blue-600 group-hover:text-white transition-colors"></i>
 		{/if}
 		<span>{$_('ui.topo_' + mode)}</span>
 	</a>

@@ -1,7 +1,11 @@
 import { routeTypeMeta } from '$lib/config.js';
 
 export function getRouteTypeMeta(typeId) {
-	return routeTypeMeta[typeId] || routeTypeMeta['sports-climbing'];
+	return routeTypeMeta[typeId] || {
+		color: '#64748b',
+		dotClass: 'bg-slate-500',
+		badgeClass: 'bg-slate-500 text-white border-transparent'
+	};
 }
 
 export function getTypeColor(typeId) {

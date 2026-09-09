@@ -21,6 +21,15 @@
     let CupertinoPaneClass: any = null;
     let observer: MutationObserver | null = null;
 
+    export function moveToLowest() {
+        if (pane && !isDesktop) {
+            pane.moveToBreak('bottom');
+            if (pane.paneEl) {
+                pane.paneEl.style.setProperty('transition', 'all 380ms cubic-bezier(.155,1.105,.295,1.12)', 'important');
+            }
+        }
+    }
+
     onMount(async () => {
         const mod = await import('cupertino-pane');
         CupertinoPaneClass = mod.CupertinoPane || mod.default?.CupertinoPane || mod.default;

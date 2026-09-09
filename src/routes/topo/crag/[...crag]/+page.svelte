@@ -1,4 +1,5 @@
 <script lang="ts">
+	// trigger HMR
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import { Canvas, T, useTask, useThrelte } from '@threlte/core';
 	import { interactivity, OrbitControls, useProgress } from '@threlte/extras';
@@ -25,18 +26,16 @@
 		calculateSunPositionVector,
 		calculateWallDirection
 	} from '$lib/assets/js/sun-calculations';
-	import SunChart from '$lib/components/charts/SunChart.svelte';
-	import GradeChart from '$lib/components/charts/GradeChart.svelte';
-	import GradeLine from '$lib/components/charts/GradeLine.svelte';
 	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
-	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
-	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
-	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
-	import RouteList from '$lib/components/topo/RouteList.svelte';
-	import FloatingButton from '$lib/components/ui/FloatingButton.svelte';
-	import FloatingControlsTop from '$lib/components/ui/FloatingControlsTop.svelte';
-	import FloatingControlsBottom from '$lib/components/ui/FloatingControlsBottom.svelte';
 	import { colors } from '$lib/colors.js';
+
+	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
+	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
+	import FloatingControlsBottom from '$lib/components/ui/FloatingControlsBottom.svelte';
+	import FloatingControlsTop from '$lib/components/ui/FloatingControlsTop.svelte';
+	import FloatingButton from '$lib/components/ui/FloatingButton.svelte';
+	import GradeLine from '$lib/components/charts/GradeLine.svelte';
+	import RouteList from '$lib/components/topo/RouteList.svelte';
 
 	let { data } = $props();
 	let currentSectorName = $derived(data.sector?.name || data.sectorId);
@@ -73,6 +72,7 @@
 	let forceHighRes = $state(false);
 	let displayModeMenuOpen = $state(false);
 
+	let infoPanelComponent = $state();
 	let isInfoPanelOpen = $state(true);
 	$effect(() => {
 		// Ensure panel re-opens whenever navigation occurs
@@ -698,42 +698,44 @@
 <svelte:window onroute-clicked={handleRouteClicked} />
 
 <div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden pointer-events-auto">
-	{#if displayMode === '2d' && has2D}
-		<Topo2DViewer
-			topo={data.topo}
-			routes={data.topo.routes || []}
-			selectedRouteId={getParentRoute(activeRouteId)?.id || activeRouteId}
-			onRouteSelect={(route) => goto(base + '/topo/crag/' + data.path + '/' + route.id + $page.url.search)}
-			bind:hoveredRouteId
-		/>
-	{:else}
-		<div
-			id="css-renderer-target"
-			style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"
-		></div>
+	{#if browser}
+		{#if displayMode === '2d' && has2D}
+			<Topo2DViewer
+				topo={data.topo}
+				routes={data.topo.routes || []}
+				selectedRouteId={getParentRoute(activeRouteId)?.id || activeRouteId}
+				onRouteSelect={(route) => goto(base + '/topo/crag/' + data.path + '/' + route.id + $page.url.search)}
+				bind:hoveredRouteId
+			/>
+		{:else}
+			<div
+				id="css-renderer-target"
+				style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"
+			></div>
 
-		<Canvas {createRenderer} dpr={browser ? window.devicePixelRatio : 1}>
-			<T.PerspectiveCamera
-				makeDefault
-				position={[0, 1, 25]}
-				fov={75}
-				near={0.1}
-				far={1000}
-				bind:ref={camera}
-			>
-				<OrbitControls
-					enableZoom={true}
-					bind:ref={controls}
-					touches={{ ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE }}
-					onstart={() => (isCameraMoving = true)}
-					onend={() => (isCameraMoving = false)}
-				/>
-			</T.PerspectiveCamera>
-			<T.AmbientLight intensity={ambientIntensity} />
-			<T.DirectionalLight
-				position={sunLightPosition}
-				intensity={dirLightIntensity}
-				castShadow
+			<Canvas {createRenderer} dpr={browser ? window.devicePixelRatio : 1}>
+				<T.PerspectiveCamera
+					makeDefault
+					position={[0, 1, 25]}
+					fov={75}
+					near={0.1}
+					far={1000}
+					bind:ref={camera}
+				>
+					<OrbitControls
+						enableZoom={true}
+						bind:ref={controls}
+						touches={{ ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE }}
+						onstart={() => (isCameraMoving = true)}
+						onend={() => (isCameraMoving = false)}
+					/>
+				</T.PerspectiveCamera>
+				<T.AmbientLight intensity={ambientIntensity} />
+				<T.DirectionalLight
+					position={sunLightPosition}
+					intensity={dirLightIntensity}
+					castShadow
+
 				shadow.mapSize={shadowMapSize}
 				shadow.bias={-0.0005}
 				shadow.camera.near={1}
@@ -823,6 +825,7 @@
 
 			<SceneSetup />
 		</Canvas>
+	{/if}
 	{/if}
 </div>
 
@@ -946,7 +949,7 @@
 		</div>
 	</FloatingControlsBottom>
 
-	<InfoPanel onShare={share} isOpen={isInfoPanelOpen && !isNavigatingAway} onClose={() => (isInfoPanelOpen = false)}>
+	<InfoPanel bind:this={infoPanelComponent} onShare={share} isOpen={isInfoPanelOpen && !isNavigatingAway} onClose={() => (isInfoPanelOpen = false)}>
 		<div class="flex flex-col h-full flex-1 min-h-0 w-full">
 			{#if $navigating && $navigating.to?.url.pathname.startsWith(base + '/topo/crag/')}
 			<div class="flex-1 overflow-y-auto w-full px-6 mb-4 mt-6 overflow-x-hidden min-h-0">
@@ -975,7 +978,17 @@
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
 				<div class="min-w-0">
-					<h1 class="truncate text-2xl font-bold my-0 text-slate-800">{data.route.name}</h1>
+					<div class="flex items-center gap-3">
+						<h1 class="truncate text-2xl font-bold my-0 text-slate-800">{data.route.name}</h1>
+						{#if data.route.grade}
+							<span
+								class="rounded-md bg-gray-100 px-5 py-1 text-sm font-bold text-gray-700 shadow-sm shrink-0"
+								style="border-left: 5px solid {getGradeColor(data.route.grade)};"
+							>
+								{data.route.grade}
+							</span>
+						{/if}
+					</div>
 					{#if data.isSectorPath}
 						<div class="mt-1 flex items-center gap-2">
 							<span
@@ -1037,9 +1050,7 @@
 							{data.route.description}
 						</div>
 					{/if}
-					{#if data.route.grade}
-						<div class="border-b border-gray-200 p-3">{$_('topo.grade')}: {data.route.grade}</div>
-					{/if}
+
 					{#if data.route.length}
 						<div class="border-b border-gray-200 p-3">
 							{$_('topo.length')}: {data.route.length} m
@@ -1057,26 +1068,28 @@
 						</div>
 					{/if}
 				</div>
-				<div class="mt-6 w-full min-h-[400px]">
-					{#if !isProgrammaticAnimationRunning && renderChartsStage >= 1}
-						<div in:slide={{ duration: 200 }}>
-							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
-								{$_('topo.steepness_distribution')}
-							</h3>
-							<div class="mb-8">
-								<SteepnessDistribution metrics={routeMetrics} />
+				{#if data.route?.points?.length > 0}
+					<div class="mt-6 w-full min-h-[400px]">
+						{#if !isProgrammaticAnimationRunning && renderChartsStage >= 1}
+							<div in:slide={{ duration: 200 }}>
+								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
+									{$_('topo.steepness_distribution')}
+								</h3>
+								<div class="mb-8">
+									<SteepnessDistribution metrics={routeMetrics} />
+								</div>
 							</div>
-						</div>
-					{/if}
-					{#if !isProgrammaticAnimationRunning && renderChartsStage >= 2}
-						<div in:slide={{ duration: 200 }}>
-							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.steepness')}</h3>
-							<div class="h-48 w-full mb-8">
-								<RouteSteepnessChart route={data.route} on:metrics={handleMetrics} />
+						{/if}
+						{#if !isProgrammaticAnimationRunning && renderChartsStage >= 2}
+							<div in:slide={{ duration: 200 }}>
+								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.steepness')}</h3>
+								<div class="h-48 w-full mb-8">
+									<RouteSteepnessChart route={data.route} on:metrics={handleMetrics} />
+								</div>
 							</div>
-						</div>
-					{/if}
-				</div>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{:else}
 			<div
@@ -1249,6 +1262,7 @@
 						onRouteSelect={(route) => {
 							hoveredRouteId = null;
 							goto(base + '/topo/crag/' + data.path + '/' + route.id + $page.url.search);
+							if (infoPanelComponent) infoPanelComponent.moveToLowest();
 						}}
 					/>
 				</div>

@@ -366,40 +366,46 @@ function portal(node) {
 			</div>
 		{:else}
 			{#if type?.length > 0 || tags?.length > 0 || topoJson}
-				<div class="dynamic-reveal flex flex-wrap gap-3 text-sm font-medium text-gray-700 sm:mb-6 sm:mt-4">
-					{#each type as t}
-						<a
-							href="{base}/map/{t}/"
-							class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white no-underline transition-all hover:scale-105"
-							style="background-color: {colors.routeTypes[t] ? colors.routeTypes[t] + 'd9' : '#64748bd9'};"
-						>
-							{$_('types.' + t)}
-						</a>
-					{/each}
-					{#if tags && tags.length > 0}
-						{#each tags as tag}
-							<span
-								class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
-								style="background-color: #64748bd9;"
-							>
-								{$_('tags.' + tag)}
-							</span>
-						{/each}
+				<div class="dynamic-reveal flex flex-col gap-3 sm:mb-6 sm:mt-4">
+					{#if type?.length > 0 || tags?.length > 0}
+						<div class="flex flex-wrap items-center gap-3 text-sm font-medium text-gray-700">
+							{#each type as t}
+								<a
+									href="{base}/map/{t}/"
+									class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white no-underline transition-all hover:scale-105"
+									style="background-color: {colors.routeTypes[t] ? colors.routeTypes[t] + 'd9' : '#64748bd9'};"
+								>
+									{$_('types.' + t)}
+								</a>
+							{/each}
+							{#if tags && tags.length > 0}
+								{#each tags as tag}
+									<span
+										class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+										style="background-color: #64748bd9;"
+									>
+										{$_('tags.' + tag)}
+									</span>
+								{/each}
+							{/if}
+						</div>
 					{/if}
 
-					{#if topoJson}
-						{#if wallDirection !== 'N/A' && wallDirection !== 'Unknown'}
-							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
-								<i class="fa-solid fa-compass"></i>
-								<span>{displayWallDirection}</span>
-							</div>
-						{/if}
-						{#if sunInfo.hours !== 'N/A' && sunInfo.hours !== 'Unknown' && sunInfo.hours !== 'no_geodata'}
-							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
-								<i class="fa-solid fa-clock"></i>
-								<span>{displaySunHours}</span>
-							</div>
-						{/if}
+					{#if topoJson && ((wallDirection !== 'N/A' && wallDirection !== 'Unknown') || (sunInfo.hours !== 'N/A' && sunInfo.hours !== 'Unknown' && sunInfo.hours !== 'no_geodata'))}
+						<div class="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-700">
+							{#if wallDirection !== 'N/A' && wallDirection !== 'Unknown'}
+								<div class="flex items-center gap-1.5">
+									<i class="fa-solid fa-compass"></i>
+									<span>{displayWallDirection}</span>
+								</div>
+							{/if}
+							{#if sunInfo.hours !== 'N/A' && sunInfo.hours !== 'Unknown' && sunInfo.hours !== 'no_geodata'}
+								<div class="flex items-center gap-1.5">
+									<i class="fa-solid fa-clock"></i>
+									<span>{displaySunHours}</span>
+								</div>
+							{/if}
+						</div>
 					{/if}
 				</div>
 			{/if}
@@ -415,28 +421,28 @@ function portal(node) {
 					<a
 						href={topo.link}
 						target="_blank"
-						class="group inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md whitespace-nowrap"
+						class="group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
 					>
-						<i class="fa-solid fa-route text-slate-400 transition-colors group-hover:text-blue-500"></i>
+						<i class="fa-solid fa-route"></i>
 						<span>{$_('ui.topo')} (Ext)</span>
 					</a>
 				{/if}
 				{#if transit}
-					<div class="inline-flex items-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
-						<span class="flex items-center rounded-l-full border-r border-slate-200 bg-slate-50 px-3 py-2 text-slate-500">
+					<div class="inline-flex items-center rounded-full bg-white shadow-sm border border-gray-200 transition-all whitespace-nowrap h-10 max-sm:h-11 overflow-hidden shrink-0">
+						<span class="flex items-center justify-center h-full px-3 text-gray-500 bg-gray-50 border-r border-gray-200">
 							<i class="fa-solid fa-train"></i>
 						</span>
 						<a
 							href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
 							target="_blank"
-							class="border-r border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-blue-600"
+							class="flex items-center h-full px-4 text-sm font-semibold text-gray-600 no-underline transition-colors hover:bg-ink hover:text-white border-r border-gray-200"
 						>
 							{$_('ui.google_maps')}
 						</a>
 						<a
 							href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(transit[0] * 1000000)}%40Y%3D{Math.trunc(transit[1] * 1000000)}&timeSel=1&returnTimeSel=1&journeyProducts=7167&start=1&#!P%7CTP!H%7C952087"
 							target="_blank"
-							class="rounded-r-full px-4 py-2 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-red-600"
+							class="flex items-center h-full px-4 text-sm font-semibold text-gray-600 no-underline transition-colors hover:bg-ink hover:text-white"
 						>
 							{$_('ui.scotty')}
 						</a>
@@ -446,9 +452,9 @@ function portal(node) {
 					<a
 						href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
 						target="_blank"
-						class="group inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md whitespace-nowrap"
+						class="group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
 					>
-						<i class="fa-solid fa-car text-slate-400 transition-colors group-hover:text-emerald-600"></i>
+						<i class="fa-solid fa-car"></i>
 						<span>{$_('ui.google_maps')}</span>
 					</a>
 				{/if}
