@@ -3,14 +3,31 @@
 	import { _ } from 'svelte-i18n';
 
 	let loading = $state(false);
-	let { path, mode } = $props();
+	let { path, mode, variant = 'default' } = $props();
 </script>
-<a
-	href="{base}/topo/crag/{path}?mode={mode}"
-	onclick={() => loading = true}
-	class="group relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-300 hover:bg-slate-50 hover:shadow-xl hover:ring-8 hover:ring-blue-500/5"
->
-	<div class="z-10 flex flex-row items-center gap-2 px-2 sm:gap-3">
+
+{#if variant === 'compact'}
+	<a
+		href="{base}/topo/crag/{path}?mode={mode}"
+		onclick={() => loading = true}
+		class="group inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-300 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-200 hover:shadow-md whitespace-nowrap"
+	>
+		{#if loading}
+			<i class="fa-solid fa-spinner fa-spin"></i>
+		{:else if mode === '3d'}
+			<i class="fa-solid fa-cube"></i>
+		{:else}
+			<i class="fa-solid fa-image"></i>
+		{/if}
+		<span>{$_('ui.topo_' + mode)}</span>
+	</a>
+{:else}
+	<a
+		href="{base}/topo/crag/{path}?mode={mode}"
+		onclick={() => loading = true}
+		class="group relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-300 hover:bg-slate-50 hover:shadow-xl hover:ring-8 hover:ring-blue-500/5"
+	>
+		<div class="z-10 flex flex-row items-center gap-2 px-2 sm:gap-3">
 		<div
 			class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-50"
 		>
@@ -33,3 +50,4 @@
 		</div>
 	</div>
 </a>
+{/if}

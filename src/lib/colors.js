@@ -30,7 +30,7 @@ export const colors = Object.freeze({
 		'sports-climbing': '#3b82f6',
 		'multi-pitch': '#10b981',
 		bouldering: '#f97316',
-		trad: '#eab308',
+		trad: '#ef4444',
 		'alpine-tour': '#8b5cf6',
 		'via-ferrata': '#ec4899'
 	}),

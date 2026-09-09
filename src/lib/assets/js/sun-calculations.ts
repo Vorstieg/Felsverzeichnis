@@ -4,7 +4,7 @@ import { colors as appColors } from '$lib/colors.js';
 // Helper: Calculate general heading of the wall/route
 function calculateWallHeading(topo: any, route: any) {
 	// If there is no orientation data at all, return null
-	if (topo.wallAzimuth === undefined && !route?.orientation && !topo.routes?.some((r: any) => r.orientation)) {
+	if (topo.wallAzimuth == null && !route?.orientation && !topo.routes?.some((r: any) => r.orientation)) {
 		return null;
 	}
 
@@ -73,6 +73,9 @@ export function calculateSunInfo(topo: any, route: any) {
 
 	const [lng, lat] = topo.coordinates;
 	const heading = calculateWallHeading(topo, route);
+	if (heading === null) {
+		return { hours: 'Unknown', chartData: null };
+	}
 	const targetAzimuthRad = (heading - 180) * (Math.PI / 180);
 
 	const now = new Date();
@@ -175,7 +178,10 @@ export function calculateBestSeason(topo: any, route: any) {
 
 	const [lng, lat] = topo.coordinates;
 	const heading = calculateWallHeading(topo, route);
-
+	if (heading === null) {
+		return null;
+	}
+	const targetAzimuthRad = (heading - 180) * (Math.PI / 180);
 	// Yearly Temperature Model Approximation based on Latitude and Altitude
 
 	// Mean Temp: 30 - 0.5 * |lat|
@@ -192,7 +198,6 @@ export function calculateBestSeason(topo: any, route: any) {
 	// Amplitude (Seasonality strength)
 	const yearlyAmp = 5 + 0.2 * absLat;
 
-	const targetAzimuthRad = (heading - 180) * (Math.PI / 180);
 	const limit = Math.PI / 2; // +/- 90 degrees for direct sun exposure
 
 	const monthlyTemps = [];

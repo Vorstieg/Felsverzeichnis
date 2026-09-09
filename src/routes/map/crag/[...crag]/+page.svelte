@@ -4,25 +4,48 @@ import { page } from '$app/stores';
 import { afterNavigate, goto } from '$app/navigation';
 import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 import GradeChart from '$lib/components/charts/GradeChart.svelte';
+import SunChart from '$lib/components/charts/SunChart.svelte';
+import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
 import RouteList from '$lib/components/topo/RouteList.svelte';
-import { calculateSunInfo, calculateWallDirection } from '$lib/assets/js/sun-calculations';
+import { calculateSunInfo, calculateWallDirection, calculateBestSeason } from '$lib/assets/js/sun-calculations';
 import { _, locale } from 'svelte-i18n';
 import { securityRatings } from '$lib/config.js';
 import { colors } from '$lib/colors.js';
-import { getTypeColorClass } from '$lib/assets/js/route-types.js';
+import { getTypeColorClass, getTypeSolidBadgeClass } from '$lib/assets/js/route-types.js';
 import TopoButton from '$lib/components/ui/TopoButton.svelte';
 import CragValidationPrompt from '$lib/components/CragValidationPrompt.svelte';
 import { getCragValidationIssue } from '$lib/assets/js/crag-validation.js';
 import { felsstudioUrl } from '$lib/config.js';
+import ImageViewer from '$lib/components/ui/ImageViewer.svelte';
 
-let fullscreenImage = $state();
+let fullscreenImageIndex = $state(-1);
 let sunInfo = $state({ hours: 'N/A' });
+let seasonChartData = $state(null);
 let wallDirection = $state('N/A');
 let searchTerm = $state('');
 let navigatingTo = $state(null);
+let breadcrumbScrollContainer = $state();
+let breadcrumbsAtEnd = $state(true);
+
+function checkBreadcrumbScroll() {
+	if (breadcrumbScrollContainer) {
+		const { scrollLeft, scrollWidth, clientWidth } = breadcrumbScrollContainer;
+		breadcrumbsAtEnd = Math.ceil(scrollWidth - clientWidth - scrollLeft) <= 5;
+	}
+}
 
 afterNavigate(() => {
 	navigatingTo = null;
+});
+
+$effect(() => {
+	// Re-evaluate on data changes
+	const _data = data;
+	setTimeout(checkBreadcrumbScroll, 50);
+	
+	const handleResize = () => checkBreadcrumbScroll();
+	window.addEventListener('resize', handleResize);
+	return () => window.removeEventListener('resize', handleResize);
 });
 
 /** @type {{data: any}} */
@@ -43,7 +66,7 @@ let displaySunHours = $derived(
 		: sunInfo.hours
 );
 
-let details = $state();
+let details = $state(null);
 
 $effect(() => {
 	const stream = data.streamed?.details;
@@ -61,6 +84,7 @@ $effect(() => {
 	if (details?.topoJson) {
 		sunInfo = calculateSunInfo(details.topoJson);
 		wallDirection = calculateWallDirection(details.topoJson);
+		seasonChartData = calculateBestSeason(details.topoJson, null);
 	}
 });
 
@@ -98,10 +122,8 @@ const equipmentIcons = {
 	Expressschlingen: `${base}/icons/quickdraw.png`,
 	Friends: `${base}/icons/friend.png`,
 	Keile: `${base}/icons/nut.png`,
-	Eisschrauben: `${base}/icons/ice-screw.png`,
-	Eisgeräte: `${base}/icons/ice-axe.png`,
-	Seil: 'fa-solid fa-infinity',
-	Helm: 'fa-solid fa-hard-hat'
+	Bohrhaken: `${base}/icons/bolt.png`,
+	Sicherung: `${base}/icons/belay.png`
 };
 
 async function share() {
@@ -112,16 +134,13 @@ async function share() {
 	});
 }
 
-function getSectorDescription(sector) {
-	return $locale === 'de'
-		? sector.description_de || sector.description || sector.description_en
-		: sector.description_en || sector.description || sector.description_de;
-}
+
 
 function getSectorRouteCount(sector) {
-	const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
-	if (routes.length > 0) return routes.length;
-
+	if (gradeRoutes?.length > 0) {
+		const routesForSector = gradeRoutes.filter(r => r.sectorId === sector.id);
+		if (routesForSector.length > 0) return routesForSector.length;
+	}
 	return (
 		sector.routesCount ||
 		sector.routeCount ||
@@ -132,95 +151,100 @@ function getSectorRouteCount(sector) {
 }
 
 function getSectorGradeDistribution(sector) {
-	const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
+	if (!gradeRoutes) return [];
+	const routes = gradeRoutes.filter(r => r.sectorId === sector.id);
 	if (routes.length === 0) return [];
-
-	let easy = 0,
-		medium = 0,
-		hard = 0,
-		veryHard = 0;
-	routes.forEach((r) => {
+	
+	let easy = 0, medium = 0, hard = 0, veryHard = 0;
+	routes.forEach(r => {
 		const g = r.grade || '';
 		if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
 		else if (g.startsWith('6')) medium++;
 		else if (g.startsWith('7')) hard++;
 		else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
 	});
-
+	
 	const total = easy + medium + hard + veryHard;
 	if (total === 0) return [];
-
+	
 	return [
-		{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-500', label: '< 6a' },
-		{
-			count: medium,
-			percent: (medium / total) * 100,
-			colorClass: 'bg-yellow-400',
-			label: '6a - 6c+'
-		},
-		{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-red-500', label: '7a - 7c+' },
-		{
-			count: veryHard,
-			percent: (veryHard / total) * 100,
-			colorClass: 'bg-purple-600',
-			label: '> 8a'
-		}
-	].filter((b) => b.count > 0);
+		{ count: easy, percent: (easy / total) * 100, colorClass: '#22c55e' },
+		{ count: medium, percent: (medium / total) * 100, colorClass: '#facc15' },
+		{ count: hard, percent: (hard / total) * 100, colorClass: '#ef4444' },
+		{ count: veryHard, percent: (veryHard / total) * 100, colorClass: '#9333ea' }
+	].filter(b => b.count > 0);
 }
 
-function getConicGradient(buckets) {
-	let gradient = [];
+function getConicGradient(distribution) {
+	if (distribution.length === 0) return 'transparent';
+	if (distribution.length === 1) return distribution[0].colorClass;
+	
+	let gradient = 'conic-gradient(';
 	let currentPercent = 0;
-	const colorMap = {
-		'bg-green-500': colors.chart.gradeGreen,
-		'bg-yellow-400': colors.topo.gradeMedium,
-		'bg-red-500': colors.chart.danger,
-		'bg-purple-600': colors.chart.gradePurple
-	};
-	for (const bucket of buckets) {
-		const nextPercent = currentPercent + bucket.percent;
-		const color = colorMap[bucket.colorClass] || colors.topo.gradeUnknown;
-		gradient.push(`${color} ${currentPercent}% ${nextPercent}%`);
-		currentPercent = nextPercent;
-	}
-	return `conic-gradient(${gradient.join(', ')})`;
+	
+	distribution.forEach((bucket, index) => {
+		const start = currentPercent;
+		const end = currentPercent + bucket.percent;
+		gradient += `${bucket.colorClass} ${start}% ${end}%`;
+		if (index < distribution.length - 1) gradient += ', ';
+		currentPercent = end;
+	});
+	
+	return gradient + ')';
 }
 
 function getSectorDirection(sector) {
-	const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
 	const mockTopo = {
-		wallAzimuth:
-			sector.wallAzimuth ||
-			sector.topo?.wallAzimuth ||
-			sector.properties?.wallAzimuth ||
-			routes[0]?.sectorWallAzimuth,
-		routes
+		wallAzimuth: sector.wallAzimuth || sector.topo?.wallAzimuth || sector.properties?.wallAzimuth || (gradeRoutes?.find(r => r.sectorId === sector.id)?.sectorWallAzimuth)
 	};
 	const dir = calculateWallDirection(mockTopo, null);
 	return dir !== 'Unknown' ? $_('directions.' + dir) : null;
 }
 
 function getSectorTypes(sector) {
-	const routes = details?.gradeRoutes?.filter((r) => r.sectorId === sector.id) || [];
+	const routes = gradeRoutes?.filter(r => r.sectorId === sector.id) || [];
 	let t = routes[0]?.sectorTags;
 	if (!t || (Array.isArray(t) && t.length === 0)) t = sector.type;
 	if (!t || (Array.isArray(t) && t.length === 0)) t = sector.properties?.type;
-	if (!t || (Array.isArray(t) && t.length === 0)) t = data.crag?.properties?.type || data.type;
+	if (!t || (Array.isArray(t) && t.length === 0)) t = data.currentData?.properties?.type;
 
 	let arr = [];
 	if (Array.isArray(t)) {
 		arr = t;
 	} else if (typeof t === 'string' && t.trim()) {
-		arr = t.includes(',') ? t.split(',').map((x) => x.trim()) : [t];
+		arr = t.includes(',') ? t.split(',').map(x => x.trim()) : [t];
 	}
 
-	return arr.map((x) => {
+	return arr.map(x => {
 		const translated = $_('tags.' + x);
 		return {
 			id: x,
 			name: translated === 'tags.' + x ? x : translated
 		};
 	});
+}
+
+function getSectorDescription(sector) {
+	const translations = sector.description || sector.properties?.description || {};
+	return translations[$locale] || translations.de || translations.en || '';
+}
+
+function focusInput(node) {
+	node.focus();
+}
+
+function clearSearch() {
+	searchTerm = '';
+}
+
+function handleSearch(event) {
+	if (event.key === 'Enter' && searchTerm.trim()) {
+		if (activeSectorId) {
+			goto(`${base}/map/crag/${data.cragPathUrl}/${activeSectorId}?q=${encodeURIComponent(searchTerm)}`);
+		} else {
+			goto(`${base}/map/crag/${data.cragPathUrl}?q=${encodeURIComponent(searchTerm)}`);
+		}
+	}
 }
 
 function getGeometryCenter(geometry) {
@@ -280,28 +304,17 @@ function portal(node) {
 }
 </script>
 
-{#if fullscreenImage}
-	<div
-		use:portal
-		class="fixed top-0 right-0 bottom-0 left-0 z-[30000] flex items-center justify-center"
-	>
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			class="absolute top-0 right-0 bottom-0 left-0 bg-black opacity-70"
-			onclick={() => (fullscreenImage = undefined)}
-		></div>
-		<img
-			class="pointer-events-none relative max-h-full max-w-full object-contain"
-			src={fullscreenImage}
-			alt="Fullscreen Crag"
-		/>
-	</div>
+{#if fullscreenImageIndex !== -1}
+	<ImageViewer 
+		images={images} 
+		startIndex={fullscreenImageIndex} 
+		onClose={() => fullscreenImageIndex = -1} 
+	/>
 {/if}
 
 <main class="z-[500] flex h-full min-h-0 w-full flex-1 flex-col">
 	<div
-		class="flex w-screen flex-row items-center justify-self-center px-5 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start"
+		class="flex w-screen flex-row items-center justify-self-center px-6 pt-3 pr-20 pb-2 sm:w-auto sm:justify-self-start sm:pt-6"
 	>
 		{#if activeSectorId}
 			<a
@@ -312,239 +325,225 @@ function portal(node) {
 				<i class="fa-solid fa-arrow-left text-gray-600"></i>
 			</a>
 		{/if}
-		<div class="flex min-w-0 flex-col sm:px-2">
-			<div
-				class="relative z-20 mb-0.5 flex flex-wrap items-center text-[10px] font-medium tracking-wide sm:text-xs"
-			>
-				{#each breadcrumbParts as part, i}
-					{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
-					<a
-						href="{base}/map/{encodeURIComponent(subpath)}"
-						class="-mx-0.5 rounded px-0.5 text-slate-500 transition-colors hover:text-slate-700 hover:underline focus:ring-2 focus:ring-slate-400 focus:outline-none"
-					>
-						{part}
-					</a>
-					{#if i < breadcrumbParts.length - 1}
-						<i class="fa-solid fa-chevron-right mx-1.5 text-[8px] text-slate-300"></i>
-					{/if}
-				{/each}
+		<div class="flex min-w-0 flex-col max-w-full">
+			<div class="relative z-20 mb-0.5 w-full {breadcrumbsAtEnd ? '' : 'breadcrumb-mask'}">
+				<div
+					bind:this={breadcrumbScrollContainer}
+					onscroll={checkBreadcrumbScroll}
+					class="flex items-center overflow-x-auto no-scrollbar text-[10px] font-medium tracking-wide sm:text-xs pr-6"
+				>
+					{#each breadcrumbParts as part, i}
+						{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
+						<a
+							href="{base}/map/{encodeURIComponent(subpath)}"
+							class="-mx-0.5 shrink-0 rounded px-0.5 text-slate-500 transition-colors hover:text-slate-700 hover:underline focus:ring-2 focus:ring-slate-400 focus:outline-none"
+						>
+							{part}
+						</a>
+						{#if i < breadcrumbParts.length - 1}
+							<i class="fa-solid fa-chevron-right shrink-0 mx-1.5 text-[8px] text-slate-300"></i>
+						{/if}
+					{/each}
+				</div>
 			</div>
 			<h1 class="my-0 text-2xl font-bold text-slate-800">{data.currentData?.properties?.name}</h1>
 		</div>
 	</div>
-	<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-5" overflow-y>
-		{#if !details}
-			<div class="flex animate-pulse flex-col space-y-4 pt-4">
-				<div class="h-40 w-full rounded-2xl bg-gray-200"></div>
-				<div class="h-4 w-5/6 rounded bg-gray-200"></div>
+	<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-6" overflow-y>
+		{#if !data.currentData}
+			<div class="mt-4 animate-pulse">
+				<div class="mb-4 h-6 w-1/3 rounded bg-gray-200"></div>
+				<div class="mb-6 flex gap-2">
+					<div class="h-8 w-16 rounded-full bg-gray-200"></div>
+					<div class="h-8 w-20 rounded-full bg-gray-200"></div>
+					<div class="h-8 w-24 rounded-full bg-gray-200"></div>
+				</div>
+				<div class="mb-2 h-4 w-full rounded bg-gray-200"></div>
 				<div class="h-4 w-3/4 rounded bg-gray-200"></div>
 				<div class="h-4 w-1/2 rounded bg-gray-200"></div>
 				<div class="mt-4 h-10 w-full rounded-full bg-gray-200"></div>
 				<div class="h-10 w-full rounded-full bg-gray-200"></div>
 			</div>
 		{:else}
+			{#if type?.length > 0 || tags?.length > 0 || topoJson}
+				<div class="dynamic-reveal flex flex-wrap gap-3 text-sm font-medium text-gray-700 sm:mb-6 sm:mt-4">
+					{#each type as t}
+						<a
+							href="{base}/map/{t}/"
+							class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white no-underline transition-all hover:scale-105"
+							style="background-color: {colors.routeTypes[t] ? colors.routeTypes[t] + 'd9' : '#64748bd9'};"
+						>
+							{$_('types.' + t)}
+						</a>
+					{/each}
+					{#if tags && tags.length > 0}
+						{#each tags as tag}
+							<span
+								class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+								style="background-color: #64748bd9;"
+							>
+								{$_('tags.' + tag)}
+							</span>
+						{/each}
+					{/if}
+
+					{#if topoJson}
+						{#if wallDirection !== 'N/A' && wallDirection !== 'Unknown'}
+							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
+								<i class="fa-solid fa-compass"></i>
+								<span>{displayWallDirection}</span>
+							</div>
+						{/if}
+						{#if sunInfo.hours !== 'N/A' && sunInfo.hours !== 'Unknown' && sunInfo.hours !== 'no_geodata'}
+							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
+								<i class="fa-solid fa-clock"></i>
+								<span>{displaySunHours}</span>
+							</div>
+						{/if}
+					{/if}
+				</div>
+			{/if}
+
+			<div class="mt-1 mb-4 flex overflow-x-auto gap-3 no-scrollbar pb-2 pt-1 -mx-2 px-2 sm:mt-4 sm:mb-6">
+				{#if has3DTopo}
+					<TopoButton mode="3d" path={$page.params.crag} variant="compact"></TopoButton>
+				{/if}
+				{#if has2DTopo}
+					<TopoButton mode="2d" path={$page.params.crag} variant="compact"></TopoButton>
+				{/if}
+				{#if topo && topo.link && topo.link.trim() !== ''}
+					<a
+						href={topo.link}
+						target="_blank"
+						class="group inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md whitespace-nowrap"
+					>
+						<i class="fa-solid fa-route text-slate-400 transition-colors group-hover:text-blue-500"></i>
+						<span>{$_('ui.topo')} (Ext)</span>
+					</a>
+				{/if}
+				{#if transit}
+					<div class="inline-flex items-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md whitespace-nowrap">
+						<span class="flex items-center rounded-l-full border-r border-slate-200 bg-slate-50 px-3 py-2 text-slate-500">
+							<i class="fa-solid fa-train"></i>
+						</span>
+						<a
+							href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
+							target="_blank"
+							class="border-r border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-blue-600"
+						>
+							{$_('ui.google_maps')}
+						</a>
+						<a
+							href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(transit[0] * 1000000)}%40Y%3D{Math.trunc(transit[1] * 1000000)}&timeSel=1&returnTimeSel=1&journeyProducts=7167&start=1&#!P%7CTP!H%7C952087"
+							target="_blank"
+							class="rounded-r-full px-4 py-2 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-red-600"
+						>
+							{$_('ui.scotty')}
+						</a>
+					</div>
+				{/if}
+				{#if parking}
+					<a
+						href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
+						target="_blank"
+						class="group inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md whitespace-nowrap"
+					>
+						<i class="fa-solid fa-car text-slate-400 transition-colors group-hover:text-emerald-600"></i>
+						<span>{$_('ui.google_maps')}</span>
+					</a>
+				{/if}
+			</div>
+
 			<CragValidationPrompt
 				issue={validationIssue}
 				editorUrl={felsstudioUrl}
 				returnTo={data.meta.url}
 			/>
-			{#if images?.length === 1}
-				<button
-					type="button"
-					onclick={() => (fullscreenImage = images[0])}
-					class="block h-71 w-full cursor-pointer border-0 bg-transparent p-0"
-					aria-label="View crag image fullscreen"
-				>
-					<img class="h-full w-full rounded-2xl object-cover" src={images[0]} alt="Crag" />
-				</button>
-			{:else if images?.length >= 1}
-				<div class="no-scrollbar flex h-73 flex-col flex-wrap content-start overflow-x-auto">
-					{#each images as image, i}
-						{#if i === 0}
+
+			<div class="dynamic-reveal-images sm:mb-8">
+				{#if images?.length > 0}
+					<div class="flex overflow-x-auto gap-3 no-scrollbar pb-2 mb-4 -mx-2 px-2">
+						{#each images as image, i}
 							<button
 								type="button"
-								onclick={() => (fullscreenImage = image)}
-								class="mr-1.5 mb-1.5 block h-71 w-60 cursor-pointer border-0 bg-transparent p-0"
+								onclick={() => (fullscreenImageIndex = i)}
+								class="shrink-0 block h-40 w-auto cursor-pointer border-0 bg-transparent p-0 transition-transform active:scale-95 sm:h-56"
 								aria-label="View crag image {i + 1} fullscreen"
 							>
-								<img class="h-full w-full rounded-2xl object-cover" src={image} alt="Crag" />
+								<img class="h-full w-auto rounded-xl object-cover" src={image} alt="Crag" />
 							</button>
-						{:else}
-							<button
-								type="button"
-								onclick={() => (fullscreenImage = image)}
-								class="mr-1.5 mb-1.5 block h-34.5 w-34.5 cursor-pointer border-0 bg-transparent p-0"
-								aria-label="View crag image {i + 1} fullscreen"
-							>
-								<img class="h-full w-full rounded-2xl object-cover" src={image} alt="Crag" />
-							</button>
-						{/if}
-					{/each}
-				</div>
-			{/if}
-			<div class="mt-5 mb-6 flex flex-wrap gap-3 text-sm font-medium text-gray-700">
-				{#each type as t}
-					<a
-						href="{base}/map/{t}/"
-						class="inline-flex items-center justify-center rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 no-underline transition-colors hover:bg-blue-100"
-					>
-						{$_('types.' + t)}
-					</a>
-				{/each}
-				{#if tags && tags.length > 0}
-					{#each tags as tag}
-						<span
-							class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700"
-						>
-							{$_('tags.' + tag)}
-						</span>
-					{/each}
-				{/if}
-				{#if security && securityRatings.has(security)}
-					<div class="mt-1 ml-2 flex items-center" title="Absicherung">
-						<span class="inline-block">
-							{#each Array(securityRatings.get(security)).fill(0) as _, i}
-								<i class="fa-solid fa-star text-yellow-400" title="Absicherung"></i>
-							{/each}
-							{#each Array(4 - securityRatings.get(security)).fill(0) as _, i}
-								<i class="fa-regular fa-star text-gray-300" title="Absicherung"></i>
-							{/each}
-						</span>
+						{/each}
 					</div>
 				{/if}
-				{#if topoJson}
-					<div
-						class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5"
-					>
-						<i class="fa-solid fa-compass text-gray-500"></i>
-						<span>{displayWallDirection}</span>
-					</div>
-					<div
-						class="flex items-center gap-2 rounded-lg border border-yellow-100 bg-yellow-50 px-3 py-1.5"
-					>
-						<i class="fa-solid fa-clock text-yellow-600"></i>
-						<span>{displaySunHours}</span>
+
+				{#if equipment}
+					<div class="mt-3 mb-6 px-1 sm:mt-6 sm:mb-8">
+						<h3 class="mb-2 text-sm font-bold text-slate-700">Ausrüstung:</h3>
+						<ul class="flex list-none flex-wrap gap-x-6 gap-y-2 p-0">
+							{#each equipment as item}
+								<li class="flex items-center text-sm text-slate-600">
+									{#if equipmentIcons[item.name] && equipmentIcons[item.name].startsWith(base)}
+										<img
+											src={equipmentIcons[item.name]}
+											alt={item.name}
+											class="mr-2 h-5 w-5 object-contain"
+										/>
+									{:else}
+										<i class="{equipmentIcons[item.name] || 'fa-solid fa-circle'} mr-2 w-5 text-center text-slate-500"></i>
+									{/if}
+									<span>
+										{#if item.amount}{item.amount}x {/if}
+										{item.name}
+										{#if item.sizes} ({item.sizes}){/if}
+									</span>
+								</li>
+							{/each}
+						</ul>
 					</div>
 				{/if}
 			</div>
 
-			{#if equipment}
-				<div class="mt-3 mb-6 px-1">
-					<h3 class="mb-2 text-sm font-bold text-slate-700">Ausrüstung:</h3>
-					<ul class="flex list-none flex-wrap gap-x-6 gap-y-2 p-0">
-						{#each equipment as item}
-							<li class="flex items-center text-sm text-slate-600">
-								{#if equipmentIcons[item.name] && equipmentIcons[item.name].startsWith(base)}
-									<img
-										src={equipmentIcons[item.name]}
-										alt={item.name}
-										class="mr-2 h-5 w-5 object-contain"
-									/>
-								{:else}
-									<i
-										class="{equipmentIcons[item.name] ||
-											'fa-solid fa-circle'} mr-2 w-5 text-center text-slate-500"
-									></i>
-								{/if}
-								<span>
-									{#if item.amount}{item.amount}x
-									{/if}
-									{item.name}
-									{#if item.sizes}
-										({item.sizes}){/if}
-								</span>
-							</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
-
-			<div class="mt-6 mb-6 flex items-center">
+			<div class="mt-2 mb-6 flex items-center sm:mb-8">
 				<div class="prose w-full text-slate-800">
-					<div class="mb-3 w-full">
-						{#if has3DTopo || has2DTopo}
-							<div class="grid {has3DTopo && has2DTopo ? 'grid-cols-2' : 'grid-cols-1'} mb-4 gap-3">
-								{#if has3DTopo}
-									<TopoButton mode="3d" path={$page.params.crag}></TopoButton>
-								{/if}
-								{#if has2DTopo}
-									<TopoButton mode="2d" path={$page.params.crag}></TopoButton>
-								{/if}
-							</div>
-						{/if}
-
-						<div class="mt-2 mb-6 flex flex-wrap items-center gap-3">
-							{#if topo && topo.link && topo.link.trim() !== ''}
-								<a
-									href={topo.link}
-									target="_blank"
-									class="group inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-900 hover:shadow-md"
-								>
-									<i
-										class="fa-solid fa-route text-slate-400 transition-colors group-hover:text-blue-500"
-									></i>
-									<span>{$_('ui.topo')} (Ext)</span>
-								</a>
-							{/if}
-							{#if transit}
-								<div
-									class="inline-flex items-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:shadow-md"
-								>
-									<span
-										class="flex items-center rounded-l-xl border-r border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-500"
-									>
-										<i class="fa-solid fa-train"></i>
-									</span>
-									<a
-										href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
-										target="_blank"
-										class="border-r border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-blue-600"
-									>
-										{$_('ui.google_maps')}
-									</a>
-									<a
-										href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(
-											transit[0] * 1000000
-										)}%40Y%3D{Math.trunc(
-											transit[1] * 1000000
-										)}&timeSel=1&returnTimeSel=1&journeyProducts=7167&start=1&#!P%7CTP!H%7C952087"
-										target="_blank"
-										class="rounded-r-xl px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50 hover:text-red-600"
-									>
-										{$_('ui.scotty')}
-									</a>
-								</div>
-							{/if}
-							{#if parking}
-								<a
-									href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
-									target="_blank"
-									class="group inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline shadow-sm ring-1 ring-slate-200 transition-all ring-inset hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-900 hover:shadow-md"
-								>
-									<i
-										class="fa-solid fa-car text-slate-400 transition-colors group-hover:text-emerald-600"
-									></i>
-									<span>{$_('ui.google_maps')}</span>
-								</a>
-							{/if}
-						</div>
-					</div>
 					<span>{description}</span>
 
 					{#if gradeRoutes?.length}
 						{#if gradeRoutes.length < 8}
-							<div class="not-prose mt-5 mb-5 w-full">
+							<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
 								<RouteList routes={gradeRoutes} />
 							</div>
 						{:else}
-							<div class="not-prose mt-5 mb-5 h-40 w-full">
-								<GradeChart routes={gradeRoutes} />
+							<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
+								<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
+									{$_('topo.grade_distribution')}
+								</h3>
+								<div class="h-40 w-full sm:h-56">
+									<GradeChart routes={gradeRoutes} />
+								</div>
 							</div>
 						{/if}
 					{/if}
+					
+					{#if seasonChartData}
+						<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
+							<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.seasonality')}</h3>
+							<div class="h-48 w-full mb-6">
+								<BestSeasonChart data={seasonChartData} />
+							</div>
+						</div>
+					{/if}
+					
+					{#if sunInfo.chartData}
+						<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
+							<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.sun_course')}</h3>
+							<div class="h-32 w-full">
+								<SunChart data={sunInfo.chartData} />
+							</div>
+						</div>
+					{/if}
 
 					{#if sectors.length > 0 && !activeSectorId}
-						<div class="mt-8 mb-5 w-full">
+						<div class="mt-8 mb-5 w-full sm:mt-12 sm:mb-8">
 							<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
 								{$_('ui.sectors')} ({sectors.length})
 							</h3>
@@ -658,3 +657,32 @@ function portal(node) {
 		{/if}
 	</div>
 </main>
+
+<style>
+	.breadcrumb-mask {
+		mask-image: linear-gradient(to right, black 70%, transparent 90%);
+		-webkit-mask-image: linear-gradient(to right, black 70%, transparent 90%);
+	}
+
+	@media (min-width: 640px) {
+		.breadcrumb-mask {
+			mask-image: linear-gradient(to right, black 85%, transparent 100%);
+			-webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+		}
+	}
+
+	@media (max-width: 639px) {
+		.dynamic-reveal {
+			margin-top: clamp(0rem, calc((var(--info-panel-height-num, 0) - 210) * 0.01rem), 0.75rem);
+			margin-bottom: clamp(0rem, calc((var(--info-panel-height-num, 0) - 210) * 0.01rem), 1rem);
+			max-height: clamp(0px, calc((var(--info-panel-height-num, 0) - 210) * 1.5px), 1000px);
+			opacity: clamp(0, calc((var(--info-panel-height-num, 0) - 250) / 120), 1);
+			overflow: hidden;
+		}
+		.dynamic-reveal-images {
+			max-height: clamp(0px, calc((var(--info-panel-height-num, 0) - 250) * 1.5px), 1000px);
+			opacity: clamp(0, calc((var(--info-panel-height-num, 0) - 290) / 120), 1);
+			overflow: hidden;
+		}
+	}
+</style>

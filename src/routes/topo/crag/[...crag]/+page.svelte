@@ -27,14 +27,15 @@
 	} from '$lib/assets/js/sun-calculations';
 	import SunChart from '$lib/components/charts/SunChart.svelte';
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
+	import GradeLine from '$lib/components/charts/GradeLine.svelte';
 	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
 	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
 	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
 	import RouteList from '$lib/components/topo/RouteList.svelte';
-	import FloatingButton from '$lib/components/topo/FloatingButton.svelte';
-	import FloatingControlsTop from '$lib/components/topo/FloatingControlsTop.svelte';
-	import FloatingControlsBottom from '$lib/components/topo/FloatingControlsBottom.svelte';
+	import FloatingButton from '$lib/components/ui/FloatingButton.svelte';
+	import FloatingControlsTop from '$lib/components/ui/FloatingControlsTop.svelte';
+	import FloatingControlsBottom from '$lib/components/ui/FloatingControlsBottom.svelte';
 	import { colors } from '$lib/colors.js';
 
 	let { data } = $props();
@@ -948,7 +949,7 @@
 	<InfoPanel onShare={share} isOpen={isInfoPanelOpen && !isNavigatingAway} onClose={() => (isInfoPanelOpen = false)}>
 		<div class="flex flex-col h-full flex-1 min-h-0 w-full">
 			{#if $navigating && $navigating.to?.url.pathname.startsWith(base + '/topo/crag/')}
-			<div class="flex-1 overflow-y-auto w-full px-5 mb-4 mt-6 overflow-x-hidden min-h-0">
+			<div class="flex-1 overflow-y-auto w-full px-6 mb-4 mt-6 overflow-x-hidden min-h-0">
 				<div class="animate-pulse flex flex-col space-y-4 pt-4">
 					<div class="h-8 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
 					<div class="flex gap-2 mb-4">
@@ -964,7 +965,7 @@
 			</div>
 		{:else if data.route}
 			<div
-				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
+				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-6 pr-20 flex flex-row items-center pt-6 pb-5"
 			>
 				<a
 					href="{base}/topo/crag/{data.path}{$page.url.search}"
@@ -974,9 +975,9 @@
 					<i class="fa-solid fa-arrow-left text-gray-600"></i>
 				</a>
 				<div class="min-w-0">
-					<h1 class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.route.name}</h1>
+					<h1 class="truncate text-2xl font-bold my-0 text-slate-800">{data.route.name}</h1>
 					{#if data.isSectorPath}
-						<div class="mt-1 flex items-center gap-2 sm:px-2">
+						<div class="mt-1 flex items-center gap-2">
 							<span
 								class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100"
 							>{$_('ui.sector')}: {currentSectorName}</span
@@ -991,48 +992,49 @@
 				</div>
 			</div>
 
-			<div class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
+			<div class="flex-1 overflow-y-auto w-full px-6 mb-4 overflow-x-hidden min-h-0" overflow-y>
 				<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mb-6">
-					<Tooltip text={$_('topo.wall_direction')}>
-						<div
-							class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200"
-						>
-							<i class="fa-solid fa-compass text-gray-500"></i>
-							<span>{displayWallDirection}</span>
-						</div>
-					</Tooltip>
-					<Tooltip text={$_('topo.sun_hours')}>
-						<div
-							class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100"
-						>
-							<i class="fa-solid fa-clock text-yellow-600"></i>
-							<span>{displaySunHours}</span>
-						</div>
-					</Tooltip>
+					{#if data.route.type}
+						{#each Array.isArray(data.route.type) ? data.route.type : [data.route.type] as t}
+							<span
+								class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+								style="background-color: {colors.routeTypes[t] ? colors.routeTypes[t] + 'd9' : '#64748bd9'};"
+							>
+								{$_('types.' + t)}
+							</span>
+						{/each}
+					{/if}
 					{#if data.route.tags && data.route.tags.length > 0}
 						{#each data.route.tags as tag}
 							<span
-								class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100"
+								class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+								style="background-color: #64748bd9;"
 							>
 								{$_('tags.' + tag)}
 							</span>
 						{/each}
+					{/if}
+					{#if wallDirection !== 'N/A' && wallDirection !== 'Unknown'}
+						<Tooltip text={$_('topo.wall_direction')}>
+							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
+								<i class="fa-solid fa-compass"></i>
+								<span>{displayWallDirection}</span>
+							</div>
+						</Tooltip>
+					{/if}
+					{#if sunInfo.hours !== 'N/A' && sunInfo.hours !== 'Unknown' && sunInfo.hours !== 'no_geodata'}
+						<Tooltip text={$_('topo.sun_hours')}>
+							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
+								<i class="fa-solid fa-clock"></i>
+								<span>{displaySunHours}</span>
+							</div>
+						</Tooltip>
 					{/if}
 				</div>
 				<div class="mb-5 prose mx-auto">
 					{#if data.route.description}
 						<div class="border-b border-gray-200 p-3">
 							{data.route.description}
-						</div>
-					{/if}
-					{#if data.route.type}
-						<div class="border-b border-gray-200 p-3">
-							{$_('topo.climbing_type')}:
-							{#if Array.isArray(data.route.type)}
-								{data.route.type.map((t) => $_('types.' + t) || t).join(', ')}
-							{:else}
-								{$_('types.' + data.route.type) || data.route.type}
-							{/if}
 						</div>
 					{/if}
 					{#if data.route.grade}
@@ -1074,52 +1076,59 @@
 							</div>
 						</div>
 					{/if}
-					{#if !isProgrammaticAnimationRunning && renderChartsStage >= 3 && sunInfo.chartData}
-						<div in:slide={{ duration: 200 }}>
-							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.sun_course')}</h3>
-							<div class="h-32 w-full">
-								<SunChart data={sunInfo.chartData} />
-							</div>
-						</div>
-					{/if}
 				</div>
 			</div>
 		{:else}
 			<div
-				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-5 pr-20 flex flex-row items-center pt-6 pb-5"
+				class="justify-self-center sm:justify-self-start w-screen sm:w-auto px-6 pr-20 flex flex-row items-center pt-6 pb-5"
 			>
 				<div class="min-w-0">
 					<h1
-						class="truncate text-2xl font-bold my-0 text-slate-800 sm:px-2">{data.sectorId ? `${data.cragName} - ${currentSectorName}` : data.cragName}</h1>
+						class="truncate text-2xl font-bold my-0 text-slate-800">{data.sectorId ? `${data.cragName} - ${currentSectorName}` : data.cragName}</h1>
 				</div>
 			</div>
 
-			<div class="flex-1 overflow-y-auto w-full px-8 mb-4 overflow-x-hidden min-h-0">
+			<div class="flex-1 overflow-y-auto w-full px-6 mb-4 overflow-x-hidden min-h-0" overflow-y>
 				<div class="flex flex-wrap gap-3 text-sm font-medium text-gray-700 mb-6">
-					<Tooltip text={$_('topo.wall_direction')}>
-						<div
-							class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200"
-						>
-							<i class="fa-solid fa-compass text-gray-500"></i>
-							<span>{displayWallDirection}</span>
-						</div>
-					</Tooltip>
-					<Tooltip text={$_('topo.sun_hours')}>
-						<div
-							class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100"
-						>
-							<i class="fa-solid fa-clock text-yellow-600"></i>
-							<span>{displaySunHours}</span>
-						</div>
-					</Tooltip>
+					{#if data.sector?.type || data.sector?.properties?.type || data.cragType}
+						{#each Array.isArray(data.sector?.type || data.sector?.properties?.type || data.cragType) ? (data.sector?.type || data.sector?.properties?.type || data.cragType) : [data.sector?.type || data.sector?.properties?.type || data.cragType] as t}
+							{#if t && typeof t === 'string' && t.trim()}
+								{#each t.split(',').map((x) => x.trim()) as singleType}
+									<span
+										class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+										style="background-color: {colors.routeTypes[singleType] ? colors.routeTypes[singleType] + 'd9' : '#64748bd9'};"
+									>
+										{$_('types.' + singleType)}
+									</span>
+								{/each}
+							{/if}
+						{/each}
+					{/if}
 					{#if data.topo.tags && data.topo.tags.length > 0}
 						{#each data.topo.tags as tag}
 							<span
-								class="px-3 py-1.5 rounded-lg border bg-blue-50 text-blue-700 text-sm font-medium border-blue-100"
+								class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+								style="background-color: #64748bd9;"
 							>
 								{$_('tags.' + tag)}
 							</span>
 						{/each}
+					{/if}
+					{#if wallDirection !== 'N/A' && wallDirection !== 'Unknown'}
+						<Tooltip text={$_('topo.wall_direction')}>
+							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
+								<i class="fa-solid fa-compass"></i>
+								<span>{displayWallDirection}</span>
+							</div>
+						</Tooltip>
+					{/if}
+					{#if sunInfo.hours !== 'N/A' && sunInfo.hours !== 'Unknown' && sunInfo.hours !== 'no_geodata'}
+						<Tooltip text={$_('topo.sun_hours')}>
+							<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
+								<i class="fa-solid fa-clock"></i>
+								<span>{displaySunHours}</span>
+							</div>
+						</Tooltip>
 					{/if}
 				</div>
 				<div class="flex flex-col mt-2 mb-10">
@@ -1132,48 +1141,18 @@
 
 					{#if data.gradeRoutes?.length || sunInfo.chartData}
 						<div class="mb-8 w-full">
-							{#if data.gradeRoutes?.length >= 8}
+							{#if data.gradeRoutes?.length >= 2}
 								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">
 									{$_('topo.grade_distribution')}
 								</h3>
-								<div class="h-32 w-full mb-6">
-									<GradeChart routes={data.gradeRoutes} />
-								</div>
-							{/if}
-							{#if seasonChartData}
-								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.seasonality')}</h3>
-								<div class="h-48 w-full mb-6">
-									<BestSeasonChart data={seasonChartData} />
-								</div>
-							{/if}
-							{#if sunInfo.chartData}
-								<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.sun_course')}</h3>
-								<div class="h-32 w-full">
-									<SunChart data={sunInfo.chartData} />
+								<div class="w-full mb-6">
+									<GradeLine routes={data.gradeRoutes} />
 								</div>
 							{/if}
 						</div>
 					{/if}
 
-					<!-- Fix Points List -->
-					{#if data.topo.fixPoints && data.topo.fixPoints.length > 0}
-						<div class="w-full mb-8">
-							<h3 class="text-lg font-bold text-gray-800 mb-3 px-1">{$_('topo.protection')}</h3>
-							<div
-								class="overflow-x-auto sm:rounded-xl border border-gray-200 shadow-sm bg-white p-4"
-							>
-								<div class="flex flex-wrap gap-2">
-									{#each Object.entries(countFixPoints(data.topo.fixPoints)) as [type, count]}
-										<span
-											class="px-3 py-1 rounded-full bg-gray-50 text-sm font-medium text-gray-700 border border-gray-200"
-										>
-											{count}x {$_('topo.fixpoints.' + type) || type}
-										</span>
-									{/each}
-								</div>
-							</div>
-						</div>
-					{/if}
+
 
 					{#if availableSectors.length > 0 && !data.sectorId && !data.routeId}
 						<div class="w-full mb-8">

@@ -20,6 +20,11 @@ export function getTypeColorClass(typeId) {
 	return getTypeBadgeClass(typeId);
 }
 
+export function getTypeSolidBadgeClass(typeId) {
+	const meta = getRouteTypeMeta(typeId);
+	return `${meta.dotClass} bg-opacity-50 text-white border-transparent`;
+}
+
 export function normalizeTypes(type) {
 	if (!type) return [];
 	if (Array.isArray(type)) return type;

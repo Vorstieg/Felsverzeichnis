@@ -151,6 +151,7 @@
                             const isHigh = height > window.innerHeight * 0.7;
                             
                             document.body.style.setProperty('--info-panel-height', height + 'px');
+                            document.body.style.setProperty('--info-panel-height-num', height);
                             document.body.style.setProperty('--controls-opacity', isHigh ? '0' : '1');
                             document.body.style.setProperty('--controls-pointer', isHigh ? 'none' : 'auto');
                             document.body.style.setProperty('--controls-scale', isHigh ? '0' : '1');
@@ -166,6 +167,12 @@
                                     pane.paneEl.classList.add('is-high');
                                 } else {
                                     pane.paneEl.classList.remove('is-high');
+                                }
+                                
+                                if (height > window.innerHeight * 0.25) {
+                                    pane.paneEl.classList.add('is-middle');
+                                } else {
+                                    pane.paneEl.classList.remove('is-middle');
                                 }
                             }
                         }
@@ -190,7 +197,7 @@
                 breaks: {
                     top: { enabled: true, height: window.innerHeight - 80, bounce: true },
                     middle: { enabled: true, height: window.innerHeight * 0.5, bounce: true },
-                    bottom: { enabled: true, height: window.innerHeight * 0.14, bounce: true },
+                    bottom: { enabled: true, height: Math.max(window.innerHeight * 0.18, 145), bounce: true },
                 },
                 initialBreak: initialBreak,
                 bottomClose: false,
@@ -209,7 +216,8 @@
             }
             pane.destroy({ animate: true });
             pane = null;
-            document.body.style.setProperty('--info-panel-height', '0px');
+            document.body.style.setProperty('--info-panel-height', '10000px');
+            document.body.style.setProperty('--info-panel-height-num', '10000');
             document.body.style.setProperty('--controls-opacity', '1');
             document.body.style.setProperty('--controls-pointer', 'auto');
             document.body.style.setProperty('--controls-scale', '1');
@@ -226,7 +234,8 @@
             }
             pane.destroy({ animate: false });
             pane = null;
-            document.body.style.setProperty('--info-panel-height', '0px');
+            document.body.style.setProperty('--info-panel-height', '10000px');
+            document.body.style.setProperty('--info-panel-height-num', '10000');
             document.body.style.setProperty('--controls-opacity', '1');
             document.body.style.setProperty('--controls-pointer', 'auto');
             document.body.style.setProperty('--controls-scale', '1');
@@ -247,8 +256,13 @@
                 paneElement.removeEventListener('touchmove', handleTouchMove);
                 paneElement.removeEventListener('touchend', handleTouchEnd);
             }
+            if (pane) {
+                pane.destroy({ animate: false });
+                pane = null;
+            }
             document.body.style.overscrollBehaviorY = 'auto';
-            document.body.style.setProperty('--info-panel-height', '0px');
+            document.body.style.setProperty('--info-panel-height', '10000px');
+            document.body.style.setProperty('--info-panel-height-num', '10000');
             document.body.style.setProperty('--controls-opacity', '1');
             document.body.style.setProperty('--controls-pointer', 'auto');
             document.body.style.setProperty('--controls-scale', '1');

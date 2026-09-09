@@ -48,8 +48,8 @@ export const routeTypeMeta = {
 	},
 	trad: {
 		color: colors.routeTypes.trad,
-		dotClass: 'bg-yellow-500',
-		badgeClass: 'bg-yellow-100 text-yellow-700 border-yellow-200'
+		dotClass: 'bg-red-500',
+		badgeClass: 'bg-red-100 text-red-700 border-red-200'
 	},
 	'alpine-tour': {
 		color: colors.routeTypes['alpine-tour'],

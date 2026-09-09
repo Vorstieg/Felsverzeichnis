@@ -50,7 +50,7 @@
 
 <div class="w-full">
 	<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.routes')} ({routes.length})</h3>
-	<div class="overflow-x-auto border border-gray-200 bg-white shadow-sm sm:rounded-xl">
+	<div class="border border-gray-200 bg-white shadow-sm sm:rounded-xl">
 		<table class="!m-0 min-w-full divide-y divide-gray-200">
 			<thead class="bg-gray-50">
 				<tr>
@@ -76,13 +76,15 @@
 						onclick={() => selectRoute(route)}
 						onkeydown={(event) => handleRowKeydown(event, route)}
 					>
-						<td class="flex items-center px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900">
-							{route.name || '—'}
-							{#if pendingRouteId === route.id}
-								<i class="fa-solid fa-circle-notch ml-2 animate-spin text-blue-500"></i>
-							{/if}
+						<td class="px-6 py-4 text-sm font-medium text-gray-900 w-full max-w-0">
+							<div class="flex items-center">
+								<span class="truncate" title={route.name}>{route.name || '—'}</span>
+								{#if pendingRouteId === route.id}
+									<i class="fa-solid fa-circle-notch ml-2 shrink-0 animate-spin text-blue-500"></i>
+								{/if}
+							</div>
 						</td>
-						<td class="px-6 py-4 text-sm whitespace-nowrap">
+						<td class="px-6 py-4 text-sm whitespace-nowrap w-1">
 							<span
 								class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 shadow-sm"
 								style="border-left: 5px solid {getGradeColor(route.grade)};"
@@ -90,7 +92,7 @@
 								{route.grade || '—'}
 							</span>
 						</td>
-						<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
+						<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500 w-1">
 							{route.length ? `${route.length}m` : '—'}
 						</td>
 					</tr>
