@@ -210,7 +210,7 @@
                 breaks: {
                     top: { enabled: true, height: window.innerHeight - 80, bounce: true },
                     middle: { enabled: true, height: window.innerHeight * 0.5, bounce: true },
-                    bottom: { enabled: true, height: Math.max(window.innerHeight * 0.18, 145), bounce: true },
+                    bottom: { enabled: true, height: Math.max(window.innerHeight * 0.19, 155), bounce: true },
                 },
                 initialBreak: initialBreak,
                 bottomClose: false,
