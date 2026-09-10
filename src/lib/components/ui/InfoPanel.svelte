@@ -158,9 +158,13 @@
                         if (ty !== null && !isNaN(ty)) {
                             const height = window.innerHeight - ty;
                             const isHigh = height > window.innerHeight * 0.7;
+                            const highStart = window.innerHeight * 0.55;
+                            const highEnd = window.innerHeight * 0.75;
+                            const highProgress = Math.max(0, Math.min(1, (height - highStart) / (highEnd - highStart)));
                             
                             document.body.style.setProperty('--info-panel-height', height + 'px');
                             document.body.style.setProperty('--info-panel-height-num', height);
+                            document.body.style.setProperty('--info-panel-high-progress', highProgress);
                             document.body.style.setProperty('--controls-opacity', isHigh ? '0' : '1');
                             document.body.style.setProperty('--controls-pointer', isHigh ? 'none' : 'auto');
                             document.body.style.setProperty('--controls-scale', isHigh ? '0' : '1');
@@ -356,7 +360,16 @@
     :global(.cupertino-pane-wrapper .pane) {
         display: flex !important;
         flex-direction: column !important;
-        overflow: hidden !important;
+        overflow: visible !important;
+    }
+    :global(.cupertino-pane-wrapper .pane::before) {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        height: 50vh;
+        background: white;
     }
     :global(.cupertino-pane-wrapper .content) {
         display: flex !important;
@@ -367,7 +380,7 @@
     }
     :global(.cupertino-pane-wrapper .pane:not(.is-high) [overflow-y]) {
         overflow-y: hidden !important;
-        touch-action: none !important;
+        touch-action: pan-x !important;
     }
 
     .floating-controls {

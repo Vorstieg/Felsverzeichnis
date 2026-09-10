@@ -38,6 +38,10 @@
 	import RouteList from '$lib/components/topo/RouteList.svelte';
 
 	let { data } = $props();
+	let mounted = $state(false);
+	onMount(() => {
+		mounted = true;
+	});
 	let currentSectorName = $derived(data.sector?.name || data.sectorId);
 	let availableSectors = $derived(data.sectors || []);
 
@@ -697,8 +701,8 @@
 
 <svelte:window onroute-clicked={handleRouteClicked} />
 
-<div class="topo-container h-screen w-screen md:w-3/4 absolute overflow-hidden pointer-events-auto">
-	{#if browser}
+<div class="topo-container top-0 left-0 h-screen w-screen {isInfoPanelOpen ? 'md:w-3/4 topo-container-fade' : 'md:w-full'} absolute overflow-hidden pointer-events-auto transition-all duration-300">
+	{#if mounted}
 		{#if displayMode === '2d' && has2D}
 			<Topo2DViewer
 				topo={data.topo}
@@ -917,6 +921,9 @@
 		{/if}
 
 		<div class="hidden sm:flex flex-col items-start gap-2 pointer-events-auto">
+			{#if !isInfoPanelOpen}
+				<FloatingButton icon="fa-info-circle" title="Show Info" onclick={() => (isInfoPanelOpen = true)} />
+			{/if}
 			{#if displayMode === '2d' && !isTopoLegendOpen}
 				<FloatingButton icon="fa-map-signs" title="Topo legend" onclick={() => (isTopoLegendOpen = true)} />
 			{/if}
@@ -934,6 +941,9 @@
 
 	<FloatingControlsBottom>
 		<div class="sm:hidden flex flex-col items-end gap-2 w-full transition-opacity duration-300 {isNavigatingAway ? 'opacity-0' : 'opacity-100'}">
+			{#if !isInfoPanelOpen}
+				<FloatingButton icon="fa-info-circle" title="Show Info" onclick={() => (isInfoPanelOpen = true)} />
+			{/if}
 			{#if displayMode === '2d' && !isTopoLegendOpen}
 				<FloatingButton icon="fa-map-signs" title="Topo legend" onclick={() => (isTopoLegendOpen = true)} />
 			{/if}
@@ -1288,7 +1298,7 @@
     }
 
     @media (min-width: 768px) {
-        .topo-container {
+        .topo-container-fade {
             -webkit-mask-image: linear-gradient(to right, black 98%, transparent 100%);
             mask-image: linear-gradient(to right, black 98%, transparent 100%);
         }

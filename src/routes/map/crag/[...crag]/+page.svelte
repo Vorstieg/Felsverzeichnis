@@ -26,6 +26,7 @@ let searchTerm = $state('');
 let navigatingTo = $state(null);
 let breadcrumbScrollContainer = $state();
 let breadcrumbsAtEnd = $state(true);
+let isScrolled = $state(false);
 
 function checkBreadcrumbScroll() {
 	if (breadcrumbScrollContainer) {
@@ -314,7 +315,7 @@ function portal(node) {
 
 <main class="z-[500] flex h-full min-h-0 w-full flex-1 flex-col">
 	<div
-		class="flex w-screen flex-row items-center justify-self-center px-6 pt-3 pr-20 pb-2 sm:w-auto sm:justify-self-start sm:pt-6"
+		class="header-dynamic flex w-screen flex-row items-center justify-self-center px-6 pr-20 pb-2 sm:w-auto sm:justify-self-start transition-colors duration-300 {isScrolled ? 'border-b border-gray-200 shadow-sm bg-white' : ''}"
 	>
 		{#if activeSectorId}
 			<a
@@ -326,7 +327,7 @@ function portal(node) {
 			</a>
 		{/if}
 		<div class="flex min-w-0 flex-col max-w-full">
-			<div class="relative z-20 mb-0.5 w-full {breadcrumbsAtEnd ? '' : 'breadcrumb-mask'}">
+			<div class="breadcrumb-dynamic relative z-20 w-full {breadcrumbsAtEnd ? '' : 'breadcrumb-mask'}">
 				<div
 					bind:this={breadcrumbScrollContainer}
 					onscroll={checkBreadcrumbScroll}
@@ -346,10 +347,10 @@ function portal(node) {
 					{/each}
 				</div>
 			</div>
-			<h1 class="my-0 text-2xl font-bold text-slate-800">{data.currentData?.properties?.name}</h1>
+			<h1 class="title-dynamic my-0 font-bold text-slate-800">{data.currentData?.properties?.name}</h1>
 		</div>
 	</div>
-	<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-6" overflow-y>
+	<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-6" overflow-y onscroll={(e) => isScrolled = e.currentTarget.scrollTop > 10}>
 		{#if !data.currentData}
 			<div class="mt-4 animate-pulse">
 				<div class="mb-4 h-6 w-1/3 rounded bg-gray-200"></div>
@@ -367,7 +368,7 @@ function portal(node) {
 		{:else}
 			{#if type?.length > 0 || tags?.length > 0 || topoJson}
 				<div class="dynamic-reveal flex flex-col gap-3 sm:mb-6 sm:mt-4">
-					{#if type?.length > 0 || tags?.length > 0}
+					{#if type?.length > 0}
 						<div class="flex flex-wrap items-center gap-3 text-sm font-medium text-gray-700">
 							{#each type as t}
 								<a
@@ -378,16 +379,19 @@ function portal(node) {
 									{$_('types.' + t)}
 								</a>
 							{/each}
-							{#if tags && tags.length > 0}
-								{#each tags as tag}
-									<span
-										class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
-										style="background-color: #64748bd9;"
-									>
-										{$_('tags.' + tag)}
-									</span>
-								{/each}
-							{/if}
+						</div>
+					{/if}
+					
+					{#if tags?.length > 0}
+						<div class="flex flex-wrap items-center gap-3 text-sm font-medium text-gray-700">
+							{#each tags as tag}
+								<span
+									class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+									style="background-color: #64748bd9;"
+								>
+									{$_('tags.' + tag)}
+								</span>
+							{/each}
 						</div>
 					{/if}
 
@@ -410,25 +414,27 @@ function portal(node) {
 				</div>
 			{/if}
 
-			<div class="mt-1 mb-4 flex overflow-x-auto gap-3 no-scrollbar pb-2 pt-1 -mx-2 px-2 sm:mt-4 sm:mb-6">
+
+
+			<div class="buttons-inline mt-1 mb-4 flex overflow-x-auto gap-3 no-scrollbar pb-2 pt-1 -mx-2 px-2 sm:mt-4 sm:mb-6">
 				{#if has3DTopo}
-					<TopoButton mode="3d" path={$page.params.crag} variant="compact"></TopoButton>
+					<div class="shrink-0"><TopoButton mode="3d" path={$page.params.crag} variant="compact"></TopoButton></div>
 				{/if}
 				{#if has2DTopo}
-					<TopoButton mode="2d" path={$page.params.crag} variant="compact"></TopoButton>
+					<div class="shrink-0"><TopoButton mode="2d" path={$page.params.crag} variant="compact"></TopoButton></div>
 				{/if}
 				{#if topo && topo.link && topo.link.trim() !== ''}
 					<a
 						href={topo.link}
 						target="_blank"
-						class="group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
+						class="shrink-0 group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
 					>
 						<i class="fa-solid fa-route"></i>
 						<span>{$_('ui.topo')} (Ext)</span>
 					</a>
 				{/if}
 				{#if transit}
-					<div class="inline-flex items-center rounded-full bg-white shadow-sm border border-gray-200 transition-all whitespace-nowrap h-10 max-sm:h-11 overflow-hidden shrink-0">
+					<div class="shrink-0 inline-flex items-center rounded-full bg-white shadow-sm border border-gray-200 transition-all whitespace-nowrap h-10 max-sm:h-11 overflow-hidden">
 						<span class="flex items-center justify-center h-full px-3 text-gray-500 bg-gray-50 border-r border-gray-200">
 							<i class="fa-solid fa-train"></i>
 						</span>
@@ -452,7 +458,7 @@ function portal(node) {
 					<a
 						href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
 						target="_blank"
-						class="group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
+						class="shrink-0 group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
 					>
 						<i class="fa-solid fa-car"></i>
 						<span>{$_('ui.google_maps')}</span>
@@ -553,108 +559,74 @@ function portal(node) {
 							<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
 								{$_('ui.sectors')} ({sectors.length})
 							</h3>
-							<div
-								class="mt-2 overflow-x-auto border border-gray-200 bg-white shadow-sm sm:rounded-xl"
-							>
-								<table class="!m-0 min-w-full divide-y divide-gray-200">
-									<thead class="bg-gray-50">
-										<tr>
-											<th
-												scope="col"
-												class="px-3 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase sm:px-6"
-											>
-												{$_('topo.table.name')}
-											</th>
-											<th
-												scope="col"
-												class="px-3 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase sm:px-6"
-											>
-												{$_('topo.routes')}
-											</th>
-											<th
-												scope="col"
-												class="px-3 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase sm:px-6"
-											>
-												{$_('ui.tags')}
-											</th>
-											<th scope="col" class="relative px-3 py-3 sm:px-6">
-												<span class="sr-only">Go</span>
-											</th>
-										</tr>
-									</thead>
-									<tbody class="divide-y divide-gray-200 bg-white">
-										{#each sectors as sector}
-											<tr
-												class="group cursor-pointer transition-colors hover:bg-gray-50 {activeSectorId === sector.id ? 'bg-blue-50/50' : ''}"
-												onclick={(event) => openSector(event, sector)}
-												title={getSectorDescription(sector) || sector.name}
-											>
-												<td
-													class="px-3 py-3 align-middle text-sm font-bold whitespace-nowrap text-gray-900 transition-colors group-hover:text-blue-700 sm:px-6 sm:py-4"
-												>
-													{sector.name}
-												</td>
-												<td
-													class="px-3 py-3 align-middle text-sm whitespace-nowrap text-gray-500 sm:px-6 sm:py-4"
-												>
-													{#if getSectorRouteCount(sector) > 0}
-														<div class="flex items-center gap-2">
-															<div
-																class="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full shadow-inner"
-																style="background: {getConicGradient(getSectorGradeDistribution(sector))}"
-															>
-																<div
-																	class="absolute inset-0 m-auto h-3.5 w-3.5 rounded-full bg-white shadow-sm"
-																></div>
-															</div>
-															<span class="text-xs font-bold text-slate-700"
-																>{getSectorRouteCount(sector)}</span
-															>
-														</div>
-													{:else}
-														<span
-															class="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold text-slate-500"
-														>
-															{$_('topo.no_topo')}
-														</span>
-													{/if}
-												</td>
-												<td
-													class="px-3 py-3 align-middle text-sm whitespace-nowrap text-gray-500 sm:px-6 sm:py-4"
+							<div class="mt-4 flex flex-col gap-3">
+								{#each sectors as sector}
+									<button
+										class="group flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98] {activeSectorId === sector.id ? 'border-blue-200 bg-blue-50/50' : ''}"
+										onclick={(event) => openSector(event, sector)}
+										title={getSectorDescription(sector) || sector.name}
+									>
+										<!-- Left: Grade distribution circle -->
+										<div class="shrink-0">
+											{#if getSectorRouteCount(sector) > 0}
+												<div
+													class="relative flex h-11 w-11 items-center justify-center rounded-full shadow-inner"
+													style="background: {getConicGradient(getSectorGradeDistribution(sector))}"
 												>
 													<div
-														class="flex max-w-[150px] flex-wrap items-center gap-1.5 sm:max-w-none"
+														class="absolute inset-0 m-auto flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm"
 													>
-														{#if getSectorDirection(sector)}
-															<div
-																class="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-slate-500 uppercase sm:text-[10px]"
-															>
-																<i class="fa-regular fa-compass"></i>
-																<span>{getSectorDirection(sector)}</span>
-															</div>
-														{/if}
-														{#if getSectorTypes(sector).length > 0}
-															{#each getSectorTypes(sector).slice(0, 2) as type}
-																<span
-																	class="truncate rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase sm:text-[10px] {getTypeColorClass(type.id)}"
-																>
-																	{type.name}
-																</span>
-															{/each}
-														{/if}
+														<span class="text-[11px] font-bold leading-none text-slate-700"
+															>{getSectorRouteCount(sector)}</span
+														>
 													</div>
-												</td>
-												<td
-													class="py-3 pr-3 text-right align-middle whitespace-nowrap sm:py-4 sm:pr-6"
-												>
-													<i
-														class="fa-solid fa-chevron-right text-xs text-slate-300 transition-colors group-hover:text-blue-500 sm:text-sm"
-													></i>
-												</td>
-											</tr>
-										{/each}
-									</tbody>
-								</table>
+												</div>
+											{:else}
+												<div class="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50">
+													<i class="fa-solid fa-route text-slate-400"></i>
+												</div>
+											{/if}
+										</div>
+
+										<!-- Middle: Content -->
+										<div class="flex min-w-0 flex-1 flex-col justify-center gap-1">
+											<div class="truncate text-[15px] font-bold leading-tight text-gray-900 transition-colors group-hover:text-blue-700">
+												{sector.name}
+											</div>
+											<div class="flex flex-wrap items-center gap-1.5">
+												{#if getSectorRouteCount(sector) === 0}
+													<span
+														class="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-bold text-slate-500"
+													>
+														{$_('topo.no_topo')}
+													</span>
+												{/if}
+												{#if getSectorDirection(sector)}
+													<div
+														class="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-slate-500 uppercase"
+													>
+														<i class="fa-regular fa-compass"></i>
+														<span>{getSectorDirection(sector)}</span>
+													</div>
+												{/if}
+												{#if getSectorTypes(sector).length > 0}
+													{#each getSectorTypes(sector).slice(0, 3) as type}
+														<span
+															class="truncate rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase {getTypeColorClass(type.id)}"
+														>
+															{type.name}
+														</span>
+													{/each}
+												{/if}
+											</div>
+										</div>
+
+										<!-- Right: Chevron -->
+										<div class="shrink-0 pl-1 text-slate-300 transition-colors group-hover:text-blue-500">
+											<i class="fa-solid fa-chevron-right text-sm"></i>
+										</div>
+									</button>
+								{/each}
 							</div>
 						</div>
 					{/if}
@@ -662,6 +634,75 @@ function portal(node) {
 			</div>
 		{/if}
 	</div>
+	{#if data.currentData}
+		<div class="buttons-footer border-t border-gray-200 bg-white/80 backdrop-blur-md px-6 shrink-0">
+			<div class="flex items-center overflow-x-auto no-scrollbar text-[10px] font-medium tracking-wide sm:text-xs mt-1 pb-1">
+					{#each breadcrumbParts as part, i}
+						{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
+						<a
+							href="{base}/map/{encodeURIComponent(subpath)}"
+							class="-mx-0.5 shrink-0 rounded px-0.5 text-slate-500 transition-colors hover:text-slate-700 hover:underline focus:ring-2 focus:ring-slate-400 focus:outline-none"
+						>
+							{part}
+						</a>
+						{#if i < breadcrumbParts.length - 1}
+							<i class="fa-solid fa-chevron-right shrink-0 mx-1.5 text-[8px] text-slate-300"></i>
+						{/if}
+					{/each}
+			</div>
+			{#if has3DTopo || has2DTopo || (topo && topo.link && topo.link.trim() !== '') || transit || parking}
+				<div class="flex overflow-x-auto gap-3 no-scrollbar pb-1 pt-1 -mx-2 px-2">
+					{#if has3DTopo}
+						<div class="shrink-0"><TopoButton mode="3d" path={$page.params.crag} variant="compact"></TopoButton></div>
+					{/if}
+					{#if has2DTopo}
+						<div class="shrink-0"><TopoButton mode="2d" path={$page.params.crag} variant="compact"></TopoButton></div>
+					{/if}
+					{#if topo && topo.link && topo.link.trim() !== ''}
+						<a
+							href={topo.link}
+							target="_blank"
+							class="shrink-0 group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
+						>
+							<i class="fa-solid fa-route"></i>
+							<span>{$_('ui.topo')} (Ext)</span>
+						</a>
+					{/if}
+					{#if transit}
+						<div class="shrink-0 inline-flex items-center rounded-full bg-white shadow-sm border border-gray-200 transition-all whitespace-nowrap h-10 max-sm:h-11 overflow-hidden">
+							<span class="flex items-center justify-center h-full px-3 text-gray-500 bg-gray-50 border-r border-gray-200">
+								<i class="fa-solid fa-train"></i>
+							</span>
+							<a
+								href="https://www.google.com/maps/dir/?api=1&destination={transit[1]},{transit[0]}&travelmode=transit"
+								target="_blank"
+								class="flex items-center h-full px-4 text-sm font-semibold text-gray-600 no-underline transition-colors hover:bg-ink hover:text-white border-r border-gray-200"
+							>
+								{$_('ui.google_maps')}
+							</a>
+							<a
+								href="https://fahrplan.oebb.at/webapp/?context=TP&ZID=A%3D1%40X%3D{Math.trunc(transit[0] * 1000000)}%40Y%3D{Math.trunc(transit[1] * 1000000)}&timeSel=1&returnTimeSel=1&journeyProducts=7167&start=1&#!P%7CTP!H%7C952087"
+								target="_blank"
+								class="flex items-center h-full px-4 text-sm font-semibold text-gray-600 no-underline transition-colors hover:bg-ink hover:text-white"
+							>
+								{$_('ui.scotty')}
+							</a>
+						</div>
+					{/if}
+					{#if parking}
+						<a
+							href="https://www.google.com/maps/dir/?api=1&destination={parking[1]},{parking[0]}"
+							target="_blank"
+							class="shrink-0 group inline-flex items-center justify-center gap-2 h-10 max-sm:h-11 rounded-full bg-white px-4 text-sm font-semibold text-gray-600 no-underline shadow-sm border border-gray-200 transition-all hover:bg-ink hover:text-white whitespace-nowrap"
+						>
+							<i class="fa-solid fa-car"></i>
+							<span>{$_('ui.google_maps')}</span>
+						</a>
+					{/if}
+				</div>
+			{/if}
+		</div>
+	{/if}
 </main>
 
 <style>
@@ -689,6 +730,60 @@ function portal(node) {
 			max-height: clamp(0px, calc((var(--info-panel-height-num, 0) - 250) * 1.5px), 1000px);
 			opacity: clamp(0, calc((var(--info-panel-height-num, 0) - 290) / 120), 1);
 			overflow: hidden;
+		}
+		
+		.header-dynamic {
+			padding-top: calc(0.75rem - (var(--info-panel-high-progress, 0) * 0.25rem));
+		}
+		
+		.breadcrumb-dynamic {
+			max-height: calc((1 - var(--info-panel-high-progress, 0)) * 32px);
+			opacity: calc(1 - var(--info-panel-high-progress, 0));
+			margin-bottom: calc((1 - var(--info-panel-high-progress, 0)) * 0.125rem);
+			overflow: hidden;
+		}
+		
+		.title-dynamic {
+			font-size: calc(1.5rem - (var(--info-panel-high-progress, 0) * 0.375rem));
+			line-height: calc(2rem - (var(--info-panel-high-progress, 0) * 0.25rem));
+		}
+		
+		.buttons-footer {
+			max-height: calc(var(--info-panel-high-progress, 0) * 120px);
+			opacity: var(--info-panel-high-progress, 0);
+			padding-top: calc(var(--info-panel-high-progress, 0) * 0.75rem);
+			padding-bottom: calc(var(--info-panel-high-progress, 0) * 0.75rem);
+			border-top-color: rgba(229, 231, 235, var(--info-panel-high-progress, 0));
+			overflow: hidden;
+		}
+		
+		.buttons-inline {
+			max-height: calc((1 - var(--info-panel-high-progress, 0)) * 100px);
+			opacity: calc(1 - var(--info-panel-high-progress, 0));
+			margin-top: calc((1 - var(--info-panel-high-progress, 0)) * 0.25rem) !important;
+			margin-bottom: calc((1 - var(--info-panel-high-progress, 0)) * 1rem) !important;
+			padding-top: calc((1 - var(--info-panel-high-progress, 0)) * 0.25rem) !important;
+			padding-bottom: calc((1 - var(--info-panel-high-progress, 0)) * 0.5rem) !important;
+			overflow-y: hidden;
+			overflow-x: auto;
+		}
+	}
+	
+	@media (min-width: 640px) {
+		.header-dynamic {
+			padding-top: 1.5rem;
+		}
+		.breadcrumb-dynamic {
+			max-height: 32px;
+			opacity: 1;
+			margin-bottom: 0.125rem;
+		}
+		.title-dynamic {
+			font-size: 1.5rem;
+			line-height: 2rem;
+		}
+		.buttons-footer {
+			display: none;
 		}
 	}
 </style>
