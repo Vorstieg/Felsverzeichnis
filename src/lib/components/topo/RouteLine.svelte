@@ -136,9 +136,9 @@
 							}
 						}}>
 				{#if isHovered || isSelected || isClose}
-					{name} - {grade}
+					{name} - {grade?.display || grade}
 				{:else}
-					{grade}
+					{grade?.display || grade}
 				{/if}
 			</div>
 		</CssObject>

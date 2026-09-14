@@ -24,9 +24,10 @@
 		onRouteHover?: (route: Route | null) => void;
 	} = $props();
 
-	function getGradeColor(grade?: string) {
-		if (!grade) return colors.topo.gradeUnknown;
-		const value = grade.toLowerCase();
+	function getGradeColor(grade?: any) {
+		const gStr = typeof grade === 'object' ? (grade?.french || grade?.display || '') : (grade || '');
+		if (!gStr) return colors.topo.gradeUnknown;
+		const value = String(gStr).toLowerCase();
 		if (value.startsWith('3') || value.startsWith('4') || value.startsWith('5')) {
 			return colors.topo.gradeEasy;
 		}
@@ -87,9 +88,9 @@
 						<td class="px-6 py-4 text-sm whitespace-nowrap w-1">
 							<span
 								class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 shadow-sm"
-								style="border-left: 5px solid {getGradeColor(route.grade)};"
+								style="border-left: 5px solid {getGradeColor(route.grade?.french || route.grade)};"
 							>
-								{route.grade || '—'}
+								{route.grade?.display || route.grade || '—'}
 							</span>
 						</td>
 						<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500 w-1">

@@ -616,9 +616,10 @@
 		return null;
 	}
 
-	function getGradeColor(grade: string) {
-		if (!grade) return colors.topo.gradeUnknown;
-		const g = grade.toLowerCase();
+	function getGradeColor(grade: any) {
+		const gStr = typeof grade === 'object' ? (grade?.french || grade?.display || '') : (grade || '');
+		if (!gStr) return colors.topo.gradeUnknown;
+		const g = String(gStr).toLowerCase();
 		if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) return colors.topo.gradeEasy;
 		if (g.startsWith('6')) return colors.topo.gradeMedium;
 		if (g.startsWith('7')) return colors.topo.gradeHard;
@@ -645,7 +646,7 @@
 
 		let easy = 0, medium = 0, hard = 0, veryHard = 0;
 		routes.forEach(r => {
-			const g = r.grade || '';
+			const g = (r.grade?.french || r.grade || '');
 			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
 			else if (g.startsWith('6')) medium++;
 			else if (g.startsWith('7')) hard++;
@@ -656,10 +657,10 @@
 		if (total === 0) return [];
 
 		return [
-			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-500', label: '< 6a' },
+			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-400', label: '< 6a' },
 			{ count: medium, percent: (medium / total) * 100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
-			{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-red-500', label: '7a - 7c+' },
-			{ count: veryHard, percent: (veryHard / total) * 100, colorClass: 'bg-purple-600', label: '> 8a' }
+			{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-orange-500', label: '7a - 7c+' },
+			{ count: veryHard, percent: (veryHard / total) * 100, colorClass: 'bg-fuchsia-500', label: '> 8a' }
 		].filter(b => b.count > 0);
 	}
 
@@ -782,7 +783,7 @@
 						id={route.id}
 						color={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)
 							? colors.topo.routeHover
-							: getGradeColor(route.grade)}
+							: getGradeColor(route.grade?.french || route.grade)}
 						width={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId) ? 0.1 : 0.08}
 						isSelected={!!activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)}
 						{isCameraMoving}
@@ -995,7 +996,7 @@
 								class="rounded-md bg-gray-100 px-5 py-1 text-sm font-bold text-gray-700 shadow-sm shrink-0"
 								style="border-left: 5px solid {getGradeColor(data.route.grade)};"
 							>
-								{data.route.grade}
+								{data.route.grade?.display || data.route.grade}
 							</span>
 						{/if}
 					</div>

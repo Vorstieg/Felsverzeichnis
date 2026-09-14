@@ -127,8 +127,20 @@
 			labels.push(grade);
 			dataCounts.push(counts[grade] || 0);
 
-			let hue = 130 - i * 5.5;
-			if (hue < 0) hue = 0;
+			let hue;
+			if (i <= 23) {
+				// Green tier (1a to 5c+): hue 140 to 80
+				hue = 140 - (i / 23) * 60;
+			} else if (i <= 29) {
+				// Yellow tier (6a to 6c+): hue 65 to 40
+				hue = 65 - ((i - 24) / 5) * 25;
+			} else if (i <= 35) {
+				// Red tier (7a to 7c+): hue 25 to 0
+				hue = 25 - ((i - 30) / 5) * 25;
+			} else {
+				// Purple tier (8a to 9b+): hue 290 to 260
+				hue = 290 - ((i - 36) / 9) * 30;
+			}
 			segmentColors.push(`hsl(${hue}, 85%, 45%)`);
 		}
 
@@ -164,8 +176,8 @@
 		}
 
 		function normalizeGrade(grade: any): string | null {
-			if (grade === null || grade === undefined) return null;
-			const value = String(grade).trim();
+			if (!grade) return null;
+			let value = String(grade.french || grade).trim();
 			if (!value) return null;
 			return uiaaToFrench[value.toUpperCase()] || value.toLowerCase();
 		}

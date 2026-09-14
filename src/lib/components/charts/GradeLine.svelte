@@ -8,21 +8,23 @@
 
 		let easy = 0, medium = 0, hard = 0, veryHard = 0;
 		routes.forEach(r => {
-			const g = r.grade || '';
-			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5') || g.startsWith('2') || g.startsWith('1')) easy++;
-			else if (g.startsWith('6')) medium++;
-			else if (g.startsWith('7')) hard++;
-			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
+			const g = (r.grade?.french || r.grade || '');
+			if (typeof g === 'string') {
+				if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5') || g.startsWith('2') || g.startsWith('1')) easy++;
+				else if (g.startsWith('6')) medium++;
+				else if (g.startsWith('7')) hard++;
+				else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
+			}
 		});
 
 		const total = easy + medium + hard + veryHard;
 		if (total === 0) return [];
 
 		return [
-			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-500', label: '< 6a' },
+			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-400', label: '< 6a' },
 			{ count: medium, percent: (medium / total) * 100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
-			{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-red-500', label: '7a - 7c+' },
-			{ count: veryHard, percent: (veryHard / total) * 100, colorClass: 'bg-purple-600', label: '> 8a' }
+			{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-orange-500', label: '7a - 7c+' },
+			{ count: veryHard, percent: (veryHard / total) * 100, colorClass: 'bg-fuchsia-500', label: '> 8a' }
 		].filter(b => b.count > 0);
 	});
 </script>
