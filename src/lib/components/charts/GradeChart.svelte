@@ -177,7 +177,7 @@
 
 		function normalizeGrade(grade: any): string | null {
 			if (!grade) return null;
-			let value = String(grade.french || grade).trim();
+			let value = String(grade.standardizedValue || grade.french || grade).trim();
 			if (!value) return null;
 			return uiaaToFrench[value.toUpperCase()] || value.toLowerCase();
 		}

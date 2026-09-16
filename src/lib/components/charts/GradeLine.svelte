@@ -8,7 +8,7 @@
 
 		let easy = 0, medium = 0, hard = 0, veryHard = 0;
 		routes.forEach(r => {
-			const g = (r.grade?.french || r.grade || '');
+			const g = (r.grade?.standardizedValue || r.grade?.french || r.grade || '');
 			if (typeof g === 'string') {
 				if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5') || g.startsWith('2') || g.startsWith('1')) easy++;
 				else if (g.startsWith('6')) medium++;

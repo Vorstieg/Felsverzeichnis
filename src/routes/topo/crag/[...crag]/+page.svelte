@@ -617,7 +617,7 @@
 	}
 
 	function getGradeColor(grade: any) {
-		const gStr = typeof grade === 'object' ? (grade?.french || grade?.display || '') : (grade || '');
+		const gStr = typeof grade === 'object' ? (grade?.standardizedValue || grade?.french || grade?.value || grade?.display || '') : (grade || '');
 		if (!gStr) return colors.topo.gradeUnknown;
 		const g = String(gStr).toLowerCase();
 		if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) return colors.topo.gradeEasy;
@@ -646,7 +646,7 @@
 
 		let easy = 0, medium = 0, hard = 0, veryHard = 0;
 		routes.forEach(r => {
-			const g = (r.grade?.french || r.grade || '');
+			const g = (r.grade?.standardizedValue || r.grade?.french || r.grade || '');
 			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
 			else if (g.startsWith('6')) medium++;
 			else if (g.startsWith('7')) hard++;
@@ -783,7 +783,7 @@
 						id={route.id}
 						color={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)
 							? colors.topo.routeHover
-							: getGradeColor(route.grade?.french || route.grade)}
+							: getGradeColor(route.grade?.standardizedValue || route.grade?.french || route.grade)}
 						width={activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId) ? 0.1 : 0.08}
 						isSelected={!!activeRouteId && (activeRouteId === route.id || activeRouteId === route.parentId)}
 						{isCameraMoving}
@@ -996,7 +996,7 @@
 								class="rounded-md bg-gray-100 px-5 py-1 text-sm font-bold text-gray-700 shadow-sm shrink-0"
 								style="border-left: 5px solid {getGradeColor(data.route.grade)};"
 							>
-								{data.route.grade?.display || data.route.grade}
+								{data.route.grade?.value || route.grade?.display || data.route.grade}
 							</span>
 						{/if}
 					</div>

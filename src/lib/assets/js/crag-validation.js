@@ -149,7 +149,7 @@ export function getCragValidationIssue({
 		for (const route of entry.topo?.routes || []) {
 			if (
 				!hasText(route.name) ||
-				!hasText(route.grade) ||
+				!hasText(route.grade?.standardizedValue || route.grade?.french || route.grade?.value || route.grade?.display || route.grade) ||
 				(!hasRouteLine(route, 'points2D') && !hasRouteLine(route, 'points')) ||
 				(routeNeedsProtection(route) && !hasRouteProtection(route, entry.topo))
 			) {

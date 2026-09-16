@@ -124,7 +124,7 @@
 			<div class={labelClass}
 					 role="link"
 					 tabindex="0"
-					 aria-label={`Open ${name || grade}`}
+					 aria-label={`Open ${name || grade?.value || grade?.display || grade}`}
 						 style:border-left="5px solid {color}"
 						 onpointerenter={onPointerEnter}
 						 onpointerleave={onPointerLeave}
@@ -136,9 +136,9 @@
 							}
 						}}>
 				{#if isHovered || isSelected || isClose}
-					{name} - {grade?.display || grade}
+					{name} - {grade?.value || grade?.display || grade}
 				{:else}
-					{grade?.display || grade}
+					{grade?.value || grade?.display || grade}
 				{/if}
 			</div>
 		</CssObject>

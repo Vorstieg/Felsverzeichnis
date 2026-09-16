@@ -88,9 +88,9 @@
 						<td class="px-6 py-4 text-sm whitespace-nowrap w-1">
 							<span
 								class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 shadow-sm"
-								style="border-left: 5px solid {getGradeColor(route.grade?.french || route.grade)};"
+								style="border-left: 5px solid {getGradeColor(route.grade?.standardizedValue || route.grade?.french || route.grade)};"
 							>
-								{route.grade?.display || route.grade || '—'}
+								{route.grade?.value || route.grade?.display || route.grade || '—'}
 							</span>
 						</td>
 						<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500 w-1">

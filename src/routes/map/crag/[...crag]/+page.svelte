@@ -158,7 +158,7 @@ function getSectorGradeDistribution(sector) {
 	
 	let easy = 0, medium = 0, hard = 0, veryHard = 0;
 	routes.forEach(r => {
-		const gStr = typeof r.grade === 'object' ? (r.grade?.french || r.grade?.display || '') : (r.grade || '');
+		const gStr = typeof r.grade === 'object' ? (r.grade?.standardizedValue || r.grade?.french || r.grade?.value || r.grade?.display || '') : (r.grade || '');
 		const g = String(gStr).toLowerCase();
 		if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
 		else if (g.startsWith('6')) medium++;
