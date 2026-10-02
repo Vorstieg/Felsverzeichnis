@@ -139,6 +139,7 @@ export const load = async ({ params, url, fetch }) => {
 					sectorId
 				)
 			: new Topo(path.slice(0, path.lastIndexOf('/')), path.split('/').at(-1));
+		const access = await fetchJson(modelTopo.getAccessPath());
 		const modelCandidates = [
 			{ path: isSectorPath ? sectorPath : path, fileName: modelTopo.getGlbPath().split('/').at(-1) }
 		];
@@ -175,6 +176,7 @@ export const load = async ({ params, url, fetch }) => {
 			sectorPath,
 			sectorId,
 			sector: pojo(sectorData),
+			access: pojo(access),
 			sectors: pojo(indexedCrag?.properties?.sectors || []),
 			isSectorPath,
 			topo: pojo(topo),

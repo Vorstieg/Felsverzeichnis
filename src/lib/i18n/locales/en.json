@@ -278,6 +278,8 @@
 		"schematic_view": "Schematic View",
 		"track_view": "Track View",
 		"gpx_tracks": "GPX Tracks",
+		"download_tour_gpx": "Download tour GPX",
+		"choose_tour_gpx": "Choose a GPX tour",
 		"select_tool_hint": "Select a tool to start editing",
 		"generate_2d": "Generate 2D Topo",
 		"generating": "Generating...",

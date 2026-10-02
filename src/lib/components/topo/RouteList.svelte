@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { colors } from '$lib/colors.js';
+	import { getRouteTracks } from '$lib/assets/js/route-gpx.js';
+	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
 
 	type Route = {
 		id?: string;
@@ -12,12 +14,16 @@
 
 	let {
 		routes,
+		topo = null,
+		fallbackAccessTracks = [],
 		activeRouteId,
 		pendingRouteId,
 		onRouteSelect,
 		onRouteHover
 	}: {
 		routes: Route[];
+		topo?: any;
+		fallbackAccessTracks?: any[];
 		activeRouteId?: string | null;
 		pendingRouteId?: string | null;
 		onRouteSelect?: (route: Route) => void;
@@ -42,6 +48,7 @@
 	}
 
 	function handleRowKeydown(event: KeyboardEvent, route: Route) {
+		if ((event.target as HTMLElement).closest('[data-gpx-control]')) return;
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
 			selectRoute(route);
@@ -68,18 +75,22 @@
 			</thead>
 			<tbody class="divide-y divide-gray-200 bg-white">
 				{#each routes as route}
+					{@const tracks = route.downloadTracks || getRouteTracks(topo, route)}
 					<tr
 						class="{activeRouteId === route.id ? 'bg-blue-50' : onRouteSelect ? 'cursor-pointer transition-colors hover:bg-blue-50' : ''}"
 						role={onRouteSelect ? 'button' : undefined}
 						tabindex={onRouteSelect ? 0 : undefined}
 						onmouseenter={() => onRouteHover?.(route)}
 						onmouseleave={() => onRouteHover?.(null)}
-						onclick={() => selectRoute(route)}
+						onclick={(event) => { if (!(event.target as HTMLElement).closest('[data-gpx-control]')) selectRoute(route); }}
 						onkeydown={(event) => handleRowKeydown(event, route)}
 					>
 						<td class="px-6 py-4 text-sm font-medium text-gray-900 w-full max-w-0">
 							<div class="flex items-center">
 								<span class="truncate" title={route.name}>{route.name || '—'}</span>
+								{#if tracks.length}
+									<div class="ml-2"><RouteGpxDownload {route} {tracks} {fallbackAccessTracks} /></div>
+								{/if}
 								{#if pendingRouteId === route.id}
 									<i class="fa-solid fa-circle-notch ml-2 shrink-0 animate-spin text-blue-500"></i>
 								{/if}

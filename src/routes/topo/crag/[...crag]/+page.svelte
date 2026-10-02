@@ -27,6 +27,8 @@
 		calculateWallDirection
 	} from '$lib/assets/js/sun-calculations';
 	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
+	import { getAccessTracks, getRouteTracks } from '$lib/assets/js/route-gpx.js';
+	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
 	import { colors } from '$lib/colors.js';
 
 	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
@@ -167,6 +169,9 @@
 				(r.variants && r.variants.some((variant) => variant.id === childId))
 		);
 	}
+
+	let referencedTracks = $derived(getRouteTracks(data.topo, getParentRoute(data.route?.id) || data.route));
+	let fallbackAccessTracks = $derived(getAccessTracks(data.access));
 
 	function getCameraOffset(radius: number) {
 		const offset = new Vector3();
@@ -999,6 +1004,9 @@
 								{data.route.grade?.value || route.grade?.display || data.route.grade}
 							</span>
 						{/if}
+						{#if referencedTracks.length}
+							<RouteGpxDownload route={data.route} tracks={referencedTracks} {fallbackAccessTracks} />
+						{/if}
 					</div>
 					{#if data.isSectorPath}
 						<div class="mt-1 flex items-center gap-2">
@@ -1267,6 +1275,8 @@
 					<!-- Route List -->
 					<RouteList
 						routes={data.topo.routes}
+						topo={data.topo}
+						{fallbackAccessTracks}
 						activeRouteId={activeRouteId}
 						pendingRouteId={pendingRouteId}
 						onRouteHover={(route) => (hoveredRouteId = route?.id || null)}
