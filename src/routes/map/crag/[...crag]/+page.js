@@ -3,6 +3,7 @@ import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
 import { Topo } from '$lib/assets/js/topo-paths.js';
 import { getGeometryCenter } from '$lib/assets/js/topo-loader-utils.js';
+import { getRouteTracks } from '$lib/assets/js/route-gpx.js';
 import { createCragCache } from '$lib/assets/js/crag-cache.js';
 
 /** @typedef {import('@vorstieg/fels-data/types').CragFeature} CragFeature */
@@ -99,7 +100,10 @@ export async function load({ params, url, parent, fetch }) {
 
 			/** @type {TopoDocument | null} */
 			let topoJson = await fetchJson(currentLocation.getTopoPath());
-			let gradeRoutes = topoJson?.routes || [];
+			let gradeRoutes = (topoJson?.routes || []).map((route) => ({
+				...route,
+				downloadTracks: getRouteTracks(topoJson, route)
+			}));
 			let sectorTopos = [];
 
 			if (currentLocation.sectorId && topoJson) {
@@ -158,6 +162,7 @@ export async function load({ params, url, parent, fetch }) {
 					gradeRoutes = sectorTopos.flatMap(({ sectorId, sectorName, topo }) =>
 						(topo.routes || []).map((route) => ({
 							...route,
+							downloadTracks: getRouteTracks(topo, route),
 							sectorId,
 							sectorName,
 							sectorWallAzimuth: topo.wallAzimuth,

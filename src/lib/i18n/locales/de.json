@@ -285,6 +285,8 @@
 		"topo_description_2d": "Schematische Ansicht",
 		"track_view": "Track-Ansicht",
 		"gpx_tracks": "GPX Tracks",
+		"download_tour_gpx": "Tour-GPX herunterladen",
+		"choose_tour_gpx": "GPX-Tour wählen",
 		"select_tool_hint": "Wähle ein Werkzeug aus, um mit der Bearbeitung zu beginnen",
 		"generate_2d": "2D Topo generieren",
 		"generating": "Generiere...",
