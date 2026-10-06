@@ -44,7 +44,10 @@
 	function download(approachIndex, descentIndex) {
 		const selectedTracks = getTourTracks(tracks, fallbackAccessTracks, approachIndex, descentIndex);
 		const suffix = optionCount > 1 ? `-tour-${approachIndex + 1}-${descentIndex + 1}` : '-tour';
-		downloadRouteGpx(route, selectedTracks, suffix);
+		downloadRouteGpx(route, selectedTracks, suffix, {
+			startOfClimb: $_('gpx_waypoints.start_of_climb'),
+			endOfClimb: $_('gpx_waypoints.end_of_climb')
+		});
 		closeMenu(true);
 	}
 

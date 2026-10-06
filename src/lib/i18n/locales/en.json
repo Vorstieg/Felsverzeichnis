@@ -47,6 +47,10 @@
 		"descent": "Descent",
 		"variant": "Variant"
 	},
+	"gpx_waypoints": {
+		"start_of_climb": "Start of climb",
+		"end_of_climb": "End of climb"
+	},
 	"rock_types": {
 		"granite": "Granite",
 		"gneiss": "Gneiss",

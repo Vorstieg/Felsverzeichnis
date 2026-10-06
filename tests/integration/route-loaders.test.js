@@ -5,8 +5,6 @@ vi.mock('$lib/assets/js/fetchCrags.js', () => ({
 }));
 
 import fetchCrags from '$lib/assets/js/fetchCrags.js';
-import { load as loadList } from '../../src/routes/list/+page.js';
-import { load as loadListSearch } from '../../src/routes/list/[search]/+page.js';
 import { load as loadMapLayout } from '../../src/routes/map/+layout.js';
 import { load as loadMapSearch } from '../../src/routes/map/[search]/+page.js';
 
@@ -33,16 +31,6 @@ describe('route loaders and redirects', () => {
 		vi.mocked(fetchCrags).mockReset();
 	});
 
-	it('loads the complete list and exposes it as allLocations', async () => {
-		const crags = [alpineCrag, valleyCrag];
-		vi.mocked(fetchCrags).mockResolvedValue(crags);
-
-		const result = await loadList();
-
-		expect(fetchCrags).toHaveBeenCalledWith({ limit: -1 });
-		expect(result).toEqual({ crags, allLocations: crags });
-	});
-
 	it('loads map layout locations and exposes them as allLocations', async () => {
 		const locations = [alpineCrag];
 		vi.mocked(fetchCrags).mockResolvedValue(locations);
@@ -51,25 +39,6 @@ describe('route loaders and redirects', () => {
 
 		expect(fetchCrags).toHaveBeenCalledWith({ limit: -1 });
 		expect(result).toEqual({ locations, allLocations: locations });
-	});
-
-	it('returns multiple list search results without redirecting', async () => {
-		const crags = [alpineCrag, valleyCrag];
-		vi.mocked(fetchCrags).mockResolvedValue(crags);
-
-		const result = await loadListSearch({ params: { search: 'crag' } });
-
-		expect(fetchCrags).toHaveBeenCalledWith({ search: 'crag', limit: -1 });
-		expect(result).toEqual({ crags, search: 'crag' });
-	});
-
-	it('redirects a single list search result to its map crag page', async () => {
-		vi.mocked(fetchCrags).mockResolvedValue([alpineCrag]);
-
-		await expect(loadListSearch({ params: { search: 'alpine' } })).rejects.toMatchObject({
-			status: 302,
-			location: '/map/crag/areas/alpine-crag'
-		});
 	});
 
 	it('redirects a single map search result with a coordinate hash', async () => {

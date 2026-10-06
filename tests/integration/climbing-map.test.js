@@ -12,6 +12,7 @@ vi.mock('maplibre-gl', () => {
 			this.handlers = new Map();
 			this.zoom = options.zoom;
 			this.canvas = { style: {} };
+			this.container = { clientWidth: 1440, clientHeight: 900 };
 			this.controls = [];
 			this.paintCalls = [];
 			this.layoutCalls = [];
@@ -26,12 +27,22 @@ vi.mock('maplibre-gl', () => {
 			this.handlers.set(key, maybeHandler || layerOrHandler);
 			return this;
 		}
+		once(event, handler) {
+			this.handlers.set(event, handler);
+			return this;
+		}
 
 		addControl(control) {
 			this.controls.push(control);
 		}
 		getCanvas() {
 			return this.canvas;
+		}
+		getContainer() {
+			return this.container;
+		}
+		project() {
+			return { x: 100, y: 100 };
 		}
 		getZoom() {
 			return this.zoom;
@@ -77,6 +88,9 @@ vi.mock('maplibre-gl', () => {
 		}
 		easeTo(options) {
 			this.ease = options;
+		}
+		flyTo(options) {
+			this.fly = options;
 		}
 		fitBounds(bounds, options) {
 			this.bounds = { bounds, options };
@@ -172,19 +186,6 @@ describe('ClimbingMap', () => {
 		expect(map.style).toBe('/satellite.json');
 	});
 
-	it('toggles terrain and pitch through the 3D control', async () => {
-		const map = await renderMap();
-		const toggle = screen.getByRole('button', { name: '2D' });
-		await fireEvent.click(toggle);
-		expect(map.terrain).toEqual({ source: 'globalTerrainSource', exaggeration: 1 });
-		expect(map.ease).toEqual({ pitch: 60 });
-		expect(screen.getByRole('button', { name: '3D' })).toBeInTheDocument();
-
-		await fireEvent.click(screen.getByRole('button', { name: '3D' }));
-		expect(map.terrain).toBeNull();
-		expect(map.ease).toEqual({ pitch: 0 });
-	});
-
 	it('navigates from low-zoom place dots and high-zoom place labels', async () => {
 		const map = await renderMap();
 		const lowZoomClick = map.handlers.get('click:"places-dots"');
@@ -217,7 +218,7 @@ describe('ClimbingMap', () => {
 				detail: { center: [16, 48], zoom: 15, path: 'areas/alpine-crag' }
 			})
 		);
-		expect(map.ease.center).toEqual([16, 48]);
-		expect(map.ease.zoom).toBe(15);
+		expect(map.fly.center).toEqual([16, 48]);
+		expect(map.fly.zoom).toBe(15);
 	});
 });

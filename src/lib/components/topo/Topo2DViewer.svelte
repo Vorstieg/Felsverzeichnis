@@ -24,27 +24,7 @@
 		if (!gElement) return;
 		const root = select(gElement);
 		const hasBackgroundImage = Boolean(topo.image2D);
-		const gridId = 'topo-viewer-grid';
-		const defs = select(svgElement).selectAll('defs.topo-viewer-defs').data([null]).join('defs');
-		const pattern = defs
-			.selectAll(`pattern#${gridId}`)
-			.data([null])
-			.join('pattern')
-			.attr('id', gridId)
-			.attr('width', 50)
-			.attr('height', 50)
-			.attr('patternUnits', 'userSpaceOnUse');
-		pattern
-			.selectAll('path')
-			.data([null])
-			.join('path')
-			.attr('d', 'M 50 0 L 0 0 0 50')
-			.attr('fill', 'none')
-			.attr('stroke', colors.ui.grid)
-			.attr('stroke-width', 1);
-
-		// A route-only topo has the same neutral drawing surface as the editor.
-		// Keep it inside the zoomed content group so panning behaves consistently.
+		// Keep the route-only background inside the zoomed content group.
 		root
 			.selectAll('rect.viewer-blank-background')
 			.data(hasBackgroundImage ? [] : [null])
@@ -52,7 +32,7 @@
 				.attr('class', 'viewer-blank-background')
 				.attr('width', baseWidth)
 				.attr('height', baseHeight)
-				.attr('fill', `url(#${gridId})`)
+				.attr('fill', '#fff')
 				.attr('pointer-events', 'none')
 				.lower();
 
@@ -139,7 +119,7 @@
 	});
 </script>
 
-<div class="relative w-full h-full bg-gray-100 rounded-lg overflow-hidden">
+<div class="relative w-full h-full bg-white rounded-lg overflow-hidden">
 	<svg bind:this={svgElement} viewBox="0 0 {baseWidth} {baseHeight}" class="w-full h-full cursor-grab" style="touch-action: none;">
 		<g bind:this={gElement}></g>
 	</svg>
