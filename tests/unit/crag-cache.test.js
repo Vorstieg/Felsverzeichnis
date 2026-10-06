@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCragCache } from '$lib/assets/js/crag-cache.js';
+import { createCragCache } from '$lib/assets/js/crag-cache';
 
 describe('crag cache helpers', () => {
 	let cache;

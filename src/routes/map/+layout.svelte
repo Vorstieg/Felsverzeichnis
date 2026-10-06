@@ -1,26 +1,24 @@
-<script>
-
+<script lang="ts">
 	import InfoPanel from '$lib/components/ui/InfoPanel.svelte';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import { page, navigating } from '$app/stores';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 
-	/** @type {{children?: import('svelte').Snippet}} */
-	let { children } = $props();
+	let { children }: { children?: import('svelte').Snippet } = $props();
 
 	let currentPathname = $derived(
-		$navigating?.to?.url?.pathname?.startsWith(`${base}/map/`) 
-			? $navigating.to.url.pathname 
+		$navigating?.to?.url?.pathname?.startsWith(`${base}/map/`)
+			? $navigating.to.url.pathname
 			: $page.url.pathname
 	);
 	let showPanel = $derived(
 		currentPathname.startsWith(`${base}/map/`) && currentPathname !== `${base}/map/`
 	);
-	
+
 	let isAboutRoute = $derived(currentPathname.endsWith('/about'));
 	let isSearchRoute = $derived(!!$page.params.search);
-	let panelBreak = $derived((isAboutRoute || isSearchRoute) ? 'top' : 'middle');
+	let panelBreak = $derived<'top' | 'middle'>(isAboutRoute || isSearchRoute ? 'top' : 'middle');
 
 	let currentSearchTerm = $derived($page.params.search || '');
 
@@ -35,11 +33,19 @@
 	}
 </script>
 
-
-
-<div class="pointer-events-none fixed left-0 right-0 top-2 z-[1000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto">
-	<div class="pointer-events-auto mx-4 sm:mx-0 sm:ml-8 sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80">
-		<SearchBar actionBase={`${base}/map`} searchTerm={currentSearchTerm} showClear={isSearchRoute} onClear={resetSearch} containerClass="w-full" />
+<div
+	class="pointer-events-none fixed top-2 right-0 left-0 z-[1000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto"
+>
+	<div
+		class="pointer-events-auto mx-4 sm:mx-0 sm:ml-8 sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80"
+	>
+		<SearchBar
+			actionBase={`${base}/map`}
+			searchTerm={currentSearchTerm}
+			showClear={isSearchRoute}
+			onClear={resetSearch}
+			containerClass="w-full"
+		/>
 	</div>
 </div>
 

@@ -1,8 +1,7 @@
-console.log("=== MAP LOADED ===");
-import fetchCrags from '$lib/assets/js/fetchCrags.js';
+import fetchCrags from '$lib/assets/js/fetchCrags';
 
-/** @type {import('./$types').PageServerLoad} */
-export const load = async () => {
-	const locations = await fetchCrags({ limit: -1 });
+/** @satisfies {import('./$types').LayoutLoad} */
+export const load = async ({ fetch }) => {
+	const locations = await fetchCrags({ limit: -1, fetch });
 	return { locations, allLocations: locations };
 };

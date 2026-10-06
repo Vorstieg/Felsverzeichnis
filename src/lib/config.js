@@ -30,6 +30,7 @@ export const geometryModes = ['topo', 'track', 'hybrid'];
 
 export const gpxRoles = ['main', 'approach', 'descent', 'variant'];
 
+/** @type {Record<string, {color: string, dotClass: string, badgeClass: string}>} */
 export const routeTypeMeta = {
 	'sports-climbing': {
 		color: colors.routeTypes['sports-climbing'],

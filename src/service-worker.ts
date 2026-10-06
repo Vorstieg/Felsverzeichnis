@@ -1,3 +1,4 @@
+declare const self: ServiceWorkerGlobalScope;
 import { build, files, version } from '$service-worker';
 import { registerServiceWorker } from './lib/service-worker-runtime.js';
 

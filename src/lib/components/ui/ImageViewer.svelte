@@ -1,14 +1,16 @@
 <script lang="ts">
+	import PhotoSwipeLightbox from 'photoswipe/lightbox';
+	import 'photoswipe/style.css';
+	import type { SlideData } from 'photoswipe';
 	import { onMount, onDestroy } from 'svelte';
-	
+
 	let {
 		images = [],
 		startIndex = 0,
 		onClose = () => {}
-	} = $props();
+	}: { images?: string[]; startIndex?: number; onClose?: () => void } = $props();
 
-	let lightbox: any;
-	let cssLink: HTMLLinkElement;
+	let lightbox: PhotoSwipeLightbox;
 	let closedByNavigation = false;
 
 	const handlePopState = () => {
@@ -25,28 +27,22 @@
 		history.pushState({ viewer: 'photoswipe' }, '');
 		window.addEventListener('popstate', handlePopState);
 
-		// 1. Add PhotoSwipe CSS
-		cssLink = document.createElement('link');
-		cssLink.rel = 'stylesheet';
-		cssLink.href = 'https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css';
-		document.head.appendChild(cssLink);
-
-		// 2. Load PhotoSwipe Lightbox via dynamic ESM import
-		const PhotoSwipeLightbox = (await import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe-lightbox.esm.js')).default;
-		
 		// 3. Preload all image dimensions
-		const dataSource = await Promise.all(images.map(src => {
-			return new Promise((resolve) => {
-				const img = new Image();
-				img.onload = () => resolve({ src, width: img.width, height: img.height });
-				img.onerror = () => resolve({ src, width: window.innerWidth, height: window.innerHeight }); // fallback
-				img.src = src;
-			});
-		}));
+		const dataSource = await Promise.all(
+			images.map((src) => {
+				return new Promise<SlideData>((resolve) => {
+					const img = new Image();
+					img.onload = () => resolve({ src, width: img.width, height: img.height });
+					img.onerror = () =>
+						resolve({ src, width: window.innerWidth, height: window.innerHeight }); // fallback
+					img.src = src;
+				});
+			})
+		);
 
 		lightbox = new PhotoSwipeLightbox({
 			dataSource,
-			pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js'),
+			pswpModule: () => import('photoswipe'),
 			// Some nice mobile defaults
 			zoom: true,
 			clickToCloseNonZoomable: false,
@@ -72,9 +68,6 @@
 		if (lightbox) {
 			lightbox.destroy();
 		}
-		if (cssLink && cssLink.parentNode) {
-			cssLink.parentNode.removeChild(cssLink);
-		}
 	});
 </script>
 
@@ -84,7 +77,7 @@
 	:global(.pswp__button--zoom) {
 		display: none !important;
 	}
-	
+
 	/* Match InfoPanel close button symbol but keep native bright/no-background style */
 	:global(.pswp__button--close) {
 		display: flex !important;
@@ -93,11 +86,11 @@
 		color: white !important;
 		opacity: 0.8 !important;
 	}
-	
+
 	:global(.pswp__button--close:hover) {
 		opacity: 1 !important;
 	}
-	
+
 	:global(.pswp__button--close:active) {
 		opacity: 0.7 !important;
 	}

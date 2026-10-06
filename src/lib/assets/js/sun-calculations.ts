@@ -1,73 +1,40 @@
 import SunCalc from 'suncalc';
+import type { FelsTopoDocument, Point3D, Route } from '@vorstieg/fels-types/types';
 import { colors as appColors } from '$lib/colors.js';
 
-// Helper: Calculate general heading of the wall/route
-function calculateWallHeading(topo: any, route: any) {
-	// If there is no orientation data at all, return null
-	if (topo.wallAzimuth == null && !route?.orientation && !topo.routes?.some((r: any) => r.orientation)) {
-		return null;
-	}
-
-	// 1. Start with the base model rotation (wallAzimuth)
-	let heading = topo.wallAzimuth || 0;
+// Rotate model-local route orientations by the wall's compass azimuth.
+function calculateWallHeading(topo: FelsTopoDocument, route: Route | null) {
 	let orientation = route?.orientation;
-
-	// 2. If no specific route orientation, average all route orientations
-	if (!orientation && topo.routes?.length > 0) {
-		let sumX = 0,
-			sumY = 0,
-			sumZ = 0; // Y is usually up, but summing vectors works
-		let count = 0;
-
-		for (const r of topo.routes) {
-			if (r.orientation) {
-				sumX += r.orientation[0];
-				sumY += r.orientation[1];
-				sumZ += r.orientation[2];
-				count++;
-			}
-		}
-
-		if (count > 0) {
-			orientation = [sumX / count, sumY / count, sumZ / count];
+	if (!orientation) {
+		const orientations = topo.routes.flatMap((item) =>
+			item.orientation ? [item.orientation] : []
+		);
+		if (orientations.length) {
+			orientation = orientations.reduce<Point3D>(
+				(sum, vector) => [sum[0] + vector[0], sum[1] + vector[1], sum[2] + vector[2]],
+				[0, 0, 0]
+			);
 		}
 	}
-
-	// 3. Apply the orientation vector rotation if available
-	if (orientation) {
-		const [ox, , oz] = orientation;
-		// Convert azimuth to radians (CCW rotation for Math functions? No, check formula)
-		// Rotation Angle applied to model: theta = -wallAzimuth
-		const theta = -(topo.wallAzimuth || 0) * (Math.PI / 180);
-
-		// Rotate vector (ox, oz) by theta around Origin (0,0)
-		const rx = ox * Math.cos(theta) - oz * Math.sin(theta);
-		const rz = ox * Math.sin(theta) + oz * Math.cos(theta);
-
-		// Convert result vector to Compass Heading
-		// North is -Z (0 deg). East is +X (90 deg).
-		// atan2(x, -z) gives angle from North (CW positive)
-		const headingRad = Math.atan2(rx, -rz);
-		heading = headingRad * (180 / Math.PI);
-
-		// Normalize to 0-360
-		if (heading < 0) heading += 360;
-	}
-
-	return heading;
+	if (!orientation) return topo.wallAzimuth ?? null;
+	const [x, , z] = orientation;
+	const theta = (-(topo.wallAzimuth ?? 0) * Math.PI) / 180;
+	const rotatedX = x * Math.cos(theta) - z * Math.sin(theta);
+	const rotatedZ = x * Math.sin(theta) + z * Math.cos(theta);
+	return ((Math.atan2(rotatedX, -rotatedZ) * 180) / Math.PI + 360) % 360;
 }
 
-export function calculateWallDirection(topo: any, route: any) {
+export function calculateWallDirection(topo: FelsTopoDocument, route: Route | null = null) {
 	const heading = calculateWallHeading(topo, route);
 	if (heading === null) return 'Unknown';
-	
+
 	const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 	const dirIndex = Math.round(heading / 45) % 8;
 	return dirs[dirIndex];
 }
 
-export function calculateSunInfo(topo: any, route: any) {
-	if (!topo || !topo.coordinates || (topo.coordinates[0] === 0 && topo.coordinates[1] === 0)) {
+export function calculateSunInfo(topo: FelsTopoDocument, route: Route | null = null) {
+	if (!topo.coordinates) {
 		return { hours: 'no_geodata', chartData: null };
 	}
 
@@ -90,10 +57,7 @@ export function calculateSunInfo(topo: any, route: any) {
 	const labels: string[] = [];
 	const altitudes: number[] = [];
 	const colors: string[] = [];
-	const conditions: string[] = [];
-
-	let sunnyIntervals = 0;
-	let totalIntervals = 0;
+	const conditions: ('sun.sunny' | 'sun.shadow' | 'sun.low_sun')[] = [];
 
 	// Hourly scan for chart
 	for (let h = 6; h <= 21; h++) {
@@ -115,7 +79,6 @@ export function calculateSunInfo(topo: any, route: any) {
 		if (isInSun) {
 			colors.push(appColors.chart.sunny);
 			conditions.push('sun.sunny');
-			sunnyIntervals++;
 		} else if (isUp) {
 			colors.push(appColors.chart.shade);
 			conditions.push('sun.shadow');
@@ -123,7 +86,6 @@ export function calculateSunInfo(topo: any, route: any) {
 			colors.push(appColors.chart.lowSun);
 			conditions.push('sun.low_sun');
 		}
-		totalIntervals++;
 	}
 
 	// Detailed scan for text time (15 min)
@@ -171,8 +133,8 @@ export function calculateSunPositionVector(
 	];
 }
 
-export function calculateBestSeason(topo: any, route: any) {
-	if (!topo || !topo.coordinates || (topo.coordinates[0] === 0 && topo.coordinates[1] === 0)) {
+export function calculateBestSeason(topo: FelsTopoDocument, route: Route | null = null) {
+	if (!topo.coordinates) {
 		return null;
 	}
 
@@ -191,9 +153,7 @@ export function calculateBestSeason(topo: any, route: any) {
 	let yearlyMean = 48 - 0.7 * absLat;
 
 	// Altitude Lapse Rate: -6.5 degrees per 1000m
-	if (topo.altitude) {
-		yearlyMean -= (topo.altitude / 1000) * 6.5;
-	}
+	yearlyMean -= (topo.coordinates[2] / 1000) * 6.5;
 
 	// Amplitude (Seasonality strength)
 	const yearlyAmp = 5 + 0.2 * absLat;

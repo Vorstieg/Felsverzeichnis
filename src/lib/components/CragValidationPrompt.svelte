@@ -1,39 +1,49 @@
-<script>
-import { browser } from '$app/environment';
-import { _ } from 'svelte-i18n';
-import { buildFelsstudioUrl } from '$lib/assets/js/crag-validation.js';
+<script lang="ts">
+	import { browser } from '$app/environment';
+	import { _ } from 'svelte-i18n';
+	import { buildFelsstudioUrl } from '$lib/assets/js/crag-validation.js';
 
-let { issue, editorUrl = '', returnTo = '' } = $props();
-let dismissed = $state(false);
-const maxAge = 30 * 24 * 60 * 60 * 1000;
-let storageKey = $derived(
-	issue ? `fels-validation-dismissal:${issue.target.cragPath}:${issue.rule}` : ''
-);
-let href = $derived(
-	issue && editorUrl
-		? buildFelsstudioUrl(editorUrl, { ...issue.target, task: issue.task, returnTo })
-		: null
-);
+	let {
+		issue,
+		editorUrl = '',
+		returnTo = ''
+	}: {
+		issue: import('$lib/types/application').ImprovementIssue | null;
+		editorUrl?: string;
+		returnTo?: string;
+	} = $props();
+	let dismissed = $state(false);
+	const maxAge = 30 * 24 * 60 * 60 * 1000;
+	let storageKey = $derived(
+		issue ? `fels-validation-dismissal:${issue.target.cragPath}:${issue.rule}` : ''
+	);
+	let href = $derived(
+		issue && editorUrl
+			? buildFelsstudioUrl(editorUrl, { ...issue.target, task: issue.task, returnTo })
+			: null
+	);
 
-$effect(() => {
-	if (!browser || !issue) return;
-	try {
-		const value = JSON.parse(localStorage.getItem(storageKey) || 'null');
-		dismissed = Boolean(value?.expiresAt > Date.now());
-	} catch {
-		dismissed = false;
+	$effect(() => {
+		if (!browser || !issue) return;
+		try {
+			const value = JSON.parse(localStorage.getItem(storageKey) || 'null') as {
+				expiresAt: number;
+			} | null;
+			dismissed = Boolean((value?.expiresAt ?? 0) > Date.now());
+		} catch {
+			dismissed = false;
+		}
+	});
+
+	function dismiss() {
+		dismissed = true;
+		if (!browser) return;
+		try {
+			localStorage.setItem(storageKey, JSON.stringify({ expiresAt: Date.now() + maxAge }));
+		} catch {
+			// A private-browser storage failure should not prevent hiding the prompt.
+		}
 	}
-});
-
-function dismiss() {
-	dismissed = true;
-	if (!browser) return;
-	try {
-		localStorage.setItem(storageKey, JSON.stringify({ expiresAt: Date.now() + maxAge }));
-	} catch {
-		// A private-browser storage failure should not prevent hiding the prompt.
-	}
-}
 </script>
 
 {#if issue && !dismissed}
@@ -49,7 +59,7 @@ function dismiss() {
 				{#if href}
 					<a
 						class="font-semibold text-amber-900 underline hover:text-amber-700"
-						href={href}
+						{href}
 						target="_blank"
 						rel="noopener"
 					>

@@ -6,7 +6,7 @@ export const storage = {
 	/**
 	 * Save data to localStorage
 	 * @param {string} key
-	 * @param {any} value
+	 * @param {unknown} value
 	 * @returns {boolean} Success
 	 */
 	set(key, value) {
@@ -24,8 +24,8 @@ export const storage = {
 	/**
 	 * Get data from localStorage
 	 * @param {string} key
-	 * @param {any} defaultValue
-	 * @returns {any}
+	 * @param {unknown} defaultValue
+	 * @returns {unknown}
 	 */
 	get(key, defaultValue = null) {
 		try {

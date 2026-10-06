@@ -4,15 +4,14 @@ import { load } from '../../src/routes/map/crag/[...crag]/+page.js';
 const API = 'https://felslager.vorstieg.eu/api/fs';
 
 const crag = {
+	type: 'Feature',
 	geometry: { type: 'Point', coordinates: [16, 48] },
 	properties: {
 		name: 'Alpine Crag',
-		path: 'areas/alpine-crag',
 		id: 'alpine-crag',
-		minzoom: 15,
-		type: 'sports-climbing',
-		description_de: 'Beschreibung',
-		sectors: [{ id: 'north', name: 'North Wall' }]
+		kind: 'crag',
+		type: ['sports-climbing'],
+		description_de: 'Beschreibung'
 	}
 };
 
@@ -20,7 +19,7 @@ const topo = {
 	routes: [
 		{
 			id: 'route-1',
-			type: ['sports-climbing'],
+			type: 'sports-climbing',
 			pathRefs: [{ pathId: 'approach-1', role: 'approach', label: 'Trail' }],
 			points2D: [
 				[0.1, 0.9],
@@ -50,8 +49,16 @@ const topo = {
 const access = {
 	type: 'FeatureCollection',
 	features: [
-		{ properties: { kind: 'transit' }, geometry: { type: 'Point', coordinates: [16.1, 48.1] } },
-		{ properties: { kind: 'parking' }, geometry: { type: 'Point', coordinates: [16.2, 48.2] } }
+		{
+			type: 'Feature',
+			properties: { kind: 'transit' },
+			geometry: { type: 'Point', coordinates: [16.1, 48.1] }
+		},
+		{
+			type: 'Feature',
+			properties: { kind: 'parking' },
+			geometry: { type: 'Point', coordinates: [16.2, 48.2] }
+		}
 	]
 };
 
@@ -92,7 +99,10 @@ function makeArgs(fetch, params = { crag: 'areas/alpine-crag' }) {
 		params,
 		url: new URL(`https://example.test/map/crag/${params.crag}`),
 		fetch,
-		parent: async () => ({ locations: [crag], allLocations: [crag] })
+		parent: async () => ({
+			locations: [{ entry: crag, path: 'areas/alpine-crag' }],
+			allLocations: [{ entry: crag, path: 'areas/alpine-crag' }]
+		})
 	};
 }
 
@@ -130,8 +140,16 @@ describe('map crag loader', () => {
 			routes: [
 				{
 					...topo.routes[0],
-					points2D: [],
-					pitches: [{ id: 'pitch-1', points2D: [[0.1, 0.9], [0.9, 0.1]] }]
+					points2D: undefined,
+					pitches: [
+						{
+							id: 'pitch-1',
+							points2D: [
+								[0.1, 0.9],
+								[0.9, 0.1]
+							]
+						}
+					]
 				}
 			]
 		};
@@ -164,5 +182,77 @@ describe('map crag loader', () => {
 				params: { crag: 'missing/crag' }
 			})
 		).rejects.toMatchObject({ status: 404 });
+	});
+
+	it.each([
+		['country', 'austria'],
+		['region', 'austria/tyrol'],
+		['area', 'austria/tyrol/innsbruck']
+	])('displays an existing %s entry without a crag ancestor', async (kind, path) => {
+		const id = path.split('/').at(-1);
+		const entry = {
+			...crag,
+			properties: { id, kind, name: `Selected ${kind}`, description_de: 'Hierarchy description' }
+		};
+		const fetch = vi.fn(async (url) => {
+			if (url === `${API}/${path}/${id}.json`) return response(entry);
+			if (url === `${API}/${path}`)
+				return response([{ type: 'file', name: 'overview.jpg', path: 'overview.jpg' }]);
+			return response(null, false);
+		});
+		const result = await load({
+			...makeArgs(fetch, { crag: path }),
+			parent: async () => ({
+				locations: [{ entry, path }],
+				allLocations: [
+					{ entry, path },
+					{ entry: crag, path: `${path}/alpine-crag` }
+				]
+			})
+		});
+
+		expect(result.currentData).toEqual(entry);
+		expect(result.name).toBe(`Selected ${kind}`);
+		expect(result.description_de).toBe('Hierarchy description');
+		expect(result.meta.title).toBe(`Selected ${kind}`);
+		expect(result.currentLocation.getFolder()).toBe(path);
+		expect(result.currentLocation.sectorId).toBeNull();
+		expect(result.sectors).toEqual([{ entry: crag, path: `${path}/alpine-crag` }]);
+		expect(await result.streamed.details).toMatchObject({
+			images: [`${API}/${path}/overview.jpg`],
+			gradeRoutes: [],
+			sectorTopos: [],
+			has2DTopo: false,
+			has3DTopo: false
+		});
+	});
+
+	it('keeps crag and sector loading when hierarchy documents are absent', async () => {
+		const path = 'areas/alpine-crag/north';
+		const sector = {
+			...crag,
+			properties: { id: 'north', kind: 'sector', name: 'North Wall' }
+		};
+		const fetchCrag = makeFetch();
+		const result = await load({
+			...makeArgs(
+				async (url) => (url === `${API}/${path}/north.json` ? response(sector) : fetchCrag(url)),
+				{ crag: path }
+			),
+			parent: async () => ({
+				locations: [{ entry: crag, path: 'areas/alpine-crag' }],
+				allLocations: [
+					{ entry: crag, path: 'areas/alpine-crag' },
+					{ entry: sector, path }
+				]
+			})
+		});
+
+		expect(result.currentData).toEqual(sector);
+		expect(result.cragData).toEqual(sector);
+		expect(result.parentEntry.entry).toEqual(crag);
+		expect(result.currentLocation.getCurrentPath()).toBe(`${path}/north.json`);
+		expect(result.cragPathUrl).toBe(path);
+		await result.streamed.details;
 	});
 });

@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import type { FelsTopoDocument, Grade, Route } from '@vorstieg/fels-types/types';
+	import type { GpxTrack, RouteSummary } from '$lib/types/application';
+	import { routeGrade, routeLength } from '$lib/assets/js/route-summary';
 	import { colors } from '$lib/colors.js';
 	import { getRouteTracks } from '$lib/assets/js/route-gpx.js';
 	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
-
-	type Route = {
-		id?: string;
-		name?: string;
-		grade?: string;
-		length?: string | number;
-		[key: string]: any;
-	};
 
 	let {
 		routes,
@@ -21,19 +16,18 @@
 		onRouteSelect,
 		onRouteHover
 	}: {
-		routes: Route[];
-		topo?: any;
-		fallbackAccessTracks?: any[];
-		activeRouteId?: string | null;
-		pendingRouteId?: string | null;
+		routes: RouteSummary[];
+		topo?: FelsTopoDocument | null;
+		fallbackAccessTracks?: GpxTrack[];
+		activeRouteId?: Route['id'] | null;
+		pendingRouteId?: Route['id'] | null;
 		onRouteSelect?: (route: Route) => void;
 		onRouteHover?: (route: Route | null) => void;
 	} = $props();
 
-	function getGradeColor(grade?: any) {
-		const gStr = typeof grade === 'object' ? (grade?.french || grade?.display || '') : (grade || '');
-		if (!gStr) return colors.topo.gradeUnknown;
-		const value = String(gStr).toLowerCase();
+	function getGradeColor(grade: Grade | undefined) {
+		if (!grade?.standardizedValue) return colors.topo.gradeUnknown;
+		const value = grade.standardizedValue;
 		if (value.startsWith('3') || value.startsWith('4') || value.startsWith('5')) {
 			return colors.topo.gradeEasy;
 		}
@@ -48,7 +42,7 @@
 	}
 
 	function handleRowKeydown(event: KeyboardEvent, route: Route) {
-		if ((event.target as HTMLElement).closest('[data-gpx-control]')) return;
+		if (event.target instanceof Element && event.target.closest('[data-gpx-control]')) return;
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
 			selectRoute(route);
@@ -62,13 +56,22 @@
 		<table class="!m-0 min-w-full divide-y divide-gray-200">
 			<thead class="bg-gray-50">
 				<tr>
-					<th scope="col" class="px-6 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase">
+					<th
+						scope="col"
+						class="px-6 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase"
+					>
 						{$_('topo.table.name')}
 					</th>
-					<th scope="col" class="px-6 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase">
+					<th
+						scope="col"
+						class="px-6 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase"
+					>
 						{$_('topo.table.grade')}
 					</th>
-					<th scope="col" class="px-6 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase">
+					<th
+						scope="col"
+						class="px-6 py-3 text-left text-xs font-bold tracking-wider text-gray-500 uppercase"
+					>
 						{$_('topo.table.length')}
 					</th>
 				</tr>
@@ -76,36 +79,48 @@
 			<tbody class="divide-y divide-gray-200 bg-white">
 				{#each routes as route}
 					{@const tracks = route.downloadTracks || getRouteTracks(topo, route)}
+					{@const grade = routeGrade(route)}
+					{@const length = routeLength(route)}
 					<tr
-						class="{activeRouteId === route.id ? 'bg-blue-50' : onRouteSelect ? 'cursor-pointer transition-colors hover:bg-blue-50' : ''}"
+						class={activeRouteId === route.id
+							? 'bg-blue-50'
+							: onRouteSelect
+								? 'cursor-pointer transition-colors hover:bg-blue-50'
+								: ''}
 						role={onRouteSelect ? 'button' : undefined}
 						tabindex={onRouteSelect ? 0 : undefined}
 						onmouseenter={() => onRouteHover?.(route)}
 						onmouseleave={() => onRouteHover?.(null)}
-						onclick={(event) => { if (!(event.target as HTMLElement).closest('[data-gpx-control]')) selectRoute(route); }}
+						onclick={(event) => {
+							if (event.target instanceof Element && event.target.closest('[data-gpx-control]'))
+								return;
+							selectRoute(route);
+						}}
 						onkeydown={(event) => handleRowKeydown(event, route)}
 					>
-						<td class="px-6 py-4 text-sm font-medium text-gray-900 w-full max-w-0">
+						<td class="w-full max-w-0 px-6 py-4 text-sm font-medium text-gray-900">
 							<div class="flex items-center">
 								<span class="truncate" title={route.name}>{route.name || '—'}</span>
 								{#if tracks.length}
-									<div class="ml-2"><RouteGpxDownload {route} {tracks} {fallbackAccessTracks} /></div>
+									<div class="ml-2">
+										<RouteGpxDownload {route} {tracks} {fallbackAccessTracks} />
+									</div>
 								{/if}
 								{#if pendingRouteId === route.id}
 									<i class="fa-solid fa-circle-notch ml-2 shrink-0 animate-spin text-blue-500"></i>
 								{/if}
 							</div>
 						</td>
-						<td class="px-6 py-4 text-sm whitespace-nowrap w-1">
+						<td class="w-1 px-6 py-4 text-sm whitespace-nowrap">
 							<span
 								class="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 shadow-sm"
-								style="border-left: 5px solid {getGradeColor(route.grade?.standardizedValue || route.grade?.french || route.grade)};"
+								style="border-left: 5px solid {getGradeColor(grade)};"
 							>
-								{route.grade?.value || route.grade?.display || route.grade || '—'}
+								{grade?.value || '—'}
 							</span>
 						</td>
-						<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500 w-1">
-							{route.length ? `${route.length}m` : '—'}
+						<td class="w-1 px-6 py-4 text-sm whitespace-nowrap text-gray-500">
+							{length !== null ? `${length}m` : '—'}
 						</td>
 					</tr>
 				{/each}

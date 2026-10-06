@@ -12,8 +12,17 @@ vi.mock('$app/stores', () => ({
 		data: {
 			allLocations: [
 				{
-					properties: { name: 'Alpine Crag', path: 'areas/alpine-crag', type: 'sports-climbing' },
-					geometry: { type: 'Point', coordinates: [16, 48] }
+					path: 'areas/alpine-crag',
+					entry: {
+						type: 'Feature',
+						properties: {
+							id: 'alpine-crag',
+							kind: 'crag',
+							name: 'Alpine Crag',
+							type: ['sports-climbing']
+						},
+						geometry: { type: 'Point', coordinates: [16, 48] }
+					}
 				}
 			]
 		}

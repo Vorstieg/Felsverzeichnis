@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { base } from '$app/paths';
 	import { page, navigating } from '$app/stores';
 	import { slide } from 'svelte/transition';
@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
+	import { getGeometryCenter } from '$lib/assets/js/topo-loader-utils.js';
 	import { colors } from '$lib/colors.js';
 	import {
 		createPlacesData,
@@ -16,8 +17,17 @@
 		selectionExpression
 	} from '$lib/assets/js/climbing-map-utils.js';
 
-	/** @typedef {import('@vorstieg/fels-data/types').TopoPathFeature} TopoPathFeature */
-	/** @type {{locations?: any, access?: any, topoPaths?: TopoPathFeature[], accessKey?: string, tracks?: any, pitch?: number, isHidden?: boolean}} */
+	import type {
+		LayerSpecification,
+		ExpressionSpecification,
+		GeoJSONSource,
+		LngLatLike,
+		PaddingOptions,
+		MapGeoJSONFeature
+	} from 'maplibre-gl';
+	import type { FelsLocation } from '$lib/types/files';
+	import type { AccessCollection, MapCameraTarget, MapFocusTarget } from '$lib/types/application';
+	import type { PathFeature } from '@vorstieg/fels-types/types';
 	let {
 		locations = [],
 		access = null,
@@ -25,20 +35,34 @@
 		accessKey = '',
 		cameraTarget = null,
 		isHidden = false
+	}: {
+		locations?: FelsLocation[];
+		access?: AccessCollection | null;
+		topoPaths?: PathFeature[];
+		accessKey?: string;
+		cameraTarget?: MapCameraTarget | null;
+		isHidden?: boolean;
 	} = $props();
 
-	let mapElement = $state();
-	let map;
+	let mapElement: HTMLDivElement;
+	let map: maplibregl.Map;
 	let tileLayerMenuOpen = $state(false);
-	let styleLoaded = $state(false);
 	let currentPathname = $derived($navigating?.to?.url?.pathname ?? $page.url.pathname);
 	let detailsShown = $derived(
 		currentPathname !== base + '/map' && currentPathname !== base + '/map/'
 	);
 
-	const placeTypeColor = [
+	const placeType: ExpressionSpecification = [
+		'case',
+		['>', ['length', ['coalesce', ['get', 'type'], ['literal', []]]], 0],
+		['at', 0, ['get', 'type']],
+		''
+	];
+	const placeIcon: ExpressionSpecification = ['image', placeType];
+
+	const placeTypeColor: ExpressionSpecification = [
 		'match',
-		['get', 'type'],
+		placeType,
 		'sports-climbing',
 		colors.routeTypes['sports-climbing'],
 		'multi-pitch',
@@ -60,18 +84,14 @@
 		colors.routeTypes['sports-climbing']
 	];
 
-	const placesLayer = {
+	const placesLayer: LayerSpecification = {
 		id: 'places',
 		type: 'symbol',
 		source: 'places',
 		minzoom: 11.5,
-		filter: [
-			'all',
-			['!=', ['geometry-type'], 'Polygon'],
-			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 0]]
-		],
+		filter: ['all', ['!=', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 0]],
 		layout: {
-			'icon-image': ['get', 'type'],
+			'icon-image': placeIcon,
 			'icon-size': 0.55,
 			'icon-allow-overlap': true,
 			'text-optional': true,
@@ -95,12 +115,12 @@
 		}
 	};
 
-	const placesDotsLayer = {
+	const placesDotsLayer: LayerSpecification = {
 		id: 'places-dots',
 		type: 'circle',
 		source: 'places',
 		maxzoom: 14,
-		filter: ['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 0]],
+		filter: ['>=', ['zoom'], 0],
 		paint: {
 			'circle-color': placeTypeColor,
 			'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5],
@@ -114,40 +134,27 @@
 		}
 	};
 
-	const sectorFillLayer = {
+	const sectorFillLayer: LayerSpecification = {
 		id: 'sector-fill',
 		type: 'fill',
 		source: 'places',
-		filter: [
-			'all',
-			['==', ['geometry-type'], 'Polygon'],
-			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 13]]
-		],
+		filter: ['all', ['==', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 16]],
 		paint: { 'fill-color': placeTypeColor, 'fill-opacity': 0.12 }
 	};
 
-	const sectorLineLayer = {
+	const sectorLineLayer: LayerSpecification = {
 		id: 'sector-line',
 		type: 'line',
 		source: 'places',
-		filter: [
-			'all',
-			['==', ['geometry-type'], 'Polygon'],
-			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 13]]
-		],
+		filter: ['all', ['==', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 16]],
 		paint: { 'line-color': placeTypeColor, 'line-width': 2, 'line-opacity': 0.7 }
 	};
 
-	const sectorLabelsLayer = {
+	const sectorLabelsLayer: LayerSpecification = {
 		id: 'sector-labels',
 		type: 'symbol',
 		source: 'places',
-		filter: [
-			'all',
-			['==', ['geometry-type'], 'Polygon'],
-			['>=', ['zoom'], ['coalesce', ['to-number', ['get', 'minzoom']], 13]],
-			['has', 'name']
-		],
+		filter: ['all', ['==', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 16], ['has', 'name']],
 		layout: {
 			'text-field': ['get', 'name'],
 			'text-size': 12,
@@ -161,7 +168,7 @@
 		}
 	};
 
-	const accessLineLayer = {
+	const accessLineLayer: LayerSpecification = {
 		id: 'access-lines',
 		type: 'line',
 		source: 'access',
@@ -173,7 +180,7 @@
 		}
 	};
 
-	const accessPointsLayer = {
+	const accessPointsLayer: LayerSpecification = {
 		id: 'access-points',
 		type: 'symbol',
 		source: 'access',
@@ -183,15 +190,12 @@
 			'icon-image': [
 				'match',
 				['get', 'kind'],
-				'parking', 'parking',
-				'hut', 'access-hut',
-				'transit', [
-					'match',
-					['coalesce', ['get', 'mode'], 'bus'],
-					'train', 'train',
-					'bus', 'bus',
-					'bus'
-				],
+				'parking',
+				'parking',
+				'hut',
+				'access-hut',
+				'transit',
+				['match', ['coalesce', ['get', 'mode'], 'bus'], 'train', 'train', 'bus', 'bus', 'bus'],
 				'bus'
 			],
 			'icon-size': 0.65,
@@ -219,7 +223,7 @@
 		}
 	};
 
-	const topoPathsLayer = {
+	const topoPathsLayer: LayerSpecification = {
 		id: 'topo-paths',
 		type: 'line',
 		source: 'topo-paths',
@@ -231,21 +235,31 @@
 				[
 					'match',
 					['get', 'routeType'],
-					'sports-climbing', colors.routeTypes['sports-climbing'],
-					'multi-pitch', colors.routeTypes['multi-pitch'],
-					'bouldering', colors.routeTypes.bouldering,
-					'trad', colors.routeTypes.trad,
-					'alpine-tour', colors.routeTypes['alpine-tour'],
-					'via-ferrata', colors.routeTypes['via-ferrata'],
+					'sports-climbing',
+					colors.routeTypes['sports-climbing'],
+					'multi-pitch',
+					colors.routeTypes['multi-pitch'],
+					'bouldering',
+					colors.routeTypes.bouldering,
+					'trad',
+					colors.routeTypes.trad,
+					'alpine-tour',
+					colors.routeTypes['alpine-tour'],
+					'via-ferrata',
+					colors.routeTypes['via-ferrata'],
 					colors.topoPaths.main
 				],
 				[
 					'match',
 					['get', 'role'],
-					'approach', colors.topoPaths.approach,
-					'descent', colors.topoPaths.descent,
-					'variant', colors.topoPaths.variant,
-					'fixedRope', colors.topoPaths.fixedRope,
+					'approach',
+					colors.topoPaths.approach,
+					'descent',
+					colors.topoPaths.descent,
+					'variant',
+					colors.topoPaths.variant,
+					'fixedRope',
+					colors.topoPaths.fixedRope,
 					colors.topoPaths.main
 				]
 			],
@@ -257,8 +271,8 @@
 	onMount(async () => {
 		map = new maplibregl.Map({
 			container: mapElement,
-			zoom: cameraTarget?.zoom ?? 8,
-			center: cameraTarget?.center ?? [16.0, 48.0],
+			zoom: cameraTarget?.type === 'center' ? cameraTarget.zoom : 8,
+			center: cameraTarget?.type === 'center' ? cameraTarget.center : [16.0, 48.0],
 			pitch: 0,
 			hash: true,
 			style: base + '/terrain.json',
@@ -286,9 +300,8 @@
 		map.getCanvas().style.cursor = 'default';
 
 		map.on('click', 'places', (e) => {
-			if (map.getZoom() >= 12.0 && e.features[0]?.properties?.path) {
-				updateSelectionStyle(e.features[0].properties.path);
-				openPlace(e.features[0].properties.path, e.features[0].geometry.coordinates);
+			if (map.getZoom() >= 12.0 && e.features?.[0]) {
+				openFeature(e.features[0]);
 			}
 		});
 
@@ -314,7 +327,6 @@
 				await drawLayers();
 				applyCameraTarget();
 				updateSelectionStyle($page.params.crag || '');
-				styleLoaded = true;
 			});
 		});
 
@@ -339,9 +351,8 @@
 		});
 
 		map.on('click', 'places-dots', (e) => {
-			if (map.getZoom() < 12.0 && e.features[0]?.properties?.path) {
-				updateSelectionStyle(e.features[0].properties.path);
-				openPlace(e.features[0].properties.path, e.features[0].geometry.coordinates);
+			if (map.getZoom() < 12.0 && e.features?.[0]) {
+				openFeature(e.features[0]);
 			}
 		});
 
@@ -354,8 +365,7 @@
 		});
 		map.on('click', sectorLayerIds, (e) => {
 			const feature = e.features?.[0];
-			const path = feature?.properties?.path;
-			if (path) openPlace(path, e.lngLat.toArray());
+			if (feature) openFeature(feature);
 		});
 
 		window.addEventListener('crag-review:focus-map-target', handleFocusMapTarget);
@@ -366,7 +376,7 @@
 		return calculateMapPadding({ width: window.innerWidth, height: window.innerHeight });
 	}
 
-	function handleFocusMapTarget(e) {
+	function handleFocusMapTarget(e: CustomEvent<MapFocusTarget>) {
 		if (!map || !map.isStyleLoaded()) return;
 		const target = e.detail;
 		if (target && target.center) {
@@ -388,9 +398,19 @@
 		};
 	});
 
-	function openPlace(path, coordinates) {
-		goto(`${base}/map/crag/${path}`);
-		
+	function openFeature(feature: MapGeoJSONFeature) {
+		const properties = feature.properties as { filePath: string };
+		const location = locations.find((item) => item.path === properties.filePath);
+		if (!location) return;
+		const center = getGeometryCenter(location.entry.geometry);
+		if (!center) return;
+		updateSelectionStyle(location.path);
+		openPlace(location.path, center);
+	}
+
+	async function openPlace(path: string, coordinates: [number, number]) {
+		await goto(`${base}/map/crag/${path}`);
+
 		if (!map || !coordinates) return;
 		const uiPadding = getMapPadding();
 		if (!isTargetVisibleAndZoomed(coordinates, uiPadding, 16)) {
@@ -401,7 +421,9 @@
 				padding: uiPadding,
 				duration: 1200
 			});
-			map.once('moveend', () => { isManuallyPanning = false; });
+			map.once('moveend', () => {
+				isManuallyPanning = false;
+			});
 		}
 	}
 
@@ -444,7 +466,7 @@
 
 	function getAccessData() {
 		return {
-			type: 'FeatureCollection',
+			type: 'FeatureCollection' as const,
 			features: access?.features || []
 		};
 	}
@@ -465,7 +487,7 @@
 		if (!map?.isStyleLoaded()) return;
 		if (topoPaths?.length) {
 			addTopoPathLayers();
-			map.getSource('topo-paths')?.setData(getTopoPathsData());
+			map.getSource<GeoJSONSource>('topo-paths')?.setData(getTopoPathsData());
 		} else {
 			removeTopoPathLayers();
 		}
@@ -493,8 +515,8 @@
 	}
 
 	$effect(() => {
-		const source = map?.getSource('places');
-		if (source && Array.isArray(locations)) {
+		const source = map?.getSource<GeoJSONSource>('places');
+		if (source) {
 			source.setData(getPlacesData());
 			const selectedPath = $page.params.crag || '';
 			updateSelectionStyle(selectedPath);
@@ -514,7 +536,7 @@
 		if (!map?.isStyleLoaded()) return;
 		if (access?.features?.length) {
 			addAccessLayers();
-			map.getSource('access')?.setData(getAccessData());
+			map.getSource<GeoJSONSource>('access')?.setData(getAccessData());
 		} else {
 			removeAccessLayers();
 		}
@@ -532,10 +554,18 @@
 		let active = true;
 		// Bomb-proof polling to ensure it catches MapLibre's canvas renderer regardless of async tile/layer lag
 		if (selectedPath) {
-			setTimeout(() => { if (active) updateSelectionStyle(selectedPath); }, 50);
-			setTimeout(() => { if (active) updateSelectionStyle(selectedPath); }, 200);
-			setTimeout(() => { if (active) updateSelectionStyle(selectedPath); }, 600);
-			setTimeout(() => { if (active) updateSelectionStyle(selectedPath); }, 1200);
+			setTimeout(() => {
+				if (active) updateSelectionStyle(selectedPath);
+			}, 50);
+			setTimeout(() => {
+				if (active) updateSelectionStyle(selectedPath);
+			}, 200);
+			setTimeout(() => {
+				if (active) updateSelectionStyle(selectedPath);
+			}, 600);
+			setTimeout(() => {
+				if (active) updateSelectionStyle(selectedPath);
+			}, 1200);
 		}
 
 		return () => {
@@ -543,7 +573,7 @@
 		};
 	});
 
-	function updateSelectionStyle(selectedPath) {
+	function updateSelectionStyle(selectedPath: string) {
 		if (!map || !map.getLayer('places-dots')) return;
 
 		if (!selectedPath) {
@@ -552,7 +582,7 @@
 			map.setPaintProperty('places-dots', 'circle-stroke-opacity', ['step', ['zoom'], 1, 13.5, 0]);
 			map.setPaintProperty('places', 'text-color', 'rgba(47,57,72,1)');
 			map.setPaintProperty('places', 'icon-opacity', ['step', ['zoom'], 0, 13.5, 1]);
-			map.setLayoutProperty('places', 'icon-image', ['get', 'type']);
+			map.setLayoutProperty('places', 'icon-image', placeIcon);
 			return;
 		}
 
@@ -595,8 +625,8 @@
 		map.setLayoutProperty('places', 'icon-image', [
 			'case',
 			isSelected,
-			'selected-marker',
-			['get', 'type']
+			['image', 'selected-marker'],
+			placeIcon
 		]);
 	}
 
@@ -616,7 +646,11 @@
 
 	let isManuallyPanning = false;
 
-	function isTargetVisibleAndZoomed(centerLngLat, padding, targetZoom = 15) {
+	function isTargetVisibleAndZoomed(
+		centerLngLat: LngLatLike,
+		padding: Required<PaddingOptions>,
+		targetZoom = 15
+	) {
 		if (!map) return false;
 		if (map.getZoom() < targetZoom - 0.5) return false;
 		const point = map.project(centerLngLat);
@@ -625,10 +659,12 @@
 		const height = container.clientHeight;
 		const marginX = 40;
 		const marginY = 60;
-		return point.x >= padding.left + marginX &&
-			   point.x <= width - padding.right - marginX &&
-			   point.y >= padding.top + marginY &&
-			   point.y <= height - padding.bottom - marginY;
+		return (
+			point.x >= padding.left + marginX &&
+			point.x <= width - padding.right - marginX &&
+			point.y >= padding.top + marginY &&
+			point.y <= height - padding.bottom - marginY
+		);
 	}
 
 	function applyCameraTarget() {
@@ -637,7 +673,7 @@
 		const uiPadding = getMapPadding();
 
 		if (cameraTarget.type === 'bounds' && cameraTarget.bounds) {
-			const base = typeof cameraTarget.padding === 'number' ? cameraTarget.padding : 40;
+			const base = cameraTarget.padding;
 			map.fitBounds(cameraTarget.bounds, {
 				padding: {
 					top: uiPadding.top + base,
@@ -648,11 +684,11 @@
 				maxZoom: cameraTarget.maxZoom ?? 18,
 				duration: 900
 			});
-		} else if (cameraTarget.center) {
+		} else if (cameraTarget.type === 'center') {
 			if (isTargetVisibleAndZoomed(cameraTarget.center, uiPadding, cameraTarget.zoom)) {
 				return;
 			}
-			
+
 			map.flyTo({
 				center: [cameraTarget.center[0] + 0.00001, cameraTarget.center[1]],
 				zoom: Math.max(map.getZoom(), cameraTarget.zoom),
@@ -662,7 +698,7 @@
 		}
 	}
 
-	async function addMapImage(name, url) {
+	async function addMapImage(name: string, url: string) {
 		try {
 			const img = await map.loadImage(url);
 			if (!map.hasImage(name)) {
@@ -687,24 +723,29 @@
 		map.setStyle(base + '/terrain.json');
 		tileLayerMenuOpen = false;
 	}
-
 </script>
 
 <div
-	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full transition-opacity duration-300 {detailsShown ? 'details-shown' : ''} {isHidden ? 'opacity-0 pointer-events-none z-[-1]' : 'opacity-100'}"
+	class="fixed top-0 right-0 bottom-0 left-0 h-screen w-full transition-opacity duration-300 {detailsShown
+		? 'details-shown'
+		: ''} {isHidden ? 'pointer-events-none z-[-1] opacity-0' : 'opacity-100'}"
 	bind:this={mapElement}
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 ></div>
 <div
-	class="fixed right-4 sm:left-8 sm:right-auto z-[1000] flex flex-col items-center style-selector-btn gap-2 transition-opacity duration-300 {isHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'}"
+	class="style-selector-btn fixed right-4 z-[1000] flex flex-col items-center gap-2 transition-opacity duration-300 sm:right-auto sm:left-8 {isHidden
+		? 'pointer-events-none opacity-0'
+		: 'opacity-100'}"
 	role="group"
 	aria-label="Map style selector"
 	onmouseleave={() => (tileLayerMenuOpen = false)}
-	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px; {isHidden ? '--controls-opacity: 0; --controls-pointer: none;' : ''}"
+	style="--dropdown-offset: {$searchSuggestionsActive > 0
+		? $searchSuggestionsActive + 16
+		: 0}px; {isHidden ? '--controls-opacity: 0; --controls-pointer: none;' : ''}"
 >
 	<button
 		aria-label="Choose map style"
-		class="cursor-pointer bg-white w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink rounded-2xl border-1 border-gray-200 transition-all shadow-md text-gray-600"
+		class="hover:bg-ink flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-1 border-gray-200 bg-white text-gray-600 shadow-md transition-all hover:text-white max-sm:h-11 max-sm:w-11"
 		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
 		><i class="fa-solid fa-layer-group text-lg"></i></button
 	>
@@ -716,21 +757,21 @@
 		>
 			<button
 				aria-label="Show transport map"
-				class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
+				class="hover:bg-ink flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-1 border-gray-200 bg-white text-gray-600 shadow-md hover:text-white max-sm:h-11 max-sm:w-11"
 				onclick={setTransportTileLayer}
 			>
 				<i class="fa-solid fa-bus-simple"></i>
 			</button>
 			<button
 				aria-label="Show satellite map"
-				class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
+				class="hover:bg-ink flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-1 border-gray-200 bg-white text-gray-600 shadow-md hover:text-white max-sm:h-11 max-sm:w-11"
 				onclick={setSatelliteTileLayer}
 			>
 				<i class="fa-solid fa-satellite"></i>
 			</button>
 			<button
 				aria-label="Show terrain map"
-				class="cursor-pointer w-10 h-10 max-sm:w-11 max-sm:h-11 flex items-center justify-center hover:text-white hover:bg-ink bg-white border-1 border-gray-200 rounded-2xl shadow-md text-gray-600"
+				class="hover:bg-ink flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-1 border-gray-200 bg-white text-gray-600 shadow-md hover:text-white max-sm:h-11 max-sm:w-11"
 				onclick={setTerrainTileLayer}
 			>
 				<i class="fa-solid fa-mountain"></i>
@@ -738,7 +779,6 @@
 		</div>
 	{/if}
 </div>
-
 
 <style>
 	@import 'leaflet/dist/leaflet.css';
@@ -769,15 +809,24 @@
 		}
 	}
 
-
 	:global(.maplibregl-ctrl-group) {
-		@apply cursor-pointer bg-white rounded-2xl w-10 h-10 border-1 border-gray-200 transition-all flex items-center justify-center;
+		display: flex;
+		height: calc(var(--spacing) * 10);
+		width: calc(var(--spacing) * 10);
+		cursor: pointer;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-2xl);
+		border: 1px solid var(--color-gray-200);
+		background-color: var(--color-white);
+		transition: all var(--default-transition-duration) var(--default-transition-timing-function);
 		margin: 0 0 0.5rem 0 !important;
 	}
 
 	:global(.maplibregl-ctrl-group) {
 		@media (width <= 40rem) {
-			@apply w-11 h-11;
+			height: calc(var(--spacing) * 11);
+			width: calc(var(--spacing) * 11);
 			transition:
 				opacity 0.2s ease-out,
 				transform 0.2s ease-out;
@@ -789,32 +838,42 @@
 	}
 
 	:global(.maplibregl-ctrl-group button) {
-		@apply w-full h-full rounded-2xl;
+		height: 100%;
+		width: 100%;
+		border-radius: var(--radius-2xl);
 	}
 
 	:global(.maplibregl-ctrl-group:not(:empty)) {
-		@apply shadow-md;
+		box-shadow: var(--shadow-md);
 	}
 
 	:global(.maplibregl-ctrl-bottom-right) {
-		@apply bottom-2 right-2;
+		right: calc(var(--spacing) * 2);
+		bottom: calc(var(--spacing) * 2);
 	}
 
 	:global(.maplibregl-ctrl-bottom-right) {
 		@media (width <= 40rem) {
-			@apply left-2 right-auto;
+			right: auto;
+			left: calc(var(--spacing) * 2);
 			bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
 		}
 	}
 
 	:global(.maplibregl-ctrl-top-right) {
-		@apply fixed left-8 right-auto z-[1000] !m-0;
+		position: fixed;
+		right: auto;
+		left: calc(var(--spacing) * 8);
+		z-index: 1000;
+		margin: 0 !important;
 		top: calc(5rem + var(--dropdown-offset, 0px));
 	}
 
 	:global(.maplibregl-ctrl-top-right) {
 		@media (width <= 40rem) {
-			@apply left-auto right-4 top-auto;
+			top: auto;
+			right: calc(var(--spacing) * 4);
+			left: auto;
 			top: 8rem;
 			bottom: auto;
 			transition: top 0.2s ease-out;

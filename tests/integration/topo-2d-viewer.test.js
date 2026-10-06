@@ -4,7 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import Topo2DViewer from '$lib/components/topo/Topo2DViewer.svelte';
 
 const topo = {
-	canvasAspectRatio: 2,
+	routes: [],
+	imageAspectRatio: 2,
 	image2D: 'data:image/svg+xml;base64,fixture',
 	backgroundFit: 'cover',
 	outlines: [
@@ -31,12 +32,19 @@ const topo = {
 		},
 		{ id: 'default-label', text: 'Default', position2D: [0.25, 0.25] },
 		{ id: 'empty-label', text: '', position2D: [0.75, 0.25] },
-		{ id: 'invalid', text: 'Ignored', position2D: [0.5] }
+		{ id: '3d-label', text: '3D only', position: [0, 1, 0] }
 	]
 };
 
 const routes = [
-	{ id: 'route-1', points2D: [[0.2, 0.8], [0.5, 0.4], [0.7, 0.15]] }
+	{
+		id: 'route-1',
+		points2D: [
+			[0.2, 0.8],
+			[0.5, 0.4],
+			[0.7, 0.15]
+		]
+	}
 ];
 
 afterEach(() => {
@@ -67,8 +75,8 @@ describe('Topo2DViewer', () => {
 		expect(svg.querySelectorAll('.topo-text-label')).toHaveLength(3);
 		expect(svg.querySelector('.topo-text-label')).toHaveTextContent('Summit');
 		expect(svg.querySelector('.topo-text-label')).toHaveAttribute(
-		'transform',
-		'translate(500, 100) rotate(10)'
+			'transform',
+			'translate(500, 100) rotate(10)'
 		);
 	});
 
@@ -76,17 +84,13 @@ describe('Topo2DViewer', () => {
 		const { container } = await renderViewer({
 			topo: {
 				...topo,
-				canvasAspectRatio: 0,
 				image2D: null,
-				imageAspectRatio: 0,
+				imageAspectRatio: undefined,
 				textLabels: []
 			}
 		});
 
-		expect(container.querySelector('.viewer-blank-background')).toHaveAttribute(
-			'fill',
-			'#fff'
-		);
+		expect(container.querySelector('.viewer-blank-background')).toHaveAttribute('fill', '#fff');
 		expect(container.querySelector('#topo-viewer-grid')).toBeNull();
 		expect(container.querySelector('.bg-white')).toBeInTheDocument();
 		expect(container.querySelector('svg')).toHaveAttribute('viewBox', '0 0 1000 666.6666666666666');
@@ -98,14 +102,33 @@ describe('Topo2DViewer', () => {
 				...topo,
 				image2D: null,
 				outlines: [
-					{ id: 'back', points2D: [[0.1, 0.1], [0.8, 0.1], [0.8, 0.8], [0.1, 0.1]] },
+					{
+						id: 'back',
+						points2D: [
+							[0.1, 0.1],
+							[0.8, 0.1],
+							[0.8, 0.8],
+							[0.1, 0.1]
+						]
+					},
 					{
 						id: 'front',
-						points2D: [[0.2, 0.2], [0.9, 0.2], [0.9, 0.9], [0.2, 0.2]],
+						points2D: [
+							[0.2, 0.2],
+							[0.9, 0.2],
+							[0.9, 0.9],
+							[0.2, 0.2]
+						],
 						fillColor: '#ff0000',
 						fillOpacity: 0.3
 					},
-					{ id: 'open', points2D: [[0.1, 0.9], [0.9, 0.9]] }
+					{
+						id: 'open',
+						points2D: [
+							[0.1, 0.9],
+							[0.9, 0.9]
+						]
+					}
 				]
 			}
 		});
@@ -114,13 +137,17 @@ describe('Topo2DViewer', () => {
 		const groups = Array.from(layer.children);
 		expect(groups).toHaveLength(3);
 		expect(Array.from(groups[0].children, (node) => node.getAttribute('class'))).toEqual([
-			'outline-background', 'rock-outline'
+			'outline-background',
+			'rock-outline'
 		]);
 		expect(Array.from(groups[1].children, (node) => node.getAttribute('class'))).toEqual([
-			'outline-background', 'outline-fill', 'rock-outline'
+			'outline-background',
+			'outline-fill',
+			'rock-outline'
 		]);
 		expect(groups[1].querySelector('.outline-background')).toHaveAttribute(
-			'd', groups[1].querySelector('.rock-outline').getAttribute('d')
+			'd',
+			groups[1].querySelector('.rock-outline').getAttribute('d')
 		);
 		expect(groups[1].querySelector('.outline-fill')).toHaveAttribute('fill', '#ff0000');
 		expect(groups[1].querySelector('.outline-fill')).toHaveAttribute('fill-opacity', '0.3');

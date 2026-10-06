@@ -1,0 +1,93 @@
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { fsApiUrl } from '$lib/config';
+import { createCragCache } from '$lib/assets/js/crag-cache';
+import { load } from '../../src/routes/topo/crag/[...crag]/+page.js';
+
+vi.mock('$app/environment', () => ({ browser: true }));
+
+const cragPath = 'country/region/area/crag';
+const sectorPath = `${cragPath}/north`;
+const crag = { properties: { id: 'crag', kind: 'crag', name: 'Cached Crag' } };
+const sector = { properties: { id: 'north', kind: 'sector', name: 'North Wall' } };
+const cragTopo = { routes: [{ id: 'crag-route', name: 'Crag route' }] };
+const sectorTopo = { routes: [{ id: 'sector-route', name: 'Sector route' }] };
+const directory = [
+	{ name: 'crag.json', path: 'crag.json', type: 'file' },
+	{ name: 'crag-topo.json', path: 'crag-topo.json', type: 'file' },
+	{ name: 'north', path: 'north', type: 'dir' }
+];
+const sectorDirectory = [
+	{ name: 'north.json', path: 'north.json', type: 'file' },
+	{ name: 'north-topo.json', path: 'north-topo.json', type: 'file' },
+	{ name: 'north.glb', path: 'north.glb', type: 'file' }
+];
+
+beforeEach(async () => {
+	const stored = new Map();
+	vi.stubGlobal('caches', {
+		open: async () => ({
+			match: async (url) => stored.get(url)?.clone(),
+			put: async (url, response) => stored.set(url, response.clone())
+		})
+	});
+	const documents = new Map([
+		[`${cragPath}/crag.json`, crag],
+		[`${cragPath}/crag-topo.json`, cragTopo],
+		[`${sectorPath}/north.json`, sector],
+		[`${sectorPath}/north-topo.json`, sectorTopo],
+		[cragPath, directory],
+		[sectorPath, sectorDirectory],
+		[
+			`${cragPath}/?recursive=true`,
+			[...directory, ...sectorDirectory.map((file) => ({ ...file, path: `north/${file.path}` }))]
+		]
+	]);
+	const fetch = async (url) => {
+		const path = url.slice(fsApiUrl.length + 1);
+		if (path.endsWith('/hash.txt')) return new Response('hash-1');
+		if (path.endsWith('.glb')) return new Response('model');
+		return documents.has(path)
+			? new Response(JSON.stringify(documents.get(path)))
+			: new Response(null, { status: 404 });
+	};
+	await createCragCache({ apiUrl: fsApiUrl, fetch, useCache: true }).cacheCragFolder(cragPath);
+	expect(stored.has(`${fsApiUrl}/?recursive=true`)).toBe(false);
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+it.each([
+	[cragPath, cragPath, null],
+	[`${cragPath}/crag-route`, cragPath, cragTopo.routes[0]],
+	[sectorPath, sectorPath, null],
+	[`${sectorPath}/sector-route`, sectorPath, sectorTopo.routes[0]]
+])('loads prefetched topo %s after an offline reload', async (requestedPath, path, route) => {
+	const result = await load({
+		params: { crag: requestedPath },
+		url: new URL(`https://example.test/topo/crag/${requestedPath}`),
+		fetch: async () => {
+			throw new TypeError('Offline');
+		}
+	});
+
+	expect(result.path).toBe(path);
+	expect(result.baseCragPath).toBe(cragPath);
+	expect(result.cragName).toBe('Cached Crag');
+	expect(result.route).toEqual(route);
+	expect(result.sectors).toEqual(path === sectorPath ? [] : [{ path: sectorPath, entry: sector }]);
+	expect(result.topo).toEqual(path === sectorPath ? sectorTopo : cragTopo);
+	expect(result.gradeRoutes[0].id).toBe('sector-route');
+	expect(result.has3D).toBe(path === sectorPath);
+});
+
+it('returns 404 for an uncached path while offline', async () => {
+	await expect(
+		load({
+			params: { crag: 'country/region/area/missing' },
+			url: new URL('https://example.test/topo/crag/country/region/area/missing'),
+			fetch: async () => {
+				throw new TypeError('Offline');
+			}
+		})
+	).rejects.toMatchObject({ status: 404 });
+});

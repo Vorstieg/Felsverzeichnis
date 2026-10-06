@@ -1,18 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('$lib/assets/js/fetchCrags', () => ({ default: vi.fn() }));
+import fetchCrags from '$lib/assets/js/fetchCrags';
 import { load } from '../../src/routes/topo/crag/[...crag]/+page.js';
 
 const topo = {
-	name: 'Alpine Crag topo',
-	routes: [{ id: 'route-1', name: 'First route', grade: '6a' }],
+	routes: [
+		{
+			id: 'route-1',
+			name: 'First route',
+			grade: { scale: 'french', value: '6a', standardizedValue: '6a' }
+		}
+	],
 	paths: { type: 'FeatureCollection', features: [] }
 };
 
 const crag = {
+	type: 'Feature',
+	geometry: { type: 'Point', coordinates: [16, 48] },
 	properties: {
+		id: 'alpine-crag',
+		kind: 'crag',
 		name: 'Alpine Crag',
-		type: 'sports-climbing',
-		description_de: 'Beschreibung',
-		sectors: [{ id: 'north', name: 'North Wall', type: 'sports-climbing' }]
+		type: ['sports-climbing'],
+		description_de: 'Beschreibung'
 	}
 };
 
@@ -26,7 +36,9 @@ function makeFetch() {
 		if (url.endsWith('/areas/alpine-crag/alpine-crag.json')) return response(crag);
 		if (url.endsWith('/areas/alpine-crag/north/north-topo.json'))
 			return response({
-				routes: [{ id: 'sector-route', grade: '6b' }],
+				routes: [
+					{ id: 'sector-route', grade: { scale: 'french', value: '6b', standardizedValue: '6b' } }
+				],
 				wallAzimuth: 180,
 				tags: ['sports-climbing']
 			});
@@ -35,7 +47,19 @@ function makeFetch() {
 	};
 }
 
+const sector = {
+	path: 'areas/alpine-crag/north',
+	entry: {
+		type: 'Feature',
+		geometry: { type: 'Point', coordinates: [16, 48] },
+		properties: { id: 'north', kind: 'sector', name: 'North Wall', type: ['sports-climbing'] }
+	}
+};
+
 describe('topo page loader', () => {
+	beforeEach(() =>
+		vi.mocked(fetchCrags).mockResolvedValue([{ entry: crag, path: 'areas/alpine-crag' }, sector])
+	);
 	it('loads a crag and aggregates sector routes', async () => {
 		const result = await load({
 			params: { crag: 'areas/alpine-crag' },
@@ -45,11 +69,12 @@ describe('topo page loader', () => {
 
 		expect(result.cragName).toBe('Alpine Crag');
 		expect(result.isSectorPath).toBe(false);
-		expect(result.sectors).toEqual(crag.properties.sectors);
+		expect(result.sectors).toEqual([sector]);
 		expect(result.gradeRoutes).toEqual([
 			{
 				id: 'sector-route',
-				grade: '6b',
+				downloadTracks: [],
+				grade: { scale: 'french', value: '6b', standardizedValue: '6b' },
 				sectorId: 'north',
 				sectorName: 'North Wall',
 				sectorWallAzimuth: 180,

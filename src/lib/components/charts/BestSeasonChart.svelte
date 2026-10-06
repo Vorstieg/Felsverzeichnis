@@ -1,9 +1,9 @@
 <script lang="ts">
-    import Chart from 'chart.js/auto';
-    import { _ } from 'svelte-i18n';
-    import { colors } from '$lib/colors.js';
+	import Chart from 'chart.js/auto';
+	import { _ } from 'svelte-i18n';
+	import { colors } from '$lib/colors.js';
 
-	let { data } = $props();
+	let { data }: { data: import('$lib/types/application').SeasonData } = $props();
 	let canvas: HTMLCanvasElement;
 
 	let t_feels_like = $derived($_('charts.feels_like'));
@@ -35,7 +35,7 @@
 		};
 	});
 
-	function initChart(node: HTMLCanvasElement, config: any) {
+	function initChart(node: HTMLCanvasElement, config: typeof chartConfig) {
 		if (!config || !config.data) return;
 
 		const ctx = node.getContext('2d');
@@ -45,7 +45,7 @@
 
 		const idealHigh = new Array(data.labels.length).fill(25);
 		const idealLow = new Array(data.labels.length).fill(15);
-		const idealMonths = data.feelsLikeTemps.map((t: number) => (t >= 15 && t <= 25) ? 40 : 0);
+		const idealMonths = data.feelsLikeTemps.map((t: number) => (t >= 15 && t <= 25 ? 40 : 0));
 
 		const chart = new Chart(ctx, {
 			type: 'line',
@@ -68,9 +68,8 @@
 						label: 'Ideal Low',
 						data: idealLow,
 						fill: false,
-						radius: 0,
-						borderColor: 'transparent',
 						pointRadius: 0,
+						borderColor: 'transparent',
 						order: 10
 					},
 					{
@@ -79,7 +78,6 @@
 						fill: '-1',
 						backgroundColor: `${colors.chart.good}1a`,
 						borderColor: 'transparent',
-						radius: 0,
 						pointRadius: 0,
 						order: 10
 					},
@@ -93,7 +91,7 @@
 						tension: 0.4,
 						fill: false,
 						pointBackgroundColor: (ctx) => {
-							const v = ctx.raw as number;
+							const v = ctx.parsed.y;
 							if (v >= 15 && v <= 25) return colors.chart.good;
 							if (v < 5 || v > 35) return colors.chart.danger;
 							return colors.chart.warning;
@@ -128,7 +126,7 @@
 					tooltip: {
 						mode: 'index',
 						intersect: false,
-						filter: (item) => !item.dataset.label.includes('Ideal'),
+						filter: (item) => !(item.dataset.label ?? '').includes('Ideal'),
 						callbacks: {
 							label: (ctx) => {
 								let label = ctx.dataset.label || '';
@@ -137,7 +135,8 @@
 								return label;
 							},
 							footer: (tooltipItems) => {
-								const v = tooltipItems[0].parsed.y;
+								const v = tooltipItems[0]?.parsed.y;
+								if (typeof v !== 'number' || !Number.isFinite(v)) return '';
 								if (v >= 15 && v <= 25) return translations.ideal_conditions;
 								if (v > 30) return translations.too_hot;
 								if (v < 5) return translations.too_cold;
@@ -161,13 +160,17 @@
 		});
 
 		return {
-			update(newConfig: any) {
+			update(newConfig: typeof chartConfig) {
 				if (!newConfig || !newConfig.data) return;
 				const { data, translations } = newConfig;
 				const len = data.labels.length;
-				const newIdealMonths = data.feelsLikeTemps.map((t: number) => (t >= 15 && t <= 25) ? 40 : 0);
+				const newIdealMonths = data.feelsLikeTemps.map((t: number) =>
+					t >= 15 && t <= 25 ? 40 : 0
+				);
 
-				chart.data.labels = data.labels.map((idx: string) => translations.months[parseInt(idx)] || idx);
+				chart.data.labels = data.labels.map(
+					(idx: string) => translations.months[parseInt(idx)] || idx
+				);
 				chart.data.datasets[0].data = newIdealMonths;
 				chart.data.datasets[0].label = translations.ideal_month;
 				chart.data.datasets[1].data = new Array(len).fill(15);
@@ -186,7 +189,8 @@
 				// Re-assigning options.plugins.tooltip.callbacks.footer
 				if (chart.options.plugins?.tooltip?.callbacks) {
 					chart.options.plugins.tooltip.callbacks.footer = (tooltipItems) => {
-						const v = tooltipItems[0].parsed.y;
+						const v = tooltipItems[0]?.parsed.y;
+						if (typeof v !== 'number' || !Number.isFinite(v)) return '';
 						if (v >= 15 && v <= 25) return translations.ideal_conditions;
 						if (v > 30) return translations.too_hot;
 						if (v < 5) return translations.too_cold;
@@ -209,23 +213,24 @@
 	}
 </script>
 
-<div class="relative w-full h-full">
+<div class="relative h-full w-full">
 	<canvas bind:this={canvas} use:initChart={chartConfig}></canvas>
-	<div class="absolute top-0 right-0 p-1 z-50 pointer-events-auto">
+	<div class="pointer-events-auto absolute top-0 right-0 z-50 p-1">
 		<div class="relative flex justify-end">
 			<!-- Use button for better mobile interaction -->
 			<button
-				class="text-gray-400 hover:text-gray-600 focus:text-gray-600 cursor-help text-xs bg-transparent border-none p-1"
+				class="cursor-help border-none bg-transparent p-1 text-xs text-gray-400 hover:text-gray-600 focus:text-gray-600"
 				aria-label="Show calculation information"
 				onclick={toggleTooltip}
-				onmouseenter={() => showTooltip = true}
-				onmouseleave={() => showTooltip = false}
+				onmouseenter={() => (showTooltip = true)}
+				onmouseleave={() => (showTooltip = false)}
 			>
 				<i class="fa-solid fa-circle-info"></i>
 			</button>
 			{#if showTooltip}
 				<div
-					class="absolute right-0 top-6 w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg z-50 pointer-events-none">
+					class="pointer-events-none absolute top-6 right-0 z-50 w-48 rounded bg-gray-800 p-2 text-[10px] text-white shadow-lg"
+				>
 					{t_calculation_info}
 				</div>
 			{/if}
@@ -234,8 +239,8 @@
 </div>
 
 <style>
-    canvas {
-        width: 100%;
-        height: 100%;
-    }
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
 </style>

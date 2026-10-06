@@ -6,14 +6,19 @@ export function createCragCache({
 	fetch,
 	useCache = false,
 	cacheStorage = globalThis.caches
+}: {
+	apiUrl: string;
+	fetch: typeof globalThis.fetch;
+	useCache?: boolean;
+	cacheStorage?: CacheStorage;
 }) {
-	const normalizePath = (path) => String(path).replace(/\/+$/, '');
+	const normalizePath = (path: string) => path.replace(/\/+$/, '');
 
-	const fetchJson = async (path) => {
+	const fetchJson = async (path: string): Promise<unknown> => {
 		const url = `${apiUrl}/${path}`;
 		try {
 			const response = await fetch(url);
-			if (response.ok) return await response.json();
+			if (response.ok) return (await response.json()) as unknown;
 		} catch {
 			// Offline, fall back to the cache below.
 		}
@@ -22,7 +27,7 @@ export function createCragCache({
 			if (useCache && cacheStorage) {
 				const cache = await cacheStorage.open('felslager-crags');
 				const cached = await cache.match(url, { ignoreVary: true, ignoreSearch: true });
-				if (cached) return await cached.json();
+				if (cached) return (await cached.json()) as unknown;
 			}
 		} catch {
 			// Cache failures should not prevent a page from loading.
@@ -30,8 +35,7 @@ export function createCragCache({
 
 		return null;
 	};
-
-	const cacheCragFolder = async (path) => {
+	const cacheCragFolder = async (path: string) => {
 		const cragPath = normalizePath(path);
 		try {
 			const hashRes = await fetch(`${apiUrl}/${cragPath}/hash.txt`);
@@ -45,7 +49,7 @@ export function createCragCache({
 
 			if (currentHash !== cachedHash || !baseDirCached) {
 				const indexRes = await fetch(`${apiUrl}/${cragPath}/?recursive=true`);
-				const files = await indexRes.json();
+				const files = (await indexRes.json()) as import('$lib/types/files').DirectoryEntry[];
 				const jsonFiles = files.filter(
 					(file) => file.type === 'file' && file.name.endsWith('.json')
 				);
@@ -87,6 +91,13 @@ export function createCragCache({
 			// Prefetching is best effort and must not block navigation.
 		}
 	};
-
-	return { fetchJson, cacheCragFolder, normalizePath };
+	const fetchEntry = async (path: string) =>
+		(await fetchJson(path)) as import('@vorstieg/fels-types/types').FelsEntry | null;
+	const fetchTopo = async (path: string) =>
+		(await fetchJson(path)) as import('@vorstieg/fels-types/types').FelsTopoDocument | null;
+	const fetchDirectory = async (path: string) =>
+		(await fetchJson(path)) as import('$lib/types/files').DirectoryEntry[] | null;
+	const fetchAccess = async (path: string) =>
+		(await fetchJson(path)) as import('$lib/types/application').AccessCollection | null;
+	return { fetchEntry, fetchTopo, fetchDirectory, fetchAccess, cacheCragFolder, normalizePath };
 }

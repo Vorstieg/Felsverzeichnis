@@ -2,6 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { Topo } from '$lib/assets/js/topo-paths.js';
 
 describe('Topo paths', () => {
+	it('builds paths for entries directly under the root', () => {
+		const location = new Topo('', 'austria');
+		expect(location.getCurrentPath()).toBe('austria/austria.json');
+		expect(location.getCragPath()).toBe('austria/austria.json');
+		expect(location.getFolder()).toBe('austria');
+		expect(location.getTopoPath()).toBe('austria/austria-topo.json');
+		expect(location.getAccessPath()).toBe('austria/austria-access.json');
+		const sector = new Topo('', 'crag', 'north');
+		expect(sector.getSectorPath()).toBe('crag/north/north.json');
+		expect(sector.getFolder()).toBe('crag/north/');
+	});
 	it('builds crag asset paths', () => {
 		const topo = new Topo('lower-austria', 'hohe-wand');
 		expect(topo.getTopoPath()).toBe('lower-austria/hohe-wand/hohe-wand-topo.json');

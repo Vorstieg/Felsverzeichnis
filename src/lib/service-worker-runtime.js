@@ -1,3 +1,5 @@
+/** @param {ServiceWorkerGlobalScope} scope
+ * @param {{build?: string[], files?: string[], version: string, cacheStorage?: CacheStorage, fetcher?: typeof fetch}} options */
 export function registerServiceWorker(
 	scope,
 	{ build = [], files = [], version, cacheStorage = globalThis.caches, fetcher = globalThis.fetch }
@@ -11,7 +13,7 @@ export function registerServiceWorker(
 			for (const asset of assets) {
 				try {
 					await cache.add(asset);
-				} catch (e) {
+				} catch {
 					console.warn('[SW] Failed to cache asset on install:', asset);
 				}
 			}

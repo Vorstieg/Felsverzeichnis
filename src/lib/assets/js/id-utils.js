@@ -26,11 +26,13 @@ export function generateId(prefix = 'id') {
 
 /**
  * Initialize counters from existing data to avoid collisions
- * @param {Object} topo - The topo object from userState
+ * @param {import("@vorstieg/fels-types/types").FelsTopoDocument} topo - The topo object from userState
  */
 export function initializeIdCounters(topo) {
 	if (!topo) return;
 
+	/** @param {{id: string | number}[] | undefined} items
+	 * @param {string} prefix */
 	const findMaxId = (items, prefix) => {
 		let max = 0;
 		if (!items) return max;

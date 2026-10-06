@@ -1,205 +1,75 @@
-export const ssr = false;
 import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
-import { Topo } from '$lib/assets/js/topo-paths.js';
-import { findRouteOrChild, normalizeSectorData } from '$lib/assets/js/topo-loader-utils.js';
-import { createCragCache } from '$lib/assets/js/crag-cache.js';
+import { findRouteOrChild } from '$lib/assets/js/topo-loader-utils.js';
+import { createEntryLoader } from '$lib/assets/js/entry-loader';
+import fetchCrags from '$lib/assets/js/fetchCrags';
 
-/** @typedef {import('@vorstieg/fels-data/types').CragFeature} CragFeature */
-/** @typedef {import('@vorstieg/fels-data/types').TopoDocument} TopoDocument */
-
+/** @satisfies {import('./$types').PageLoad} */
 export const load = async ({ params, url, fetch }) => {
+	const loader = createEntryLoader({ apiUrl: fsApiUrl, fetch, useCache: browser });
+	/** @type {import('$lib/types/files').FelsLocation[]} */
+	let locations = [];
 	try {
-		/** @type {TopoDocument | null} */
-		let topo = null;
-		let route;
-		let path;
-		let sectorData = null;
-		let baseCragPath = params.crag;
-		let sectorPath = null;
-		let sectorId = null;
-		let isSectorPath = false;
-
-		const API_URL = fsApiUrl;
-		const { fetchJson, cacheCragFolder } = createCragCache({
-			apiUrl: API_URL,
-			fetch,
-			useCache: browser
-		});
-		const pathParts = params.crag.split('/');
-		const lastPart = pathParts.at(-1);
-		const cragPath = pathParts.slice(0, -1).join('/');
-
-		// Try as Crag
-		topo = await fetchJson(new Topo(cragPath, lastPart).getTopoPath());
-
-		if (topo) {
-			path = params.crag;
-		} else if (pathParts.length > 1) {
-			// Try as Sector
-			const parentPath = pathParts.slice(0, -1).join('/');
-			topo = await fetchJson(
-				new Topo(pathParts.slice(0, -2).join('/'), pathParts.at(-2), lastPart).getTopoPath()
-			);
-			if (topo) {
-				isSectorPath = true;
-				baseCragPath = parentPath;
-				sectorId = lastPart;
-				sectorPath = `${parentPath}/${lastPart}`;
-				path = sectorPath;
-				sectorData = normalizeSectorData(await fetchJson(`${sectorPath}/${sectorId}.json`));
-			} else {
-				// Try as Crag + Route
-				const parentCragName = pathParts.at(-2);
-				topo = await fetchJson(
-					new Topo(pathParts.slice(0, -2).join('/'), parentCragName).getTopoPath()
-				);
-				if (topo) {
-					baseCragPath = parentPath;
-					path = parentPath;
-					route = findRouteOrChild(topo.routes, lastPart);
-				} else if (pathParts.length > 2) {
-					// Try as Sector + Route
-					const grandParentPath = pathParts.slice(0, -2).join('/');
-					const sectorName = pathParts.at(-2);
-					topo = await fetchJson(
-						new Topo(pathParts.slice(0, -3).join('/'), pathParts.at(-3), sectorName).getTopoPath()
-					);
-					if (topo) {
-						isSectorPath = true;
-						baseCragPath = grandParentPath;
-						sectorId = sectorName;
-						sectorPath = `${grandParentPath}/${sectorName}`;
-						path = sectorPath;
-						route = findRouteOrChild(topo.routes, lastPart);
-						sectorData = normalizeSectorData(await fetchJson(`${sectorPath}/${sectorId}.json`));
-					}
-				}
-			}
-		}
-
-		if (!topo) {
-			error(404, { message: `Crag or route not found: ${params.crag}` });
-		}
-
-		const pojo = (obj) => (obj ? JSON.parse(JSON.stringify(obj)) : obj);
-
-		// Fetch crag metadata to aggregate routes if it's a crag
-		/** @type {CragFeature | null} */
-		let indexedCrag = null;
-		let gradeRoutes = topo?.routes || [];
-		if (!isSectorPath) {
-			const cragName = baseCragPath.split('/').at(-1);
-			indexedCrag = await fetchJson(`${baseCragPath}/${cragName}.json`);
-			const sectors = indexedCrag?.properties?.sectors || [];
-			if (sectors.length > 0) {
-				const sectorRoutes = [];
-				const sectorPromises = sectors.map(async (sector) => {
-					if (!sector?.id) return [];
-					const sectorTopo = await fetchJson(`${baseCragPath}/${sector.id}/${sector.id}-topo.json`);
-					if (Array.isArray(sectorTopo?.routes)) {
-						return sectorTopo.routes.map((route) => ({
-							...route,
-							sectorId: sector.id,
-							sectorName: sector.name,
-							sectorWallAzimuth: sectorTopo.wallAzimuth,
-							sectorTags: sectorTopo.tags
-						}));
-					}
-					return [];
-				});
-
-				const results = await Promise.all(sectorPromises);
-				for (const result of results) {
-					sectorRoutes.push(...result);
-				}
-
-				if (sectorRoutes.length > 0) {
-					gradeRoutes = sectorRoutes;
-				}
-			}
-		} else if (!sectorData && sectorId) {
-			const cragName = baseCragPath.split('/').at(-1);
-			indexedCrag = await fetchJson(`${baseCragPath}/${cragName}.json`);
-			sectorData = normalizeSectorData(
-				indexedCrag?.properties?.sectors?.find((sector) => sector.id === sectorId)
-			);
-		}
-
-		// Check if a .glb model exists
-		let has3D = false;
-		let modelUrl = null;
-		let lowResModelUrl = null;
-
-		const modelTopo = isSectorPath
-			? new Topo(
-					baseCragPath.slice(0, baseCragPath.lastIndexOf('/')),
-					baseCragPath.split('/').at(-1),
-					sectorId
-				)
-			: new Topo(path.slice(0, path.lastIndexOf('/')), path.split('/').at(-1));
-		const access = await fetchJson(modelTopo.getAccessPath());
-		const modelCandidates = [
-			{ path: isSectorPath ? sectorPath : path, fileName: modelTopo.getGlbPath().split('/').at(-1) }
-		];
-
-		try {
-			for (const candidate of modelCandidates) {
-				const dirRes = await fetch(`${API_URL}/${candidate.path}`);
-				if (dirRes.ok) {
-					const files = await dirRes.json();
-					const glbFile = files.find((f) => f.name === candidate.fileName);
-					if (glbFile) {
-						has3D = true;
-						modelUrl = `${API_URL}/${candidate.path}/${candidate.fileName}`;
-
-						const lowResName = candidate.fileName.replace('.glb', '-low.glb');
-						if (files.some((f) => f.name === lowResName)) {
-							lowResModelUrl = `${API_URL}/${candidate.path}/${lowResName}`;
-						}
-						break;
-					}
-				}
-			}
-		} catch (e) {
-			// Ignore
-		}
-
-		if (browser) {
-			cacheCragFolder(baseCragPath);
-		}
-
-		return {
-			path,
-			baseCragPath,
-			sectorPath,
-			sectorId,
-			sector: pojo(sectorData),
-			access: pojo(access),
-			sectors: pojo(indexedCrag?.properties?.sectors || []),
-			isSectorPath,
-			topo: pojo(topo),
-			gradeRoutes: pojo(gradeRoutes),
-			route: pojo(route) || null,
-			has3D,
-			modelUrl,
-			lowResModelUrl,
-			cragName: indexedCrag?.properties?.name,
-			cragType: indexedCrag?.properties?.type,
-			name: topo?.name,
-			description_de: topo?.description_de || indexedCrag?.properties?.description_de,
-			description_en: topo?.description_en || indexedCrag?.properties?.description_en,
-			meta: {
-				lang: 'de',
-				title: (topo?.name || 'Topo') + ' - Felsverzeichnis',
-				description: topo?.description_de || '',
-				type: 'article',
-				author: topo?.author,
-				url: url.href
-			}
-		};
-	} catch (err) {
-		error(404, { message: err.message || 'Not found' });
+		locations = await fetchCrags({ limit: -1, fetch });
+	} catch {
+		// Direct entry loading also works without the global index.
 	}
+	const context = await loader.resolve(params.crag, locations, true);
+	if (!context) error(404, 'Entry not found');
+	const location = context.location;
+	const path = location.path;
+	const parentEntry = context.ancestors[0] ?? null;
+	const sector = parentEntry ? location : undefined;
+	const crag = parentEntry ?? location;
+	const baseCragPath = crag.path;
+	const sectorId = sector?.entry.properties.id ?? null;
+	const sectors = context.children;
+	const details = await loader.details(context);
+	const topo = details.topoJson;
+	if (!topo) error(404, `Topo not found: ${path}`);
+	const routeId = context.routeId;
+	const route = routeId === null ? null : findRouteOrChild(topo.routes, routeId);
+	if (routeId !== null && !route) error(404, `Route not found: ${routeId}`);
+	const { sectorTopos, gradeRoutes, access } = details;
+	const files = context.directory;
+	const fileName = context.paths.getGlbName();
+	const has3D = details.has3DTopo;
+	const lowResName = fileName.replace('.glb', '-low.glb');
+	if (browser) void loader.cacheFolder(path);
+	const properties = location.entry.properties;
+	return {
+		path,
+		baseCragPath,
+		sectorPath: sector?.path ?? null,
+		sectorId,
+		sector: sector?.entry ?? null,
+		access,
+		sectors,
+		sectorTopos,
+		isSectorPath: sector !== undefined,
+		topo,
+		gradeRoutes,
+		route,
+		has3D,
+		modelUrl: has3D ? `${fsApiUrl}/${path}/${fileName}` : null,
+		lowResModelUrl:
+			has3D && files.some((file) => file.name === lowResName)
+				? `${fsApiUrl}/${path}/${lowResName}`
+				: null,
+		cragName: crag.entry.properties.name,
+		cragType: crag.entry.properties.type,
+		rockType: location.entry.properties.rock_type,
+		name: properties.name,
+		description_de: properties.description_de,
+		description_en: properties.description_en,
+		meta: {
+			lang: 'de',
+			title: `${properties.name} - Felsverzeichnis`,
+			description: topo.description ?? properties.description_de,
+			type: 'article',
+			author: topo.author,
+			url: url.href
+		}
+	};
 };

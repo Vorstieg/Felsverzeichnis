@@ -1,49 +1,32 @@
 /** Find a route, pitch, or variant by ID and preserve its parent relationship. */
+/** @param {import("@vorstieg/fels-types/types").Route[]} routes
+ * @param {string} id
+ * @returns {import("$lib/types/application").SelectedClimbingLine | null} */
 export function findRouteOrChild(routes, id) {
-	for (const parent of routes || []) {
-		if (parent.id === id) return parent;
+	for (const parent of routes) {
+		if (String(parent.id) === id) return parent;
 		for (const child of [...(parent.pitches || []), ...(parent.variants || [])]) {
-			if (child.id === id) return { ...child, parentId: parent.id };
+			if (String(child.id) === id) return { ...child, parentId: parent.id };
 		}
 	}
 	return null;
 }
 
-/** Flatten sector feature properties into the shape consumed by the page. */
-export function normalizeSectorData(sector) {
-	return sector
-		? {
-				...sector,
-				...(sector.properties || {}),
-				geometry: sector.geometry || sector.properties?.geometry
-			}
-		: null;
-}
-
-/** Calculate a representative center for point and polygonal GeoJSON geometry. */
+/** Calculate the mean of outer-ring vertices, excluding closing coordinates.
+ * @param {import('@vorstieg/fels-types/types').PointOrAreaGeometry | null | undefined} geometry
+ * @returns {[number, number] | null} */
 export function getGeometryCenter(geometry) {
-	if (!geometry?.coordinates) return null;
-	if (geometry.type === 'Point') return geometry.coordinates;
-
-	const coordinates =
+	if (!geometry) return null;
+	if (geometry.type === 'Point') return [geometry.coordinates[0], geometry.coordinates[1]];
+	const rings =
 		geometry.type === 'Polygon'
-			? geometry.coordinates?.[0]
-			: geometry.type === 'MultiPolygon'
-				? geometry.coordinates?.flatMap((polygon) => polygon[0])
-				: geometry.coordinates;
-
-	if (!Array.isArray(coordinates) || coordinates.length === 0) return null;
-
-	const usableCoordinates =
-		coordinates.length > 1 &&
-		coordinates[0][0] === coordinates[coordinates.length - 1][0] &&
-		coordinates[0][1] === coordinates[coordinates.length - 1][1]
-			? coordinates.slice(0, -1)
-			: coordinates;
-
-	const sums = usableCoordinates.reduce(
-		(acc, coordinate) => [acc[0] + coordinate[0], acc[1] + coordinate[1]],
+			? geometry.coordinates.slice(0, 1)
+			: geometry.coordinates.map((polygon) => polygon[0]);
+	const vertices = rings.flatMap((ring) => ring.slice(0, -1));
+	if (!vertices.length) return null;
+	const sums = vertices.reduce(
+		(sum, coordinate) => [sum[0] + coordinate[0], sum[1] + coordinate[1]],
 		[0, 0]
 	);
-	return [sums[0] / usableCoordinates.length, sums[1] / usableCoordinates.length];
+	return [sums[0] / vertices.length, sums[1] / vertices.length];
 }

@@ -1,6 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/svelte';
-import { afterEach } from 'vitest';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { goto } from '$app/navigation';
 import CragList from '$lib/components/CragList.svelte';
 import SearchBar from '$lib/components/ui/SearchBar.svelte';
@@ -8,16 +7,20 @@ import TopoButton from '$lib/components/ui/TopoButton.svelte';
 
 const crags = [
 	{
-		properties: { name: 'Adlitzgräben', path: 'niederoesterreich/adlitzgraeben', sectors: [] },
-		geometry: { type: 'Point', coordinates: [16, 48] }
+		path: 'niederoesterreich/adlitzgraeben',
+		entry: {
+			type: 'Feature',
+			properties: { id: 'adlitzgraeben', kind: 'crag', name: 'Adlitzgräben' },
+			geometry: { type: 'Point', coordinates: [16, 48] }
+		}
 	},
 	{
-		properties: {
-			name: 'Boulderpark',
-			path: 'wienerwald/boulderpark',
-			sectors: [{ name: 'North Wall' }]
-		},
-		geometry: { type: 'Point', coordinates: [16.1, 48.1] }
+		path: 'wienerwald/boulderpark',
+		entry: {
+			type: 'Feature',
+			properties: { id: 'boulderpark', kind: 'crag', name: 'Boulderpark' },
+			geometry: { type: 'Point', coordinates: [16.1, 48.1] }
+		}
 	}
 ];
 
@@ -27,7 +30,6 @@ describe('frontend navigation components', () => {
 	it('renders crags and links a selected crag', () => {
 		render(CragList, { props: { crags, isCompact: true } });
 		expect(screen.getByText('Adlitzgräben')).toBeInTheDocument();
-		expect(screen.getByText('North Wall')).toBeInTheDocument();
 		expect(screen.getByText('Boulderpark').closest('a')).toHaveAttribute(
 			'href',
 			'/map/crag/wienerwald/boulderpark'

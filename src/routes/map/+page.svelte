@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { base } from '$app/paths';
 	import { types } from '$lib/config';
 	import { _ } from 'svelte-i18n';
@@ -10,13 +10,18 @@
 	<title>{$_('site.title')}</title>
 </svelte:head>
 
-<div class="pointer-events-auto filter-wrapper fade no-scrollbar fixed right-0 z-[1000] flex items-center overflow-x-auto py-2 pl-0 transition-all duration-300 ease-out sm:top-5 sm:h-[50px] sm:py-0" style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;">
+<div
+	class="filter-wrapper fade no-scrollbar pointer-events-auto fixed right-0 z-[1000] flex items-center overflow-x-auto py-2 pl-0 transition-all duration-300 ease-out sm:top-5 sm:h-[50px] sm:py-0"
+	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
+>
 	<div class="w-4 shrink-0 sm:hidden"></div>
 	{#each types as type}
-		<a href="{base}/map/{type}"
-			 class="me-2 flex shrink-0 cursor-pointer items-center justify-center rounded-full bg-white p-2 px-4 text-sm font-semibold shadow-md transition-colors hover:bg-ink hover:text-white">
-			 <span class="mr-2 h-2.5 w-2.5 rounded-full {getTypeDotClass(type)}"></span>
-			 {$_('types.' + type)}
+		<a
+			href="{base}/map/{type}"
+			class="hover:bg-ink me-2 flex shrink-0 cursor-pointer items-center justify-center rounded-full bg-white p-2 px-4 text-sm font-semibold shadow-md transition-colors hover:text-white"
+		>
+			<span class="mr-2 h-2.5 w-2.5 rounded-full {getTypeDotClass(type)}"></span>
+			{$_('types.' + type)}
 		</a>
 	{/each}
 	<div class="w-4 shrink-0 sm:hidden"></div>
@@ -45,10 +50,22 @@
 			left: calc(2rem + min(30vw, 20rem) + 0.75rem);
 		}
 	}
-    @media (width <= 40rem) {
-        .fade {
-            -webkit-mask: linear-gradient(to right, transparent 0px, #fff 16px, #fff calc(100% - 16px), transparent 100%);
-            mask: linear-gradient(to right, transparent 0px, #fff 16px, #fff calc(100% - 16px), transparent 100%);
-        }
-    }
+	@media (width <= 40rem) {
+		.fade {
+			-webkit-mask: linear-gradient(
+				to right,
+				transparent 0px,
+				#fff 16px,
+				#fff calc(100% - 16px),
+				transparent 100%
+			);
+			mask: linear-gradient(
+				to right,
+				transparent 0px,
+				#fff 16px,
+				#fff calc(100% - 16px),
+				transparent 100%
+			);
+		}
+	}
 </style>

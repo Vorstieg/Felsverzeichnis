@@ -1,26 +1,29 @@
 <script lang="ts">
 	import Chart from 'chart.js/auto';
+	import type { SteepnessMetrics } from '$lib/types/application';
 	import { createEventDispatcher } from 'svelte';
 	import { colors } from '$lib/colors.js';
 	import { _ } from 'svelte-i18n';
 
-	let { route } = $props();
-	const dispatch = createEventDispatcher();
-
-	let canvas: HTMLCanvasElement = $state();
+	let { route }: { route: import('$lib/types/application').SelectedClimbingLine | null } = $props();
+	const dispatch = createEventDispatcher<{ metrics: SteepnessMetrics }>();
 
 	let t_steepness = $derived($_('charts.steepness'));
 	let t_distance = $derived($_('charts.distance'));
 
-	function processRouteData(currentRoute: any) {
+	function processRouteData(
+		currentRoute: import('$lib/types/application').SelectedClimbingLine | null
+	) {
 		if (!currentRoute || !currentRoute.points) return null;
 
-		const rawPoints = currentRoute.points.map((p: any) => p.map((c: any) => parseFloat(c)));
+		const rawPoints = currentRoute.points;
 
 		const smoothedPoints = [];
 		const windowSize = 4;
 		for (let i = 0; i < rawPoints.length; i++) {
-			let sumX = 0, sumY = 0, sumZ = 0;
+			let sumX = 0,
+				sumY = 0,
+				sumZ = 0;
 			let count = 0;
 			const start = Math.max(0, i - windowSize);
 			const end = Math.min(rawPoints.length - 1, i + windowSize);
@@ -64,26 +67,14 @@
 				angle = Math.atan2(Math.abs(dy), hDist) * (180 / Math.PI);
 			}
 
-			// Sanitize angle
-			if (isNaN(angle)) angle = 0;
-
 			segments.push({ dist, angle });
 			totalModelDistance += dist;
 		}
 
-		if (isNaN(totalModelDistance) || totalModelDistance <= 0.001) return null;
+		if (totalModelDistance <= 0.001) return null;
 
 		let scale = 1;
-		let routeLength = 0;
-
-		if (currentRoute.length) {
-			routeLength = parseFloat(currentRoute.length);
-		}
-
-		// If length is missing or invalid, fallback to model distance
-		if (isNaN(routeLength) || routeLength <= 0) {
-			routeLength = totalModelDistance;
-		}
+		const routeLength = currentRoute.length ?? totalModelDistance;
 
 		if (routeLength > 0 && totalModelDistance > 0) {
 			scale = routeLength / totalModelDistance;
@@ -117,9 +108,10 @@
 		}
 
 		const metrics = {
-			slab: totalRealLength > 0 ? ((slabLength / totalRealLength) * 100).toFixed(1) : '0.0',
-			vertical: totalRealLength > 0 ? ((verticalLength / totalRealLength) * 100).toFixed(1) : '0.0',
-			overhang: totalRealLength > 0 ? ((overhangLength / totalRealLength) * 100).toFixed(1) : '0.0'
+			slab: totalRealLength > 0 ? Math.round((slabLength / totalRealLength) * 1000) / 10 : 0,
+			vertical:
+				totalRealLength > 0 ? Math.round((verticalLength / totalRealLength) * 1000) / 10 : 0,
+			overhang: totalRealLength > 0 ? Math.round((overhangLength / totalRealLength) * 1000) / 10 : 0
 		};
 
 		return { steepnessData, metrics, length: routeLength };
@@ -142,7 +134,7 @@
 		}
 	});
 
-	function initChart(node: HTMLCanvasElement, config: any) {
+	function initChart(node: HTMLCanvasElement, config: typeof chartConfig) {
 		if (!config || !config.data) return;
 		const { data, translations } = config;
 
@@ -152,38 +144,43 @@
 		const chart = new Chart(ctx, {
 			type: 'line',
 			data: {
-				datasets: [{
-					label: translations.steepness + ' (°)',
-					backgroundColor: colors.chart.danger,
-					borderColor: (context: any) => {
-						const chart = context.chart;
-						const { ctx, chartArea, scales } = chart;
-						if (!chartArea || !scales.y) return colors.text.muted;
+				datasets: [
+					{
+						label: translations.steepness + ' (°)',
+						backgroundColor: colors.chart.danger,
+						borderColor: (context) => {
+							const chart = context.chart;
+							const { ctx, chartArea, scales } = chart;
+							if (!chartArea || !scales.y) return colors.text.muted;
 
-						const y = scales.y;
-						const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+							const y = scales.y;
+							const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
 
-						const getOffset = (val: number) => {
-							const pixel = y.getPixelForValue(val);
-							return Math.max(0, Math.min(1, (pixel - chartArea.top) / (chartArea.bottom - chartArea.top)));
-						};
+							const getOffset = (val: number) => {
+								const pixel = y.getPixelForValue(val);
+								return Math.max(
+									0,
+									Math.min(1, (pixel - chartArea.top) / (chartArea.bottom - chartArea.top))
+								);
+							};
 
-						gradient.addColorStop(0, colors.chart.steep);
-						gradient.addColorStop(getOffset(110), colors.chart.steep);
-						gradient.addColorStop(getOffset(100), colors.chart.moderate);
-						gradient.addColorStop(getOffset(80), colors.chart.moderate);
-						gradient.addColorStop(getOffset(70), colors.chart.gentle);
-						gradient.addColorStop(1, colors.chart.gentle);
+							gradient.addColorStop(0, colors.chart.steep);
+							gradient.addColorStop(getOffset(110), colors.chart.steep);
+							gradient.addColorStop(getOffset(100), colors.chart.moderate);
+							gradient.addColorStop(getOffset(80), colors.chart.moderate);
+							gradient.addColorStop(getOffset(70), colors.chart.gentle);
+							gradient.addColorStop(1, colors.chart.gentle);
 
-						return gradient;
-					},
-					data: data.steepnessData,
-					pointRadius: 0,
-					pointHitRadius: 10,
-					borderWidth: 3,
-					tension: 0.4,
-					fill: false
-				}]
+							return gradient;
+						},
+						data: data.steepnessData,
+						pointRadius: 0,
+						pointHitRadius: 10,
+						borderWidth: 3,
+						tension: 0.4,
+						fill: false
+					}
+				]
 			},
 			options: {
 				responsive: true,
@@ -208,7 +205,7 @@
 						mode: 'index',
 						intersect: false,
 						callbacks: {
-							label: function(context: any) {
+							label: function (context) {
 								return context.parsed.y.toFixed(1) + '°';
 							}
 						}
@@ -219,7 +216,7 @@
 		});
 
 		return {
-			update(newConfig: any) {
+			update(newConfig: typeof chartConfig) {
 				if (!newConfig || !newConfig.data) return;
 				const { data, translations } = newConfig;
 
@@ -241,25 +238,24 @@
 			}
 		};
 	}
-
 </script>
 
 {#if chartData}
 	<div class="chart-wrapper">
-		<canvas bind:this={canvas} use:initChart={chartConfig}></canvas>
+		<canvas use:initChart={chartConfig}></canvas>
 	</div>
 {/if}
 
 <style>
-    .chart-wrapper {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        min-height: 0; /* Important for flex items */
-    }
+	.chart-wrapper {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 0; /* Important for flex items */
+	}
 
-    canvas {
-        width: 100%;
-        height: 100%;
-    }
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
 </style>

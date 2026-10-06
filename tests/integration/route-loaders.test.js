@@ -1,29 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('$lib/assets/js/fetchCrags.js', () => ({
+vi.mock('$lib/assets/js/fetchCrags', () => ({
 	default: vi.fn()
 }));
 
-import fetchCrags from '$lib/assets/js/fetchCrags.js';
+import fetchCrags from '$lib/assets/js/fetchCrags';
 import { load as loadMapLayout } from '../../src/routes/map/+layout.js';
 import { load as loadMapSearch } from '../../src/routes/map/[search]/+page.js';
 
 const alpineCrag = {
-	properties: {
-		name: 'Alpine Crag',
-		path: 'areas/alpine-crag',
-		type: 'sports-climbing'
-	},
-	geometry: { type: 'Point', coordinates: [16, 48] }
+	path: 'areas/alpine-crag',
+	entry: {
+		type: 'Feature',
+		properties: { id: 'alpine-crag', name: 'Alpine Crag', kind: 'crag', type: ['sports-climbing'] },
+		geometry: { type: 'Point', coordinates: [16, 48] }
+	}
 };
-
 const valleyCrag = {
-	properties: {
-		name: 'Valley Crag',
-		path: 'areas/valley-crag',
-		type: 'sports-climbing'
-	},
-	geometry: { type: 'Point', coordinates: [15, 47] }
+	path: 'areas/valley-crag',
+	entry: {
+		type: 'Feature',
+		properties: { id: 'valley-crag', name: 'Valley Crag', kind: 'crag', type: ['sports-climbing'] },
+		geometry: { type: 'Point', coordinates: [15, 47] }
+	}
 };
 
 describe('route loaders and redirects', () => {
@@ -35,9 +34,9 @@ describe('route loaders and redirects', () => {
 		const locations = [alpineCrag];
 		vi.mocked(fetchCrags).mockResolvedValue(locations);
 
-		const result = await loadMapLayout();
+		const result = await loadMapLayout({ fetch: globalThis.fetch });
 
-		expect(fetchCrags).toHaveBeenCalledWith({ limit: -1 });
+		expect(fetchCrags).toHaveBeenCalledWith({ limit: -1, fetch: globalThis.fetch });
 		expect(result).toEqual({ locations, allLocations: locations });
 	});
 
@@ -78,5 +77,34 @@ describe('route loaders and redirects', () => {
 			search: 'missing',
 			cameraTarget: null
 		});
+	});
+
+	it.each(['country', 'region', 'area', 'crag', 'sector'])(
+		'opens an existing %s document even when descendants also match',
+		async (kind) => {
+			const area = {
+				path: 'areas',
+				entry: {
+					...alpineCrag.entry,
+					properties: { id: 'areas', kind, name: 'Areas' }
+				}
+			};
+			vi.mocked(fetchCrags).mockResolvedValue([area, alpineCrag, valleyCrag]);
+
+			await expect(loadMapSearch({ params: { search: 'areas' } })).rejects.toMatchObject({
+				status: 302,
+				location: '/map/crag/areas'
+			});
+		}
+	);
+
+	it('keeps the filtered map for a hierarchy path without a document', async () => {
+		vi.mocked(fetchCrags).mockResolvedValue([alpineCrag, valleyCrag]);
+
+		const result = await loadMapSearch({ params: { search: 'areas' } });
+
+		expect(result.locations).toEqual([alpineCrag, valleyCrag]);
+		expect(result.search).toBe('areas');
+		expect(result.cameraTarget.type).toBe('bounds');
 	});
 });
