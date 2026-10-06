@@ -28,7 +28,12 @@ describe('RouteGpxDownload', () => {
 		render(RouteGpxDownload, { props: { route, tracks: [main, approach, descent] } });
 
 		await fireEvent.click(screen.getByRole('button', { name: 'ui.download_tour_gpx: Ridge' }));
-		expect(downloadRouteGpx).toHaveBeenCalledWith(route, [approach, main, descent], '-tour');
+		expect(downloadRouteGpx).toHaveBeenCalledWith(
+			route,
+			[approach, main, descent],
+			'-tour',
+			expect.objectContaining({ startOfClimb: expect.any(String), endOfClimb: expect.any(String) })
+		);
 		expect(screen.queryByRole('group', { name: 'ui.choose_tour_gpx' })).not.toBeInTheDocument();
 	});
 
@@ -52,7 +57,12 @@ describe('RouteGpxDownload', () => {
 		const options = within(dropdown).getAllByRole('button');
 		expect(options).toHaveLength(4);
 		await fireEvent.click(options[3]);
-		expect(downloadRouteGpx).toHaveBeenCalledWith(route, [walkB, main, downB], '-tour-2-2');
+		expect(downloadRouteGpx).toHaveBeenCalledWith(
+			route,
+			[walkB, main, downB],
+			'-tour-2-2',
+			expect.objectContaining({ startOfClimb: expect.any(String), endOfClimb: expect.any(String) })
+		);
 		expect(screen.queryByRole('group', { name: 'ui.choose_tour_gpx' })).not.toBeInTheDocument();
 	});
 
@@ -74,6 +84,11 @@ describe('RouteGpxDownload', () => {
 		render(RouteList, { props: { routes: [{ ...route, downloadTracks: [main] }], onRouteSelect } });
 		await fireEvent.click(screen.getByRole('button', { name: 'ui.download_tour_gpx: Ridge' }));
 		expect(onRouteSelect).not.toHaveBeenCalled();
-		expect(downloadRouteGpx).toHaveBeenCalledWith(expect.objectContaining(route), [main], '-tour');
+		expect(downloadRouteGpx).toHaveBeenCalledWith(
+			expect.objectContaining(route),
+			[main],
+			'-tour',
+			expect.objectContaining({ startOfClimb: expect.any(String), endOfClimb: expect.any(String) })
+		);
 	});
 });

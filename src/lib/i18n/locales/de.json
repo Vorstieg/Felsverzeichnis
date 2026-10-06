@@ -48,6 +48,10 @@
 		"descent": "Abstieg",
 		"variant": "Variante"
 	},
+	"gpx_waypoints": {
+		"start_of_climb": "Einstieg",
+		"end_of_climb": "Ausstieg"
+	},
 	"rock_types": {
 		"granite": "Granit",
 		"gneiss": "Gneis",

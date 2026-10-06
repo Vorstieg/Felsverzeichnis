@@ -72,7 +72,7 @@ describe('Topo2DViewer', () => {
 		);
 	});
 
-	it('uses the neutral grid for route-only topos', async () => {
+	it('uses a white background without a grid for route-only topos', async () => {
 		const { container } = await renderViewer({
 			topo: {
 				...topo,
@@ -85,9 +85,48 @@ describe('Topo2DViewer', () => {
 
 		expect(container.querySelector('.viewer-blank-background')).toHaveAttribute(
 			'fill',
-			'url(#topo-viewer-grid)'
+			'#fff'
 		);
+		expect(container.querySelector('#topo-viewer-grid')).toBeNull();
+		expect(container.querySelector('.bg-white')).toBeInTheDocument();
 		expect(container.querySelector('svg')).toHaveAttribute('viewBox', '0 0 1000 666.6666666666666');
+	});
+
+	it('layers closed outlines over earlier outlines while preserving their fills', async () => {
+		const { container } = await renderViewer({
+			topo: {
+				...topo,
+				image2D: null,
+				outlines: [
+					{ id: 'back', points2D: [[0.1, 0.1], [0.8, 0.1], [0.8, 0.8], [0.1, 0.1]] },
+					{
+						id: 'front',
+						points2D: [[0.2, 0.2], [0.9, 0.2], [0.9, 0.9], [0.2, 0.2]],
+						fillColor: '#ff0000',
+						fillOpacity: 0.3
+					},
+					{ id: 'open', points2D: [[0.1, 0.9], [0.9, 0.9]] }
+				]
+			}
+		});
+
+		const layer = container.querySelector('.outlines-layer');
+		const groups = Array.from(layer.children);
+		expect(groups).toHaveLength(3);
+		expect(Array.from(groups[0].children, (node) => node.getAttribute('class'))).toEqual([
+			'outline-background', 'rock-outline'
+		]);
+		expect(Array.from(groups[1].children, (node) => node.getAttribute('class'))).toEqual([
+			'outline-background', 'outline-fill', 'rock-outline'
+		]);
+		expect(groups[1].querySelector('.outline-background')).toHaveAttribute(
+			'd', groups[1].querySelector('.rock-outline').getAttribute('d')
+		);
+		expect(groups[1].querySelector('.outline-fill')).toHaveAttribute('fill', '#ff0000');
+		expect(groups[1].querySelector('.outline-fill')).toHaveAttribute('fill-opacity', '0.3');
+		expect(Array.from(groups[2].children, (node) => node.getAttribute('class'))).toEqual([
+			'rock-outline'
+		]);
 	});
 
 	it('forwards route selection and hover state', async () => {

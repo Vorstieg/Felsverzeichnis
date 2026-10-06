@@ -75,7 +75,22 @@ export function getTourTracks(
 }
 
 /** Serialize a route's geographic paths as a GPX 1.1 track file. */
-export function routeTracksToGpx(route, tracks) {
+export function routeTracksToGpx(route, tracks, waypointLabels = {}) {
+	const climbs = tracks.filter((track) => track.role !== 'approach' && track.role !== 'descent');
+	const waypoints = [
+		climbs[0]?.coordinates?.[0]
+			? { name: waypointLabels.startOfClimb || 'Start of climb', point: climbs[0].coordinates[0] }
+			: null,
+		climbs.at(-1)?.coordinates?.at(-1)
+			? { name: waypointLabels.endOfClimb || 'End of climb', point: climbs.at(-1).coordinates.at(-1) }
+			: null
+	]
+		.filter(Boolean)
+		.map(
+			({ name, point }) =>
+				`  <wpt lat="${point[1]}" lon="${point[0]}">${Number.isFinite(point[2]) ? `<ele>${point[2]}</ele>` : ''}<name>${escapeXml(name)}</name></wpt>`
+		)
+		.join('\n');
 	const trackXml = tracks
 		.map(
 			({ name, role, coordinates }) =>
@@ -87,13 +102,13 @@ export function routeTracksToGpx(route, tracks) {
 					.join('\n')}\n  </trkseg></trk>`
 		)
 		.join('\n');
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Felsverzeichnis" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${escapeXml(route.name || 'Route')}</name></metadata>\n${trackXml}\n</gpx>\n`;
+	return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Felsverzeichnis" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${escapeXml(route.name || 'Route')}</name></metadata>\n${waypoints ? `${waypoints}\n` : ''}${trackXml}\n</gpx>\n`;
 }
 
 /** Trigger a browser download for the selected route. */
-export function downloadRouteGpx(route, tracks, suffix = '') {
+export function downloadRouteGpx(route, tracks, suffix = '', waypointLabels = {}) {
 	if (!tracks?.length) return;
-	const gpx = routeTracksToGpx(route, tracks);
+	const gpx = routeTracksToGpx(route, tracks, waypointLabels);
 	const url = URL.createObjectURL(new Blob([gpx], { type: 'application/gpx+xml' }));
 	const link = document.createElement('a');
 	link.href = url;
