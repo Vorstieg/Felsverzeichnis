@@ -149,16 +149,16 @@ test('3D topo renders original route and fix-point geometry', async ({ page }) =
 						id: 'route-1',
 						name: 'Original 3D line',
 						grade: { scale: 'french', value: '6a', standardizedValue: '6a' },
-						points: [
+						points3D: [
 							[0, 0, 0.1],
 							[0, 2, 0.1],
 							[0, 5, 0.1]
 						],
-						orientation: [0, 0, 1],
+						orientation3D: [0, 0, 1],
 						fixPoints: ['anchor']
 					}
 				],
-				fixPoints: [{ id: 'anchor', type: 'anchor', position: [0, 5, 0.1] }]
+				fixPoints: [{ id: 'anchor', type: 'anchor', position3D: [0, 5, 0.1] }]
 			}
 		})
 	);

@@ -40,6 +40,29 @@ const base = {
 };
 
 describe('crag validation', () => {
+	it.each(['route', 'pitches', 'variants'])('accepts complete 3D geometry on %s', (location) => {
+		const points3D = [
+			[0, 0, 0],
+			[1, 1, 1]
+		];
+		const route = {
+			id: 'r1',
+			name: 'Route',
+			type: 'sports-climbing',
+			grade: { scale: 'french', value: '6a', standardizedValue: '6a' },
+			boltAmount: 5,
+			...(location === 'route' ? { points3D } : { [location]: [{ id: 'child', points3D }] })
+		};
+		const input = { ...base, topo: { routes: [route] }, has2DTopo: false, has3DTopo: true };
+		expect(getCragValidationIssue(input)).toBeNull();
+		expect(
+			getCragValidationIssue({
+				...input,
+				topo: { routes: [{ ...route, points3D: undefined, pitches: [], variants: [] }] }
+			})
+		).toMatchObject({ rule: 'routes' });
+	});
+
 	it('returns the first issue by priority and does not use freshness metadata', () => {
 		expect(
 			getCragValidationIssue({

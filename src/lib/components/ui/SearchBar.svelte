@@ -148,7 +148,7 @@
 				>
 					<div class="flex items-center justify-between">
 						<span>{suggestion.entry.properties.name}</span>
-						{#if suggestion.entry.properties.type}
+						{#if suggestion.entry.properties.type?.[0] != null}
 							<span
 								class="text-xs {i === activeIndex
 									? 'text-white/80'

@@ -64,9 +64,14 @@ export function routeGrade(route: Route) {
 
 export function routeLength(route: Route) {
 	if (route.length !== undefined) return route.length;
-	const lengths = (route.pitches ?? []).flatMap((pitch) =>
-		pitch.length === undefined ? [] : [pitch.length]
-	);
+	const lengths = (route.pitches ?? []).flatMap((pitch) => {
+		const length: unknown = pitch.length;
+		if (length === undefined || length === null || (typeof length === 'string' && !length.trim())) {
+			return [];
+		}
+		const numericLength = Number(length);
+		return Number.isFinite(numericLength) ? [numericLength] : [];
+	});
 	return lengths.length ? lengths.reduce((total, length) => total + length, 0) : null;
 }
 

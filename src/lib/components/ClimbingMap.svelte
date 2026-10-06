@@ -89,7 +89,11 @@
 		type: 'symbol',
 		source: 'places',
 		minzoom: 11.5,
-		filter: ['all', ['!=', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 0]],
+		filter: [
+			'all',
+			['!=', ['geometry-type'], 'Polygon'],
+			['any', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
+		],
 		layout: {
 			'icon-image': placeIcon,
 			'icon-size': 0.55,
@@ -120,7 +124,7 @@
 		type: 'circle',
 		source: 'places',
 		maxzoom: 14,
-		filter: ['>=', ['zoom'], 0],
+		filter: ['all', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 0]],
 		paint: {
 			'circle-color': placeTypeColor,
 			'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5],

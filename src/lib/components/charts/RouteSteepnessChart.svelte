@@ -14,9 +14,9 @@
 	function processRouteData(
 		currentRoute: import('$lib/types/application').SelectedClimbingLine | null
 	) {
-		if (!currentRoute || !currentRoute.points) return null;
+		if (!currentRoute || !currentRoute.points3D) return null;
 
-		const rawPoints = currentRoute.points;
+		const rawPoints = currentRoute.points3D;
 
 		const smoothedPoints = [];
 		const windowSize = 4;
@@ -41,8 +41,8 @@
 
 		let normX = 0;
 		let normZ = 0;
-		if (currentRoute.orientation) {
-			const [ox, , oz] = currentRoute.orientation;
+		if (currentRoute.orientation3D) {
+			const [ox, , oz] = currentRoute.orientation3D;
 			const len = Math.sqrt(ox * ox + oz * oz);
 			if (len > 0) {
 				normX = ox / len;
@@ -59,7 +59,7 @@
 			const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
 			let angle;
-			if (currentRoute.orientation && (normX !== 0 || normZ !== 0)) {
+			if (currentRoute.orientation3D && (normX !== 0 || normZ !== 0)) {
 				const h = dx * normX + dz * normZ;
 				angle = Math.atan2(Math.abs(dy), -h) * (180 / Math.PI);
 			} else {

@@ -20,10 +20,18 @@
 	import { getCragValidationIssue } from '$lib/assets/js/crag-validation.js';
 	import ImageViewer from '$lib/components/ui/ImageViewer.svelte';
 	import { getAccessTracks } from '$lib/assets/js/route-gpx.js';
+	import { hardestRouteGrade } from '$lib/assets/js/route-summary';
 
 	let fullscreenImageIndex = $state(-1);
 	let sunInfo = $state<import('$lib/types/application').SunInfo>({ hours: 'N/A', chartData: null });
 	let seasonChartData = $state<import('$lib/types/application').SeasonData>(null);
+	let hasSeasonData = $derived(
+		seasonChartData?.labels.some(
+			(_, index) =>
+				Number.isFinite(seasonChartData?.baseTemps[index]) &&
+				Number.isFinite(seasonChartData?.feelsLikeTemps[index])
+		)
+	);
 	let wallDirection = $state('N/A');
 	let breadcrumbScrollContainer = $state<HTMLDivElement>();
 	let breadcrumbsAtEnd = $state(true);
@@ -102,7 +110,7 @@
 	let accessTracks = $derived(getAccessTracks(data.access));
 	let trackRoutes = $derived((gradeRoutes || []).filter((route) => route.downloadTracks?.length));
 	let has2DTopo = $derived(details?.has2DTopo);
-	let tags = $derived(data.currentData?.properties?.tags);
+	let tags = $derived(data.currentData?.properties?.tags?.filter((tag) => tag != null));
 	let equipment = $derived(data.currentData.properties.equipment);
 	let images = $derived(details?.images);
 	let validationIssue = $derived.by(() =>
@@ -147,7 +155,7 @@
 			hard = 0,
 			veryHard = 0;
 		routes.forEach((r) => {
-			const g = r.grade?.standardizedValue ?? '';
+			const g = hardestRouteGrade(r)?.standardizedValue ?? '';
 			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
 			else if (g.startsWith('6')) medium++;
 			else if (g.startsWith('7')) hard++;
@@ -185,15 +193,11 @@
 
 	/** @param {import("$lib/types/files").FelsLocation} sector */
 	function getSectorDirection(sector: import('$lib/types/files').FelsLocation) {
-		const routes = (gradeRoutes ?? []).filter(
-			(route) => route.sectorId === sector.entry.properties.id
-		);
 		const topo = details?.sectorTopos.find(
 			(item) => item.sectorId === sector.entry.properties.id
 		)?.topo;
-		const direction = calculateWallDirection(
-			topo ?? { routes, wallAzimuth: routes[0]?.sectorWallAzimuth }
-		);
+		if (!topo) return null;
+		const direction = calculateWallDirection(topo);
 		return direction === 'Unknown' ? null : $_('directions.' + direction);
 	}
 
@@ -243,15 +247,6 @@
 			? 'border-b border-gray-200 bg-white shadow-sm'
 			: ''}"
 	>
-		{#if data.parentEntry}
-			<a
-				href="{base}/map/crag/{data.parentEntry.path}"
-				class="mr-3 shrink-0 rounded-full p-2 transition-colors hover:bg-gray-100"
-				aria-label={data.parentEntry.entry.properties.name}
-			>
-				<i class="fa-solid fa-arrow-left text-gray-600"></i>
-			</a>
-		{/if}
 		<div class="flex max-w-full min-w-0 flex-col">
 			<div
 				class="breadcrumb-dynamic relative z-20 w-full {breadcrumbsAtEnd ? '' : 'breadcrumb-mask'}"
@@ -434,7 +429,7 @@
 					</div>
 				{/if}
 
-				{#if equipment}
+				{#if equipment?.length}
 					<div class="mt-3 mb-6 px-1 sm:mt-6 sm:mb-8">
 						<h3 class="mb-2 text-sm font-bold text-slate-700">Ausrüstung:</h3>
 						<ul class="flex list-none flex-wrap gap-x-6 gap-y-2 p-0">
@@ -492,7 +487,7 @@
 						{/if}
 					{/if}
 
-					{#if seasonChartData}
+					{#if hasSeasonData}
 						<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
 							<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.seasonality')}</h3>
 							<div class="mb-6 h-48 w-full">

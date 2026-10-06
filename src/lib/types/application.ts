@@ -14,7 +14,6 @@ export type RouteSummary = Route & {
 	sectorId?: string;
 	sectorName?: string;
 	sectorTags?: string[];
-	sectorWallAzimuth?: FelsTopoDocument['wallAzimuth'];
 };
 export type SelectedClimbingLine = ClimbingLine &
 	Partial<
@@ -29,7 +28,7 @@ export type SelectedClimbingLine = ClimbingLine &
 			| 'variants'
 			| 'fixPoints'
 			| 'pathRefs'
-			| 'orientation'
+			| 'orientation3D'
 		>
 	> & { parentId?: RouteId };
 export type VisualClimbingLine = SelectedClimbingLine & { originalRoute?: Route };

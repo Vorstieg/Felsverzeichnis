@@ -204,6 +204,22 @@ describe('ClimbingMap', () => {
 			expect(map.getLayer('access-lines')).toBeTruthy();
 			expect(map.getLayer('access-points')).toBeTruthy();
 
+			const placesFilter = createExpression(map.getLayer('places').filter, { type: 'boolean' });
+			expect(placesFilter.result).toBe('success');
+			const matchesPlace = (zoom, type, kind) =>
+				placesFilter.value.evaluateWithoutErrorHandling({ zoom }, { type, properties: { kind } });
+			expect(matchesPlace(15, 'Point', 'sector')).toBe(false);
+			expect(matchesPlace(16, 'Point', 'sector')).toBe(true);
+			expect(matchesPlace(18, 'Point', 'sector')).toBe(true);
+			expect(matchesPlace(16, 'Polygon', 'sector')).toBe(false);
+			expect(matchesPlace(14, 'Point', 'crag')).toBe(true);
+
+			map.setZoom(16);
+			map.handlers.get('click:"places"')({
+				features: [{ properties: { filePath: 'areas/alpine-crag/north' } }]
+			});
+			expect(goto).toHaveBeenCalledWith('/map/crag/areas/alpine-crag/north');
+
 			const evaluateIcon = (expression, properties) => {
 				const compiled = createExpression(expression, latest.layout_symbol['icon-image']);
 				expect(compiled.result).toBe('success');

@@ -8,22 +8,18 @@ import fetchCrags from '$lib/assets/js/fetchCrags';
 /** @satisfies {import('./$types').PageLoad} */
 export const load = async ({ params, url, fetch }) => {
 	const loader = createEntryLoader({ apiUrl: fsApiUrl, fetch, useCache: browser });
-	/** @type {import('$lib/types/files').FelsLocation[]} */
-	let locations = [];
-	try {
-		locations = await fetchCrags({ limit: -1, fetch });
-	} catch {
-		// Direct entry loading also works without the global index.
+	let context = await loader.resolve(params.crag, [], true);
+	if (!context) {
+		try {
+			const locations = await fetchCrags({ limit: -1, fetch });
+			context = await loader.resolve(params.crag, locations, true);
+		} catch {
+			// An unavailable index must still produce the entry-not-found response.
+		}
 	}
-	const context = await loader.resolve(params.crag, locations, true);
 	if (!context) error(404, 'Entry not found');
 	const location = context.location;
 	const path = location.path;
-	const parentEntry = context.ancestors[0] ?? null;
-	const sector = parentEntry ? location : undefined;
-	const crag = parentEntry ?? location;
-	const baseCragPath = crag.path;
-	const sectorId = sector?.entry.properties.id ?? null;
 	const sectors = context.children;
 	const details = await loader.details(context);
 	const topo = details.topoJson;
@@ -36,18 +32,18 @@ export const load = async ({ params, url, fetch }) => {
 	const fileName = context.paths.getGlbName();
 	const has3D = details.has3DTopo;
 	const lowResName = fileName.replace('.glb', '-low.glb');
-	if (browser) void loader.cacheFolder(path);
+	if (browser) void loader.cacheContext(context);
 	const properties = location.entry.properties;
+	const climbingTypes =
+		context.ancestors.find((ancestor) => ancestor.entry.properties.type?.length)?.entry.properties
+			.type ??
+		properties.type ??
+		[];
 	return {
 		path,
-		baseCragPath,
-		sectorPath: sector?.path ?? null,
-		sectorId,
-		sector: sector?.entry ?? null,
 		access,
 		sectors,
 		sectorTopos,
-		isSectorPath: sector !== undefined,
 		topo,
 		gradeRoutes,
 		route,
@@ -57,8 +53,7 @@ export const load = async ({ params, url, fetch }) => {
 			has3D && files.some((file) => file.name === lowResName)
 				? `${fsApiUrl}/${path}/${lowResName}`
 				: null,
-		cragName: crag.entry.properties.name,
-		cragType: crag.entry.properties.type,
+		climbingTypes,
 		rockType: location.entry.properties.rock_type,
 		name: properties.name,
 		description_de: properties.description_de,

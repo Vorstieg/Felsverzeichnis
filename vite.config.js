@@ -7,7 +7,7 @@ const config = {
 	assetsInclude: ['**/*.glb'],
 	server: {
 		fs: {
-		allow: ['.']
+			allow: ['.']
 		}
 	},
 

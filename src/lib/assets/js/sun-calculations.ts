@@ -2,26 +2,29 @@ import SunCalc from 'suncalc';
 import type { FelsTopoDocument, Point3D, Route } from '@vorstieg/fels-types/types';
 import { colors as appColors } from '$lib/colors.js';
 
-// Rotate model-local route orientations by the wall's compass azimuth.
+// Prefer 3D orientations; an explicit wall azimuth is only a fallback.
 function calculateWallHeading(topo: FelsTopoDocument, route: Route | null) {
-	let orientation = route?.orientation;
-	if (!orientation) {
-		const orientations = topo.routes.flatMap((item) =>
-			item.orientation ? [item.orientation] : []
+	const getOrientation = (item: Route): Point3D | null => {
+		const vector = item.orientation3D;
+		return vector && vector.every(Number.isFinite) && (vector[0] !== 0 || vector[2] !== 0)
+			? vector
+			: null;
+	};
+	const orientation =
+		(route ? getOrientation(route) : null) ??
+		topo.routes.reduce<Point3D>(
+			(sum, item) => {
+				const vector = getOrientation(item);
+				return vector ? [sum[0] + vector[0], sum[1] + vector[1], sum[2] + vector[2]] : sum;
+			},
+			[0, 0, 0]
 		);
-		if (orientations.length) {
-			orientation = orientations.reduce<Point3D>(
-				(sum, vector) => [sum[0] + vector[0], sum[1] + vector[1], sum[2] + vector[2]],
-				[0, 0, 0]
-			);
-		}
+	if (orientation && (orientation[0] !== 0 || orientation[2] !== 0)) {
+		return ((Math.atan2(orientation[0], -orientation[2]) * 180) / Math.PI + 360) % 360;
 	}
-	if (!orientation) return topo.wallAzimuth ?? null;
-	const [x, , z] = orientation;
-	const theta = (-(topo.wallAzimuth ?? 0) * Math.PI) / 180;
-	const rotatedX = x * Math.cos(theta) - z * Math.sin(theta);
-	const rotatedZ = x * Math.sin(theta) + z * Math.cos(theta);
-	return ((Math.atan2(rotatedX, -rotatedZ) * 180) / Math.PI + 360) % 360;
+	return typeof topo.wallAzimuth === 'number' && Number.isFinite(topo.wallAzimuth)
+		? ((topo.wallAzimuth % 360) + 360) % 360
+		: null;
 }
 
 export function calculateWallDirection(topo: FelsTopoDocument, route: Route | null = null) {

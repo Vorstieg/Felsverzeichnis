@@ -93,7 +93,6 @@ export function createEntryLoader(options: Parameters<typeof createCragCache>[0]
 				downloadTracks: getRouteTracks(child.topo, route),
 				sectorId: child.sectorId,
 				sectorName: child.sectorName,
-				sectorWallAzimuth: child.topo?.wallAzimuth,
 				sectorTags: child.topo?.tags
 			}))
 		);
@@ -111,5 +110,16 @@ export function createEntryLoader(options: Parameters<typeof createCragCache>[0]
 			has2DTopo: has2DTopo(topo)
 		};
 	}
-	return { resolve, core, details, cacheFolder: cache.cacheCragFolder };
+	async function cacheContext(context: NonNullable<Awaited<ReturnType<typeof resolve>>>) {
+		await Promise.all([
+			cache.cacheCragFolder(context.location.path),
+			cache.cacheFiles(
+				context.ancestors.flatMap((ancestor) => {
+					const ancestorPaths = paths(ancestor.path);
+					return [ancestorPaths.getCurrentPath(), ancestorPaths.getAccessPath()];
+				})
+			)
+		]);
+	}
+	return { resolve, core, details, cacheFolder: cache.cacheCragFolder, cacheContext };
 }

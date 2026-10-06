@@ -32,7 +32,7 @@ const topo = {
 		},
 		{ id: 'default-label', text: 'Default', position2D: [0.25, 0.25] },
 		{ id: 'empty-label', text: '', position2D: [0.75, 0.25] },
-		{ id: '3d-label', text: '3D only', position: [0, 1, 0] }
+		{ id: '3d-label', text: '3D only', position3D: [0, 1, 0] }
 	]
 };
 

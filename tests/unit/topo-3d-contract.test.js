@@ -8,16 +8,16 @@ const topo = {
 	routes: [
 		{
 			id: 'route',
-			points: [
+			points3D: [
 				[0, 0, 0],
 				[1, 2, 3]
 			],
-			orientation: [0, 0, 1],
+			orientation3D: [0, 0, 1],
 			pitches: [
 				{
 					id: 'pitch',
 					pitchNumber: 1,
-					points: [
+					points3D: [
 						[1, 2, 3],
 						[4, 5, 6]
 					]
@@ -26,7 +26,7 @@ const topo = {
 			variants: [
 				{
 					id: 'variant',
-					points: [
+					points3D: [
 						[0, 0, 0],
 						[2, 3, 4]
 					]
@@ -34,11 +34,11 @@ const topo = {
 			]
 		}
 	],
-	fixPoints: [{ id: 'anchor', type: 'anchor', position: [1, 2, 3] }],
-	textLabels: [{ id: 'label', text: 'Summit', position: [4, 5, 6] }]
+	fixPoints: [{ id: 'anchor', type: 'anchor', position3D: [1, 2, 3] }],
+	textLabels: [{ id: 'label', text: 'Summit', position3D: [4, 5, 6] }]
 };
 
-describe('original 3D geometry contract', () => {
+describe('canonical 3D geometry contract', () => {
 	it('validates route, pitch, variant, fix-point and label geometry', () => {
 		expect(validate(topo)).toBe(true);
 	});
@@ -46,13 +46,13 @@ describe('original 3D geometry contract', () => {
 		[
 			'route points',
 			(data) => {
-				data.routes[0].points = [[0, 0]];
+				data.routes[0].points3D = [[0, 0]];
 			}
 		],
 		[
 			'pitch points',
 			(data) => {
-				data.routes[0].pitches[0].points = [
+				data.routes[0].pitches[0].points3D = [
 					[0, 0],
 					[1, 1]
 				];
@@ -61,7 +61,7 @@ describe('original 3D geometry contract', () => {
 		[
 			'variant points',
 			(data) => {
-				data.routes[0].variants[0].points = [
+				data.routes[0].variants[0].points3D = [
 					[0, 0],
 					[1, 1]
 				];
@@ -70,19 +70,19 @@ describe('original 3D geometry contract', () => {
 		[
 			'orientation',
 			(data) => {
-				data.routes[0].orientation = [0, 1];
+				data.routes[0].orientation3D = [0, 1];
 			}
 		],
 		[
 			'fix-point position',
 			(data) => {
-				data.fixPoints[0].position = [0, 1];
+				data.fixPoints[0].position3D = [0, 1];
 			}
 		],
 		[
 			'label position',
 			(data) => {
-				data.textLabels[0].position = [0, 1];
+				data.textLabels[0].position3D = [0, 1];
 			}
 		]
 	])('rejects invalid %s coordinates', (_name, modify) => {

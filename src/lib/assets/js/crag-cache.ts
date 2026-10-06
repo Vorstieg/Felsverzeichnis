@@ -35,6 +35,24 @@ export function createCragCache({
 
 		return null;
 	};
+	const cacheFiles = async (paths: string[]) => {
+		try {
+			const cache = await cacheStorage.open('felslager-crags');
+			await Promise.all(
+				paths.map(async (path) => {
+					try {
+						const url = `${apiUrl}/${path}`;
+						const response = await fetch(url);
+						if (response.ok) await cache.put(url, response);
+					} catch {
+						// A missing asset must not prevent caching the other dependencies.
+					}
+				})
+			);
+		} catch {
+			// Prefetching is best effort and must not block navigation.
+		}
+	};
 	const cacheCragFolder = async (path: string) => {
 		const cragPath = normalizePath(path);
 		try {
@@ -99,5 +117,13 @@ export function createCragCache({
 		(await fetchJson(path)) as import('$lib/types/files').DirectoryEntry[] | null;
 	const fetchAccess = async (path: string) =>
 		(await fetchJson(path)) as import('$lib/types/application').AccessCollection | null;
-	return { fetchEntry, fetchTopo, fetchDirectory, fetchAccess, cacheCragFolder, normalizePath };
+	return {
+		fetchEntry,
+		fetchTopo,
+		fetchDirectory,
+		fetchAccess,
+		cacheCragFolder,
+		cacheFiles,
+		normalizePath
+	};
 }

@@ -17,7 +17,7 @@ export function has2DTopo(topo) {
 }
 
 /** @param {import('@vorstieg/fels-types/types').Route} route
- * @param {'points2D' | 'points'} property */
+ * @param {'points2D' | 'points3D'} property */
 function hasRouteLine(route, property) {
 	return Boolean(
 		route[property] ||
@@ -82,7 +82,7 @@ export function getCragValidationIssue({
 			if (
 				!hasText(route.name) ||
 				!route.grade?.standardizedValue ||
-				(!hasRouteLine(route, 'points2D') && !hasRouteLine(route, 'points')) ||
+				(!hasRouteLine(route, 'points2D') && !hasRouteLine(route, 'points3D')) ||
 				(route.type &&
 					protectedRouteTypes.has(route.type) &&
 					!route.boltAmount &&

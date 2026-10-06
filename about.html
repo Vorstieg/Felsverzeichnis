@@ -9,7 +9,6 @@
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-		
 		<!-- You can add global <meta> tags here, but anything not global or dynamic should be a `<svelte:head>` tag on the proper page(s) instead. -->
 		<script>
 			if ('serviceWorker' in navigator) {
@@ -34,18 +33,16 @@
 			<script>
 				{
 					__sveltekit_dev = {
-						base: new URL("..", location).pathname.slice(0, -1),
+						base: new URL('..', location).pathname.slice(0, -1),
 						env: {}
 					};
 
 					const element = document.currentScript.parentElement;
 
-					Promise.all([
-						import("/@fs/C:/Users/Robin/IdeaProjects/Felsverzeichnis/node_modules/@sveltejs/kit/src/runtime/client/entry.js"),
-						import("/@fs/C:/Users/Robin/IdeaProjects/Felsverzeichnis/.svelte-kit/generated/client/app.js")
-					]).then(([kit, app]) => {
-						kit.start(app, element);
-					});
+					// This file is a checked-in snapshot of the `/map/about` page.
+					// Let SvelteKit serve that route so Vite can resolve its runtime
+					// imports for the current machine.
+					location.replace('/map/about');
 
 					if ('serviceWorker' in navigator) {
 						addEventListener('load', function () {
@@ -57,4 +54,3 @@
 		</div>
 	</body>
 </html>
-

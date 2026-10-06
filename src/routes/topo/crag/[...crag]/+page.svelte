@@ -24,6 +24,7 @@
 	} from '$lib/assets/js/sun-calculations';
 	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
 	import { getAccessTracks, getRouteTracks } from '$lib/assets/js/route-gpx.js';
+	import { hardestRouteGrade } from '$lib/assets/js/route-summary';
 	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
 	import SceneSetup from '$lib/components/topo/SceneSetup.svelte';
 	import type { Route, Point3D, Grade } from '@vorstieg/fels-types/types';
@@ -54,7 +55,6 @@
 	onMount(() => {
 		mounted = true;
 	});
-	let currentSectorName = $derived(data.sector?.properties.name || data.sectorId);
 	let availableSectors = $derived(data.sectors);
 
 	function openChildEntry(child: import('$lib/types/files').FelsLocation) {
@@ -147,9 +147,7 @@
 		Array.from(
 			new Set(
 				(data.route?.fixPoints
-					? data.topo.fixPoints?.filter(
-							(fp) => fp.position !== undefined && data.route?.fixPoints?.includes(fp.id)
-						)
+					? data.topo.fixPoints?.filter((fp) => data.route?.fixPoints?.includes(fp.id))
 					: data.topo.fixPoints
 				)?.map((fp) => fp.type) || []
 			)
@@ -232,12 +230,12 @@
 		data.topo.routes.forEach((r) => {
 			if (r.type === 'multi-pitch' && r.pitches) {
 				r.pitches.forEach((p) => {
-					if (p.points) points.push(...p.points);
+					if (p.points3D) points.push(...p.points3D);
 				});
-			} else if (r.points) {
-				points.push(...r.points);
+			} else if (r.points3D) {
+				points.push(...r.points3D);
 			}
-			if (r.orientation) orientations.push(new Vector3(...r.orientation));
+			if (r.orientation3D) orientations.push(new Vector3(...r.orientation3D));
 		});
 
 		if (points.length === 0) return;
@@ -277,10 +275,10 @@
 		let points: Point3D[] = [];
 		if (route.type === 'multi-pitch' && route.pitches) {
 			route.pitches.forEach((p) => {
-				if (p.points) points.push(...p.points);
+				if (p.points3D) points.push(...p.points3D);
 			});
-		} else if (route.points) {
-			points = route.points;
+		} else if (route.points3D) {
+			points = route.points3D;
 		}
 
 		if (!points || points.length === 0) return;
@@ -298,11 +296,11 @@
 		const parent = getParentRoute(route.id);
 		const sourceRoute = parent || route;
 
-		if (sourceRoute.orientation) {
+		if (sourceRoute.orientation3D) {
 			orientation.set(
-				sourceRoute.orientation[0],
-				sourceRoute.orientation[1],
-				sourceRoute.orientation[2]
+				sourceRoute.orientation3D[0],
+				sourceRoute.orientation3D[1],
+				sourceRoute.orientation3D[2]
 			);
 		}
 
@@ -354,7 +352,7 @@
 					if (r.pitches) {
 						const pitch = r.pitches.find((p) => p.id === activeRouteId);
 						if (pitch) {
-							routeToFocus = { ...pitch, orientation: r.orientation };
+							routeToFocus = { ...pitch, orientation3D: r.orientation3D };
 							break;
 						}
 					}
@@ -484,11 +482,8 @@
 			if (route.type === 'multi-pitch' && route.pitches) {
 				return route.pitches.map((pitch, idx) => ({
 					...pitch,
-					id: pitch.id,
 					parentId: route.id,
 					name: `${route.name} P${idx + 1}`,
-					grade: pitch.grade,
-					points: pitch.points,
 					originalRoute: route
 				}));
 			}
@@ -597,7 +592,7 @@
 			hard = 0,
 			veryHard = 0;
 		routes.forEach((r) => {
-			const g = r.grade?.standardizedValue ?? '';
+			const g = hardestRouteGrade(r)?.standardizedValue ?? '';
 			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
 			else if (g.startsWith('6')) medium++;
 			else if (g.startsWith('7')) hard++;
@@ -631,15 +626,11 @@
 	}
 
 	function getSectorDirection(sector: import('$lib/types/files').FelsLocation) {
-		const routes = (data.gradeRoutes ?? []).filter(
-			(route) => route.sectorId === sector.entry.properties.id
-		);
 		const topo = data.sectorTopos.find(
 			(item) => item.sectorId === sector.entry.properties.id
 		)?.topo;
-		const direction = calculateWallDirection(
-			topo ?? { routes, wallAzimuth: routes[0]?.sectorWallAzimuth }
-		);
+		if (!topo) return null;
+		const direction = calculateWallDirection(topo);
 		return direction === 'Unknown' ? null : $_('directions.' + direction);
 	}
 
@@ -738,7 +729,7 @@
 								'/' +
 								(route.parentId ?? route.id) +
 								$page.url.search}
-							points={route.points}
+							points={route.points3D}
 							name={route.name}
 							grade={route.grade}
 							color={activeRouteId != null &&
@@ -758,8 +749,8 @@
 				{/if}
 
 				{#if data.topo.fixPoints && initialLoadComplete && data.route}
-					{#each data.topo.fixPoints.filter((fp) => fp.position !== undefined && data.route?.fixPoints?.includes(fp.id)) as point}
-						<CssObject position={point.position}>
+					{#each data.topo.fixPoints.filter((fp) => fp.position3D !== undefined && data.route?.fixPoints?.includes(fp.id)) as point}
+						<CssObject position={point.position3D}>
 							{#if point.type === 'anchor'}
 								<div
 									class="flex h-5 w-5 items-center justify-center rounded-full border border-orange-200 bg-white/80 shadow-sm backdrop-blur-sm"
@@ -1056,16 +1047,11 @@
 								/>
 							{/if}
 						</div>
-						{#if data.isSectorPath}
+						{#if data.name}
 							<div class="mt-1 flex items-center gap-2">
 								<span
 									class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100"
-									>{$_('ui.sector')}: {currentSectorName}</span
-								>
-								<a
-									href="{base}/map/crag/{data.path}"
-									class="text-xs font-semibold text-slate-500 no-underline hover:text-blue-700"
-									>{$_('ui.open_map')}</a
+									>{data.name}</span
 								>
 							</div>
 						{/if}
@@ -1135,7 +1121,7 @@
 							</div>
 						{/if}
 					</div>
-					{#if data.route?.points?.length}
+					{#if data.route?.points3D?.length}
 						<div class="mt-6 min-h-[400px] w-full">
 							{#if !isProgrammaticAnimationRunning && renderChartsStage >= 1}
 								<div in:slide={{ duration: 200 }}>
@@ -1164,14 +1150,14 @@
 				>
 					<div class="min-w-0">
 						<h1 class="my-0 truncate text-2xl font-bold text-slate-800">
-							{data.sectorId ? `${data.cragName} - ${currentSectorName}` : data.cragName}
+							{data.name}
 						</h1>
 					</div>
 				</div>
 
 				<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-6" overflow-y>
 					<div class="mb-6 flex flex-wrap gap-3 text-sm font-medium text-gray-700">
-						{#each data.sector?.properties.type ?? data.cragType ?? [] as type}
+						{#each data.climbingTypes as type}
 							<span
 								class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white"
 								style="background-color: {getTypeColor(type) + 'd9'};"

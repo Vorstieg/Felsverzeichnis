@@ -60,10 +60,24 @@ function fixture(kind) {
 		parent: async () => ({ locations: [], allLocations: [] }),
 		fetch
 	};
-	return { args, entry, child, path, childPath, topo, access };
+	return { args, entry, child, path, childPath, topo, access, documents };
 }
 
 describe.each(kinds)('%s entries use the same loading rules', (kind) => {
+	it.each([
+		[['bouldering'], ['bouldering']],
+		[[], ['sports-climbing']],
+		[undefined, ['sports-climbing']]
+	])('prefers parent climbing types %j when available', async (parentTypes, expected) => {
+		const { args, entry, documents } = fixture(kind);
+		entry.properties.type = ['sports-climbing'];
+		documents.set('missing-parent/missing-parent.json', {
+			properties: { kind: 'area', id: 'missing-parent', name: 'Parent', type: parentTypes }
+		});
+		const result = await loadTopo(args);
+		expect(result.climbingTypes).toEqual(expected);
+	});
+
 	it('loads its own assets and children in map and topo views without an ancestor', async () => {
 		const { args, entry, child, path, childPath, topo, access } = fixture(kind);
 		const map = await loadMap(args);
