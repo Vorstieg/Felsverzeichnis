@@ -1,7 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { fsApiUrl as API } from '$lib/config';
 import { load } from '../../src/routes/map/crag/[...crag]/+page.js';
-
-const API = 'https://felslager.vorstieg.eu/api/fs';
 
 const crag = {
 	type: 'Feature',
