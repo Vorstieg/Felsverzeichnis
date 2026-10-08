@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { text, children } = $props();
+	let { text, children }: { text: string; children: import('svelte').Snippet } = $props();
 
 	let hovered = $state(false);
 	let x = $state(0);
@@ -14,7 +14,7 @@
 		}
 	}
 
-	function toggle(e: MouseEvent) {
+	function toggle() {
 		updatePosition();
 		hovered = !hovered;
 	}
@@ -34,7 +34,7 @@
 	onmouseenter={enter}
 	onmouseleave={leave}
 	onclick={toggle}
-	class="inline-block cursor-help bg-transparent border-none p-0 text-inherit"
+	class="inline-block cursor-help border-none bg-transparent p-0 text-inherit"
 	type="button"
 >
 	{@render children()}
@@ -42,10 +42,12 @@
 
 {#if hovered}
 	<div
-		class="fixed z-[9999] px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mb-2 whitespace-nowrap"
+		class="pointer-events-none fixed z-[9999] mb-2 -translate-x-1/2 -translate-y-full transform rounded bg-gray-800 px-2 py-1 text-xs whitespace-nowrap text-white shadow-lg"
 		style="left: {x}px; top: {y}px;"
 	>
 		{text}
-		<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+		<div
+			class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"
+		></div>
 	</div>
 {/if}

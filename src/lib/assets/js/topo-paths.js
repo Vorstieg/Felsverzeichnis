@@ -1,5 +1,6 @@
+/** @param {string} value */
 function slugifyName(value) {
-	return String(value ?? '')
+	return value
 		.trim()
 		.toLowerCase()
 		.normalize('NFD')
@@ -13,16 +14,20 @@ function slugifyName(value) {
  * `path` is the directory containing the crag directory.
  */
 export class Topo {
-	constructor(path, cragId, sectorId) {
+	/** @param {string} path
+	 * @param {string} cragId
+	 * @param {string | null} [sectorId] */
+	constructor(path, cragId, sectorId = null) {
 		this.path = path;
 		this.cragId = cragId;
 		this.sectorId = sectorId;
 	}
 
 	_getPath() {
+		const cragFolder = this.path ? `${this.path}/${this.cragId}` : this.cragId;
 		return this.sectorId
-			? `${this.path}/${this.cragId}/${this.sectorId}/${this.sectorId}`
-			: `${this.path}/${this.cragId}/${this.cragId}`;
+			? `${cragFolder}/${this.sectorId}/${this.sectorId}`
+			: `${cragFolder}/${this.cragId}`;
 	}
 
 	getTopoPath() {
@@ -42,7 +47,7 @@ export class Topo {
 	}
 
 	_getCragPath() {
-		return `${this.path}/${this.cragId}/${this.cragId}`;
+		return `${this.path ? `${this.path}/` : ''}${this.cragId}/${this.cragId}`;
 	}
 
 	getCragPath() {
@@ -51,7 +56,7 @@ export class Topo {
 
 	getSectorPath() {
 		if (!this.sectorId) return this.getCragPath();
-		return `${this.path}/${this.cragId}/${this.sectorId}/${this.getFileName()}`;
+		return this.getCurrentPath();
 	}
 
 	getBaseName() {
@@ -59,9 +64,8 @@ export class Topo {
 	}
 
 	getFolder() {
-		return this.sectorId
-			? `${this.path}/${this.cragId}/${this.sectorId}/`
-			: `${this.path}/${this.cragId}`;
+		const cragFolder = this.path ? `${this.path}/${this.cragId}` : this.cragId;
+		return this.sectorId ? `${cragFolder}/${this.sectorId}/` : cragFolder;
 	}
 
 	getFileName() {
@@ -72,6 +76,7 @@ export class Topo {
 		return `${this._getCragPath()}-access.json`;
 	}
 
+	/** @param {string} name */
 	getImagePath(name, index = 0) {
 		const lastDot = name.lastIndexOf('.');
 		const ext = lastDot > 0 ? name.substring(lastDot).toLowerCase() : '';

@@ -2,10 +2,32 @@ import { describe, expect, it } from 'vitest';
 import { buildFelsstudioUrl, getCragValidationIssue } from '$lib/assets/js/crag-validation.js';
 
 const crag = {
+	type: 'Feature',
 	geometry: { type: 'Point', coordinates: [16, 48] },
-	properties: { description_de: 'A crag', type: 'sports-climbing', sectors: [] }
+	properties: {
+		id: 'crag',
+		kind: 'crag',
+		name: 'Crag',
+		description_de: 'A crag',
+		type: ['sports-climbing']
+	}
 };
-const access = { features: [{ properties: { kind: 'approach' } }] };
+const access = {
+	type: 'FeatureCollection',
+	features: [
+		{
+			type: 'Feature',
+			properties: { kind: 'approach' },
+			geometry: {
+				type: 'LineString',
+				coordinates: [
+					[16, 48],
+					[16.1, 48.1]
+				]
+			}
+		}
+	]
+};
 const topo = { routes: [], image2D: 'topo.jpg' };
 const base = {
 	crag,
@@ -18,6 +40,29 @@ const base = {
 };
 
 describe('crag validation', () => {
+	it.each(['route', 'pitches', 'variants'])('accepts complete 3D geometry on %s', (location) => {
+		const points3D = [
+			[0, 0, 0],
+			[1, 1, 1]
+		];
+		const route = {
+			id: 'r1',
+			name: 'Route',
+			type: 'sports-climbing',
+			grade: { scale: 'french', value: '6a', standardizedValue: '6a' },
+			boltAmount: 5,
+			...(location === 'route' ? { points3D } : { [location]: [{ id: 'child', points3D }] })
+		};
+		const input = { ...base, topo: { routes: [route] }, has2DTopo: false, has3DTopo: true };
+		expect(getCragValidationIssue(input)).toBeNull();
+		expect(
+			getCragValidationIssue({
+				...input,
+				topo: { routes: [{ ...route, points3D: undefined, pitches: [], variants: [] }] }
+			})
+		).toMatchObject({ rule: 'routes' });
+	});
+
 	it('returns the first issue by priority and does not use freshness metadata', () => {
 		expect(
 			getCragValidationIssue({
@@ -41,15 +86,20 @@ describe('crag validation', () => {
 	});
 
 	it('targets an existing sector for missing topo coverage and incomplete sector routes', () => {
-		const sectorCrag = {
-			...crag,
-			properties: { ...crag.properties, sectors: [{ id: 'north', name: 'North' }] }
-		};
+		const sectors = [
+			{
+				path: 'area/crag/north',
+				entry: {
+					type: 'Feature',
+					geometry: crag.geometry,
+					properties: { id: 'north', name: 'North', kind: 'sector' }
+				}
+			}
+		];
 		expect(
 			getCragValidationIssue({
 				...base,
-				crag: sectorCrag,
-				current: sectorCrag,
+				sectors,
 				topo: null,
 				has2DTopo: false
 			})
@@ -60,9 +110,9 @@ describe('crag validation', () => {
 			routes: [
 				{
 					id: 'r1',
-					type: ['sports-climbing'],
+					type: 'sports-climbing',
 					name: '',
-					grade: '6a',
+					grade: { scale: 'french', value: '6a', standardizedValue: '6a' },
 					points2D: [
 						[0, 0],
 						[1, 1]
@@ -70,12 +120,12 @@ describe('crag validation', () => {
 					fixPoints: ['bolt-1']
 				}
 			],
-			fixPoints: [{ id: 'bolt-1' }]
+			fixPoints: [{ id: 'bolt-1', type: 'bolt' }]
 		};
 		expect(
 			getCragValidationIssue({
 				...base,
-				crag: sectorCrag,
+				sectors,
 				sectorTopos: [{ sectorId: 'north', topo: routeTopo, has2DTopo: true }]
 			})
 		).toMatchObject({ rule: 'routes', target: { cragPath: 'area/crag', sectorId: 'north' } });
@@ -87,9 +137,9 @@ describe('crag validation', () => {
 			routes: [
 				{
 					id: 'b1',
-					type: ['bouldering'],
+					type: 'bouldering',
 					name: 'Bloc',
-					grade: '6A',
+					grade: { scale: 'french', value: '6A', standardizedValue: '6a' },
 					points2D: [
 						[0, 0],
 						[1, 1]

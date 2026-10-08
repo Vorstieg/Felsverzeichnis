@@ -16,6 +16,8 @@ init({
 	initialLocale: browser ? getLocaleFromNavigator() : 'de'
 });
 
+/** @param {{url: URL}} event
+ * @satisfies {import('./$types').LayoutLoad} */
 export const load = async ({ url }) => {
 	try {
 		return {
@@ -32,6 +34,6 @@ export const load = async ({ url }) => {
 			}
 		};
 	} catch (err) {
-		error(500, err);
+		error(500, err instanceof Error ? err.message : 'Failed to load application');
 	}
 };

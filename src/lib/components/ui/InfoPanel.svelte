@@ -1,405 +1,477 @@
 <script lang="ts">
-    import { base } from '$app/paths';
-    import { onMount, onDestroy } from 'svelte';
+	import { base } from '$app/paths';
+	import type { CupertinoPane } from 'cupertino-pane';
+	import type { Snippet } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 
-    let { 
-        closeUrl = `${base}/map`, 
-        onClose = null,
-        onShare, 
-        children,
-        controls = undefined,
-        isOpen = true,
-        hideCloseOnDesktop = false,
-        paneZIndex = 4000,
-        initialBreak = 'middle'
-    } = $props();
+	let {
+		closeUrl = `${base}/map`,
+		onClose = null,
+		onShare,
+		children,
+		controls = undefined,
+		isOpen = true,
+		hideCloseOnDesktop = false,
+		initialBreak = 'middle'
+	}: {
+		closeUrl?: string;
+		onClose?: (() => void) | null;
+		onShare: () => void;
+		children: Snippet;
+		controls?: Snippet;
+		isOpen?: boolean;
+		hideCloseOnDesktop?: boolean;
+		initialBreak?: 'top' | 'middle' | 'bottom';
+	} = $props();
 
-    let paneElement: HTMLElement | undefined = $state();
-    let controlsElement: HTMLElement | undefined = $state();
-    let pane: any = null;
-    let isDesktop = $state(true);
-    let CupertinoPaneClass: any = null;
-    let observer: MutationObserver | null = null;
+	let paneElement: HTMLElement | undefined = $state();
+	let controlsElement: HTMLElement | undefined = $state();
+	let pane: CupertinoPane | null = null;
+	let isDesktop = $state(true);
+	let CupertinoPaneClass: typeof import('cupertino-pane').CupertinoPane | null = $state(null);
+	let observer: MutationObserver | null = null;
 
-    export function moveToLowest() {
-        if (pane && !isDesktop) {
-            pane.moveToBreak('bottom');
-            if (pane.paneEl) {
-                pane.paneEl.style.setProperty('transition', 'all 380ms cubic-bezier(.155,1.105,.295,1.12)', 'important');
-            }
-        }
-    }
+	export function moveToLowest() {
+		if (pane && !isDesktop) {
+			pane.moveToBreak('bottom');
+			if (pane.paneEl) {
+				pane.paneEl.style.setProperty(
+					'transition',
+					'all 380ms cubic-bezier(.155,1.105,.295,1.12)',
+					'important'
+				);
+			}
+		}
+	}
 
-    onMount(async () => {
-        const mod = await import('cupertino-pane');
-        CupertinoPaneClass = mod.CupertinoPane || mod.default?.CupertinoPane || mod.default;
+	onMount(() => {
+		let active = true;
+		void import('cupertino-pane').then((mod) => {
+			if (active) CupertinoPaneClass = mod.CupertinoPane;
+		});
 
-        const checkDesktop = () => {
-            isDesktop = window.innerWidth >= 640;
-        };
-        checkDesktop();
-        window.addEventListener('resize', checkDesktop);
-        
-        return () => {
-            window.removeEventListener('resize', checkDesktop);
-            if (observer) observer.disconnect();
-        };
-    });
+		const checkDesktop = () => {
+			isDesktop = window.innerWidth >= 640;
+		};
+		checkDesktop();
+		window.addEventListener('resize', checkDesktop);
 
-    let lastY = 0;
-    let lastTime = 0;
-    let dragVelocity = 0;
+		return () => {
+			active = false;
+			window.removeEventListener('resize', checkDesktop);
+			if (observer) observer.disconnect();
+		};
+	});
 
-    const handleTouchStart = (e: any) => {
-        if (!pane || !pane.paneEl) return;
-        const transform = pane.paneEl.style.transform;
-        let ty = 0;
-        if (transform) {
-            const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
-            const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
-            if (matchY) ty = parseFloat(matchY[1]);
-            else if (match3d) ty = parseFloat(match3d[1]);
-        }
-        lastY = ty;
-        lastTime = Date.now();
-        dragVelocity = 0;
+	let lastY = 0;
+	let lastTime = 0;
+	let dragVelocity = 0;
 
-        const scrollContainer = e.target && (e.target.closest('.overflow-y-auto') || e.target.closest('[overflow-y]'));
-        if (!scrollContainer && pane['events']) {
-            pane['events'].contentScrollTop = 0;
-        } else if (scrollContainer && pane['events']) {
-            pane['events'].contentScrollTop = scrollContainer.scrollTop;
-        }
-    };
+	const handleTouchStart = (e: TouchEvent) => {
+		if (!pane || !pane.paneEl) return;
+		const transform = pane.paneEl.style.transform;
+		let ty = 0;
+		if (transform) {
+			const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
+			const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
+			if (matchY) ty = parseFloat(matchY[1]);
+			else if (match3d) ty = parseFloat(match3d[1]);
+		}
+		lastY = ty;
+		lastTime = Date.now();
+		dragVelocity = 0;
 
-    const handleTouchMove = (e: any) => {
-        if (!pane || !pane.paneEl) return;
-        
-        const transform = pane.paneEl.style.transform;
-        let currentY = 0;
-        if (transform) {
-            const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
-            const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
-            if (matchY) currentY = parseFloat(matchY[1]);
-            else if (match3d) currentY = parseFloat(match3d[1]);
-        }
-        
-        const currentTime = Date.now();
-        const dt = currentTime - lastTime;
-        if (dt > 0) {
-            dragVelocity = (currentY - lastY) / dt; // negative = UP
-        }
-        lastY = currentY;
-        lastTime = currentTime;
-    };
+		const scrollContainer =
+			e.target instanceof Element
+				? e.target.closest<HTMLElement>('.overflow-y-auto, [overflow-y]')
+				: null;
+		if (!scrollContainer && pane['events']) {
+			pane['events'].contentScrollTop = 0;
+		} else if (scrollContainer && pane['events']) {
+			pane['events'].contentScrollTop = scrollContainer.scrollTop;
+		}
+	};
 
-    const handleTouchEnd = () => {
-        if (dragVelocity < -1.0 || dragVelocity > 1.0) {
-            const targetBreak = dragVelocity < -1.0 ? 'top' : 'bottom';
-            setTimeout(() => { 
-                if (pane) {
-                    pane.moveToBreak(targetBreak);
-                    if (pane.paneEl) {
-                        pane.paneEl.style.setProperty('transition', 'all 380ms cubic-bezier(.155,1.105,.295,1.12)', 'important');
-                    }
-                }
-            }, 10);
-        }
-    };
+	const handleTouchMove = () => {
+		if (!pane || !pane.paneEl) return;
 
-    const presentPaneAndSetup = () => {
-        if (!pane) return;
-        const presentPromise = pane.present({ animate: true });
-        document.body.style.overscrollBehaviorY = 'none';
-        document.documentElement.style.overscrollBehaviorY = 'none';
-        
-        setTimeout(() => {
-            if (pane && pane.paneEl) {
-                let activeScrollContainer = null;
-                
-                pane.paneEl.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
-                pane.paneEl.addEventListener('touchmove', handleTouchMove, { passive: true, capture: true });
-                pane.paneEl.addEventListener('touchend', handleTouchEnd, { capture: true });
-                
-                pane.paneEl.addEventListener('touchstart', (e) => {
-                    let target = e.target;
-                    if (target && target.nodeType === 3) target = target.parentNode;
-                    activeScrollContainer = target && (target.closest('.overflow-y-auto') || target.closest('[overflow-y]'));
-                }, { passive: true, capture: true });
-                
-                if (pane.contentEl && !pane.contentEl.__scrollTopProxied) {
-                    Object.defineProperty(pane.contentEl, 'scrollTop', {
-                        get: () => activeScrollContainer ? activeScrollContainer.scrollTop : 0,
-                        set: (val) => { if (activeScrollContainer) activeScrollContainer.scrollTop = val; },
-                        configurable: true
-                    });
-                    pane.contentEl.__scrollTopProxied = true;
-                }
-                
-                if (!observer) {
-                    const syncState = () => {
-                        if (!pane || !pane.paneEl) return;
-                        const trans = pane.paneEl.style.transition;
-                        if (trans) {
-                            document.body.style.setProperty('--info-panel-transition', trans.replace(/transform/g, 'bottom'));
-                        } else {
-                            document.body.style.setProperty('--info-panel-transition', 'none');
-                        }
-                        
-                        const transform = pane.paneEl.style.transform;
-                        let ty = null;
-                        if (transform) {
-                            const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
-                            const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
-                            if (matchY) ty = parseFloat(matchY[1]);
-                            else if (match3d) ty = parseFloat(match3d[1]);
-                        }
-                        
-                        if (ty !== null && !isNaN(ty)) {
-                            const height = window.innerHeight - ty;
-                            const isHigh = height > window.innerHeight * 0.7;
-                            const highStart = window.innerHeight * 0.55;
-                            const highEnd = window.innerHeight * 0.75;
-                            const highProgress = Math.max(0, Math.min(1, (height - highStart) / (highEnd - highStart)));
-                            
-                            document.body.style.setProperty('--info-panel-height', height + 'px');
-                            document.body.style.setProperty('--info-panel-height-num', height);
-                            document.body.style.setProperty('--info-panel-high-progress', highProgress);
-                            document.body.style.setProperty('--controls-opacity', isHigh ? '0' : '1');
-                            document.body.style.setProperty('--controls-pointer', isHigh ? 'none' : 'auto');
-                            document.body.style.setProperty('--controls-scale', isHigh ? '0' : '1');
-                            
-                            if (controlsElement) { 
-                                controlsElement.style.opacity = isHigh ? '0' : '1'; 
-                                controlsElement.style.pointerEvents = isHigh ? 'none' : ''; 
-                                controlsElement.style.transform = isHigh ? 'scale(0)' : 'scale(1)'; 
-                            }
+		const transform = pane.paneEl.style.transform;
+		let currentY = 0;
+		if (transform) {
+			const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
+			const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
+			if (matchY) currentY = parseFloat(matchY[1]);
+			else if (match3d) currentY = parseFloat(match3d[1]);
+		}
 
-                            if (pane.paneEl) {
-                                if (isHigh) {
-                                    pane.paneEl.classList.add('is-high');
-                                } else {
-                                    pane.paneEl.classList.remove('is-high');
-                                }
-                                
-                                if (height > window.innerHeight * 0.25) {
-                                    pane.paneEl.classList.add('is-middle');
-                                } else {
-                                    pane.paneEl.classList.remove('is-middle');
-                                }
-                            }
-                        }
-                    };
-                    observer = new MutationObserver(syncState);
-                    observer.observe(pane.paneEl, { attributes: true, attributeFilter: ['style'] });
-                    syncState(); // run once immediately
-                    
-                    // Force the pane to the correct break if it was initialized with a different one
-                    pane.moveToBreak(initialBreak);
-                }
-            }
-        }, 50);
+		const currentTime = Date.now();
+		const dt = currentTime - lastTime;
+		if (dt > 0) {
+			dragVelocity = (currentY - lastY) / dt; // negative = UP
+		}
+		lastY = currentY;
+		lastTime = currentTime;
+	};
 
-        presentPromise.catch(() => {});
-    };
+	const handleTouchEnd = () => {
+		if (dragVelocity < -1.0 || dragVelocity > 1.0) {
+			const targetBreak = dragVelocity < -1.0 ? 'top' : 'bottom';
+			setTimeout(() => {
+				if (pane) {
+					pane.moveToBreak(targetBreak);
+					if (pane.paneEl) {
+						pane.paneEl.style.setProperty(
+							'transition',
+							'all 380ms cubic-bezier(.155,1.105,.295,1.12)',
+							'important'
+						);
+					}
+				}
+			}, 10);
+		}
+	};
 
-    $effect(() => {
-        if (!isDesktop && paneElement && !pane && CupertinoPaneClass && isOpen) {
-            pane = new CupertinoPaneClass(paneElement, {
-                parentElement: 'body',
-                breaks: {
-                    top: { enabled: true, height: window.innerHeight - 80, bounce: true },
-                    middle: { enabled: true, height: window.innerHeight * 0.5, bounce: true },
-                    bottom: { enabled: true, height: Math.max(window.innerHeight * 0.19, 155), bounce: true },
-                },
-                initialBreak: initialBreak,
-                bottomClose: false,
-                buttonDestroy: false,
-                showDraggable: true,
-                onBackdropTap: () => {
-                    if (onClose) onClose();
-                }
-            });
-            
-            presentPaneAndSetup();
-        } else if (!isDesktop && pane && !isOpen) {
-            if (observer) {
-                observer.disconnect();
-                observer = null;
-            }
-            pane.destroy({ animate: true });
-            pane = null;
-            document.body.style.setProperty('--info-panel-height', '10000px');
-            document.body.style.setProperty('--info-panel-height-num', '10000');
-            document.body.style.setProperty('--controls-opacity', '1');
-            document.body.style.setProperty('--controls-pointer', 'auto');
-            document.body.style.setProperty('--controls-scale', '1');
-            if (controlsElement) { 
-                controlsElement.style.opacity = '1'; 
-                controlsElement.style.pointerEvents = ''; 
-                controlsElement.style.transform = ''; 
-            }
-        } else if (isDesktop && pane) {
-            document.body.style.overscrollBehaviorY = 'auto';
-            if (observer) {
-                observer.disconnect();
-                observer = null;
-            }
-            pane.destroy({ animate: false });
-            pane = null;
-            document.body.style.setProperty('--info-panel-height', '10000px');
-            document.body.style.setProperty('--info-panel-height-num', '10000');
-            document.body.style.setProperty('--controls-opacity', '1');
-            document.body.style.setProperty('--controls-pointer', 'auto');
-            document.body.style.setProperty('--controls-scale', '1');
-            if (controlsElement) { 
-                controlsElement.style.opacity = '1'; 
-                controlsElement.style.pointerEvents = ''; 
-                controlsElement.style.transform = ''; 
-            }
-        }
+	const presentPaneAndSetup = () => {
+		if (!pane) return;
+		const presentPromise = pane.present({ animate: true });
+		document.body.style.overscrollBehaviorY = 'none';
+		document.documentElement.style.overscrollBehaviorY = 'none';
 
-        return () => {
-            if (observer) {
-                observer.disconnect();
-                observer = null;
-            }
-            if (!isDesktop && paneElement) {
-                paneElement.removeEventListener('touchstart', handleTouchStart);
-                paneElement.removeEventListener('touchmove', handleTouchMove);
-                paneElement.removeEventListener('touchend', handleTouchEnd);
-            }
-            if (pane) {
-                pane.destroy({ animate: false });
-                pane = null;
-            }
-            document.body.style.overscrollBehaviorY = 'auto';
-            document.body.style.setProperty('--info-panel-height', '10000px');
-            document.body.style.setProperty('--info-panel-height-num', '10000');
-            document.body.style.setProperty('--controls-opacity', '1');
-            document.body.style.setProperty('--controls-pointer', 'auto');
-            document.body.style.setProperty('--controls-scale', '1');
-            if (controlsElement) { 
-                controlsElement.style.opacity = '1'; 
-                controlsElement.style.pointerEvents = ''; 
-                controlsElement.style.transform = ''; 
-            }
-        };
-    });
+		setTimeout(() => {
+			if (pane && pane.paneEl) {
+				let activeScrollContainer: HTMLElement | null = null;
 
-    $effect(() => {
-        if (pane) {
-            if (isOpen) {
-                if (pane.isHidden()) {
-                    presentPaneAndSetup();
-                }
-                if (!pane.isHidden()) {
-                    pane.moveToBreak(initialBreak);
-                }
-            } else {
-                if (!pane.isHidden()) {
-                    pane.hide();
-                }
-            }
-        }
-    });
+				pane.paneEl.addEventListener('touchstart', handleTouchStart, {
+					passive: true,
+					capture: true
+				});
+				pane.paneEl.addEventListener('touchmove', handleTouchMove, {
+					passive: true,
+					capture: true
+				});
+				pane.paneEl.addEventListener('touchend', handleTouchEnd, { capture: true });
 
-    onDestroy(() => {
-        if (pane) {
-            pane.destroy({ animate: false });
-        }
-    });
+				pane.paneEl.addEventListener(
+					'touchstart',
+					(e) => {
+						let target = e.target;
+						if (target instanceof Text) target = target.parentElement;
+						activeScrollContainer =
+							target instanceof Element
+								? target.closest<HTMLElement>('.overflow-y-auto, [overflow-y]')
+								: null;
+					},
+					{ passive: true, capture: true }
+				);
 
+				if (pane.contentEl && !pane.contentEl.dataset.scrollTopProxied) {
+					Object.defineProperty(pane.contentEl, 'scrollTop', {
+						get: () => (activeScrollContainer ? activeScrollContainer.scrollTop : 0),
+						set: (val: number) => {
+							if (activeScrollContainer) activeScrollContainer.scrollTop = val;
+						},
+						configurable: true
+					});
+					pane.contentEl.dataset.scrollTopProxied = 'true';
+				}
+
+				if (!observer) {
+					const syncState = () => {
+						if (!pane || !pane.paneEl) return;
+						const trans = pane.paneEl.style.transition;
+						if (trans) {
+							document.body.style.setProperty(
+								'--info-panel-transition',
+								trans.replace(/transform/g, 'bottom')
+							);
+						} else {
+							document.body.style.setProperty('--info-panel-transition', 'none');
+						}
+
+						const transform = pane.paneEl.style.transform;
+						let ty = null;
+						if (transform) {
+							const matchY = transform.match(/translateY\(([-0-9.]+)px\)/);
+							const match3d = transform.match(/translate3d\([^,]+,\s*([-0-9.]+)px/);
+							if (matchY) ty = parseFloat(matchY[1]);
+							else if (match3d) ty = parseFloat(match3d[1]);
+						}
+
+						if (ty !== null && !isNaN(ty)) {
+							const height = window.innerHeight - ty;
+							const isHigh = height > window.innerHeight * 0.7;
+							const highStart = window.innerHeight * 0.55;
+							const highEnd = window.innerHeight * 0.75;
+							const highProgress = Math.max(
+								0,
+								Math.min(1, (height - highStart) / (highEnd - highStart))
+							);
+
+							document.body.style.setProperty('--info-panel-height', height + 'px');
+							document.body.style.setProperty('--info-panel-height-num', String(height));
+							document.body.style.setProperty('--info-panel-high-progress', String(highProgress));
+							document.body.style.setProperty('--controls-opacity', isHigh ? '0' : '1');
+							document.body.style.setProperty('--controls-pointer', isHigh ? 'none' : 'auto');
+							document.body.style.setProperty('--controls-scale', isHigh ? '0' : '1');
+
+							if (controlsElement) {
+								controlsElement.style.opacity = isHigh ? '0' : '1';
+								controlsElement.style.pointerEvents = isHigh ? 'none' : '';
+								controlsElement.style.transform = isHigh ? 'scale(0)' : 'scale(1)';
+							}
+
+							if (pane.paneEl) {
+								if (isHigh) {
+									pane.paneEl.classList.add('is-high');
+								} else {
+									pane.paneEl.classList.remove('is-high');
+								}
+
+								if (height > window.innerHeight * 0.25) {
+									pane.paneEl.classList.add('is-middle');
+								} else {
+									pane.paneEl.classList.remove('is-middle');
+								}
+							}
+						}
+					};
+					observer = new MutationObserver(syncState);
+					observer.observe(pane.paneEl, { attributes: true, attributeFilter: ['style'] });
+					syncState(); // run once immediately
+
+					// Force the pane to the correct break if it was initialized with a different one
+					pane.moveToBreak(initialBreak);
+				}
+			}
+		}, 50);
+
+		presentPromise.catch(() => {});
+	};
+
+	$effect(() => {
+		if (!isDesktop && paneElement && !pane && CupertinoPaneClass && isOpen) {
+			pane = new CupertinoPaneClass(paneElement, {
+				parentElement: 'body',
+				breaks: {
+					top: { enabled: true, height: window.innerHeight - 80, bounce: true },
+					middle: { enabled: true, height: window.innerHeight * 0.5, bounce: true },
+					bottom: { enabled: true, height: Math.max(window.innerHeight * 0.19, 155), bounce: true }
+				},
+				initialBreak: initialBreak,
+				bottomClose: false,
+				buttonDestroy: false,
+				showDraggable: true,
+				events: {
+					onBackdropTap: () => {
+						if (onClose) onClose();
+					}
+				}
+			});
+
+			presentPaneAndSetup();
+		} else if (!isDesktop && pane && !isOpen) {
+			if (observer) {
+				observer.disconnect();
+				observer = null;
+			}
+			pane.destroy({ animate: true });
+			pane = null;
+			document.body.style.setProperty('--info-panel-height', '10000px');
+			document.body.style.setProperty('--info-panel-height-num', '10000');
+			document.body.style.setProperty('--controls-opacity', '1');
+			document.body.style.setProperty('--controls-pointer', 'auto');
+			document.body.style.setProperty('--controls-scale', '1');
+			if (controlsElement) {
+				controlsElement.style.opacity = '1';
+				controlsElement.style.pointerEvents = '';
+				controlsElement.style.transform = '';
+			}
+		} else if (isDesktop && pane) {
+			document.body.style.overscrollBehaviorY = 'auto';
+			if (observer) {
+				observer.disconnect();
+				observer = null;
+			}
+			pane.destroy({ animate: false });
+			pane = null;
+			document.body.style.setProperty('--info-panel-height', '10000px');
+			document.body.style.setProperty('--info-panel-height-num', '10000');
+			document.body.style.setProperty('--controls-opacity', '1');
+			document.body.style.setProperty('--controls-pointer', 'auto');
+			document.body.style.setProperty('--controls-scale', '1');
+			if (controlsElement) {
+				controlsElement.style.opacity = '1';
+				controlsElement.style.pointerEvents = '';
+				controlsElement.style.transform = '';
+			}
+		}
+
+		return () => {
+			if (observer) {
+				observer.disconnect();
+				observer = null;
+			}
+			if (!isDesktop && paneElement) {
+				paneElement.removeEventListener('touchstart', handleTouchStart);
+				paneElement.removeEventListener('touchmove', handleTouchMove);
+				paneElement.removeEventListener('touchend', handleTouchEnd);
+			}
+			if (pane) {
+				pane.destroy({ animate: false });
+				pane = null;
+			}
+			document.body.style.overscrollBehaviorY = 'auto';
+			document.body.style.setProperty('--info-panel-height', '10000px');
+			document.body.style.setProperty('--info-panel-height-num', '10000');
+			document.body.style.setProperty('--controls-opacity', '1');
+			document.body.style.setProperty('--controls-pointer', 'auto');
+			document.body.style.setProperty('--controls-scale', '1');
+			if (controlsElement) {
+				controlsElement.style.opacity = '1';
+				controlsElement.style.pointerEvents = '';
+				controlsElement.style.transform = '';
+			}
+		};
+	});
+
+	$effect(() => {
+		if (pane) {
+			if (isOpen) {
+				if (pane.isHidden()) {
+					presentPaneAndSetup();
+				}
+				if (!pane.isHidden()) {
+					pane.moveToBreak(initialBreak);
+				}
+			} else {
+				if (!pane.isHidden()) {
+					pane.hide();
+				}
+			}
+		}
+	});
+
+	onDestroy(() => {
+		if (pane) {
+			pane.destroy({ animate: false });
+		}
+	});
 </script>
 
 {#snippet panelContent()}
-    {#if onClose}
-        <button class="absolute top-4 right-4 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000] shrink-0 text-gray-600 {hideCloseOnDesktop ? 'sm:hidden' : ''}"
-                aria-label="Close panel"
-                onclick={onClose}>
-            <i class="fa-lg fa-solid fa-xmark"></i>
-        </button>
-    {:else}
-        <a class="absolute top-4 right-4 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000] shrink-0 text-gray-600 {hideCloseOnDesktop ? 'sm:hidden' : ''}"
-           aria-label="Close panel"
-           href={closeUrl}>
-            <i class="fa-lg fa-solid fa-xmark"></i>
-        </a>
-    {/if}
+	{#if onClose}
+		<button
+			class="hover:bg-ink absolute top-4 right-4 z-[5000] flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-1 border-gray-200 bg-white text-sm text-gray-600 transition-all hover:text-white {hideCloseOnDesktop
+				? 'sm:hidden'
+				: ''}"
+			aria-label="Close panel"
+			onclick={onClose}
+		>
+			<i class="fa-lg fa-solid fa-xmark"></i>
+		</button>
+	{:else}
+		<a
+			class="hover:bg-ink absolute top-4 right-4 z-[5000] flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-1 border-gray-200 bg-white text-sm text-gray-600 transition-all hover:text-white {hideCloseOnDesktop
+				? 'sm:hidden'
+				: ''}"
+			aria-label="Close panel"
+			href={closeUrl}
+		>
+			<i class="fa-lg fa-solid fa-xmark"></i>
+		</a>
+	{/if}
 
-    <button class="absolute top-4 right-14 cursor-pointer bg-white w-8 h-8 text-sm hover:text-white hover:bg-ink rounded-full border-1 flex items-center justify-center border-gray-200 transition-all z-[5000]"
-            aria-label="Share"
-            onclick={onShare}>
-        <i class="fa-solid fa-share-nodes"></i>
-    </button>
+	<button
+		class="hover:bg-ink absolute top-4 right-14 z-[5000] flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-1 border-gray-200 bg-white text-sm transition-all hover:text-white"
+		aria-label="Share"
+		onclick={onShare}
+	>
+		<i class="fa-solid fa-share-nodes"></i>
+	</button>
 
-    {@render children()}
+	{@render children()}
 {/snippet}
 
 {#if controls}
-     <div bind:this={controlsElement} class="floating-controls fixed left-4 right-4 sm:left-auto sm:bottom-auto {isOpen ? 'sm:right-15' : 'sm:right-5'} sm:top-25 lg:top-30 sm:mt-2 z-[30000] flex flex-col sm:flex-row items-end sm:items-center justify-end pointer-events-none gap-2 sm:transition-all sm:duration-300"
-          style="--dynamic-bottom: {isOpen ? 'calc(var(--info-panel-height, 50vh) + 16px)' : 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)'};">
-        {@render controls()}
-     </div>
+	<div
+		bind:this={controlsElement}
+		class="floating-controls fixed right-4 left-4 sm:bottom-auto sm:left-auto {isOpen
+			? 'sm:right-15'
+			: 'sm:right-5'} pointer-events-none z-[30000] flex flex-col items-end justify-end gap-2 sm:top-25 sm:mt-2 sm:flex-row sm:items-center sm:transition-all sm:duration-300 lg:top-30"
+		style="--dynamic-bottom: {isOpen
+			? 'calc(var(--info-panel-height, 50vh) + 16px)'
+			: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)'};"
+	>
+		{@render controls()}
+	</div>
 {/if}
 
 {#if isDesktop}
-    <div class="box pointer-events-auto flex flex-col border-1 border-gray-200 fixed sm:left-auto left-0 right-0 sm:!right-5 sm:!h-auto top-1/2 sm:!top-5 bottom-0 sm:!bottom-5 w-full sm:w-[25rem] lg:w-[40rem] max-w-[100vw] bg-white rounded-t-3xl rounded-b-none sm:!rounded-3xl shadow-md z-[20000] overflow-hidden transition-transform duration-300 {isOpen ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-y-0 sm:translate-x-[150%]'}">
-        {@render panelContent()}
-    </div>
+	<div
+		class="box pointer-events-auto fixed top-1/2 right-0 bottom-0 left-0 z-[20000] flex w-full max-w-[100vw] flex-col overflow-hidden rounded-t-3xl rounded-b-none border-1 border-gray-200 bg-white shadow-md transition-transform duration-300 sm:!top-5 sm:!right-5 sm:!bottom-5 sm:left-auto sm:!h-auto sm:w-[25rem] sm:!rounded-3xl lg:w-[40rem] {isOpen
+			? 'translate-y-0 sm:translate-x-0'
+			: 'translate-y-full sm:translate-x-[150%] sm:translate-y-0'}"
+	>
+		{@render panelContent()}
+	</div>
 {:else}
-    <div bind:this={paneElement} class="bg-white flex flex-col overflow-hidden h-full w-full rounded-t-3xl">
-        {@render panelContent()}
-    </div>
+	<div
+		bind:this={paneElement}
+		class="flex h-full w-full flex-col overflow-hidden rounded-t-3xl bg-white"
+	>
+		{@render panelContent()}
+	</div>
 {/if}
 
 <style>
-    :global(body > .cupertino-pane-wrapper) {
-        z-index: 4000 !important;
-    }
-    :global(.cupertino-pane-wrapper .pane) {
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: visible !important;
-    }
-    :global(.cupertino-pane-wrapper .pane::before) {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        height: 50vh;
-        background: white;
-    }
-    :global(.cupertino-pane-wrapper .content) {
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important;
-        height: 100% !important;
-        padding: 0 !important;
-    }
-    :global(.cupertino-pane-wrapper .pane:not(.is-high) [overflow-y]) {
-        overflow-y: hidden !important;
-        touch-action: pan-x !important;
-    }
+	:global(body > .cupertino-pane-wrapper) {
+		z-index: 4000 !important;
+	}
+	:global(.cupertino-pane-wrapper .pane) {
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: visible !important;
+	}
+	:global(.cupertino-pane-wrapper .pane::before) {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		height: 50vh;
+		background: white;
+	}
+	:global(.cupertino-pane-wrapper .content) {
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: hidden !important;
+		height: 100% !important;
+		padding: 0 !important;
+	}
+	:global(.cupertino-pane-wrapper .pane:not(.is-high) [overflow-y]) {
+		overflow-y: hidden !important;
+		touch-action: pan-x !important;
+	}
 
-    .floating-controls {
-        @media (width <= 40rem) {
-            bottom: var(--dynamic-bottom, calc(50vh + 16px));
-            transition: var(--info-panel-transition, bottom 0.2s ease-out), opacity 0.2s ease-out;
-            opacity: var(--controls-opacity, 1);
-            pointer-events: var(--controls-pointer, auto);
-        }
-    }
-    
-    :global(.cupertino-pane-wrapper .draggable::after) {
-        content: '';
-        position: absolute;
-        top: -30px;
-        bottom: -80px;
-        left: -100vw;
-        right: -100vw;
-        background: transparent;
-        z-index: 1000;
-    }
+	.floating-controls {
+		@media (width <= 40rem) {
+			bottom: var(--dynamic-bottom, calc(50vh + 16px));
+			transition:
+				var(--info-panel-transition, bottom 0.2s ease-out),
+				opacity 0.2s ease-out;
+			opacity: var(--controls-opacity, 1);
+			pointer-events: var(--controls-pointer, auto);
+		}
+	}
+
+	:global(.cupertino-pane-wrapper .draggable::after) {
+		content: '';
+		position: absolute;
+		top: -30px;
+		bottom: -80px;
+		left: -100vw;
+		right: -100vw;
+		background: transparent;
+		z-index: 1000;
+	}
 </style>

@@ -1,6 +1,6 @@
-<script>
+<script lang="ts">
 	import { T, useThrelte, useTask } from '@threlte/core';
-	import { interactivity, useCursor } from '@threlte/extras';
+	import { useCursor } from '@threlte/extras';
 	import { CatmullRomCurve3, Vector3, TubeGeometry } from 'three';
 	import CssObject from './CssObject.svelte';
 	import { goto } from '$app/navigation';
@@ -14,12 +14,21 @@
 		color = colors.topo.route,
 		width = 0.07,
 		name = '',
-		grade = '',
-		id = 'unknown',
+		grade = null,
 		link = '',
 		isSelected = false,
 		isCameraMoving = false,
 		isHoveredExternally = false
+	}: {
+		points?: import('@vorstieg/fels-types/types').Point3D[];
+		color?: string;
+		width?: number;
+		name?: string;
+		grade?: import('@vorstieg/fels-types/types').Grade;
+		link?: string;
+		isSelected?: boolean;
+		isCameraMoving?: boolean;
+		isHoveredExternally?: boolean;
 	} = $props();
 
 	let isClose = $state(false);
@@ -27,13 +36,11 @@
 	const CLOSE_DISTANCE = 15;
 	const VISIBLE_DISTANCE = 40;
 
-	const hoverColor = colors.topo.routeHover;
 	const hoverWidth = 0.2;
-	
+
 	let isHovered = $derived(($hovering || isHoveredExternally) && !isCameraMoving);
-	
-	let currentColor = $derived(isHovered ? hoverColor : color);
-	let currentWidth = $derived((isHovered || isSelected) ? hoverWidth : width);
+
+	let currentWidth = $derived(isHovered || isSelected ? hoverWidth : width);
 
 	let pathCurve = $derived.by(() => {
 		if (vectorPoints.length >= 2) {
@@ -42,11 +49,11 @@
 		return null;
 	});
 
-	let vectorPoints = $derived(points.map(p => new Vector3(p[0], p[1], p[2])));
+	let vectorPoints = $derived(points.map((p) => new Vector3(p[0], p[1], p[2])));
 
-	let labelPosition = $derived.by(() => {
+	let labelPosition: import('@vorstieg/fels-types/types').Point3D = $derived.by(() => {
 		if (points.length < 1) return [0, 0, 0];
-		return points[Math.floor((points.length / 2))];
+		return points[Math.floor(points.length / 2)];
 	});
 
 	useTask(() => {
@@ -59,12 +66,11 @@
 
 	const labelClass = 'route-label';
 
-	function openRoute(event) {
+	function openRoute(event?: { stopPropagation: () => void }) {
 		event?.stopPropagation();
 		goto(link);
 		if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('route-clicked'));
 	}
-
 </script>
 
 {#if vectorPoints.length >= 2}
@@ -72,73 +78,50 @@
 	{#if pathCurve}
 		{#if isHovered || isSelected}
 			<T.Mesh>
-				<T is={TubeGeometry} args={[
-						pathCurve,
-						vectorPoints.length * 10,
-						currentWidth, 
-						4,
-						false
-					]} />
-				<T.MeshBasicMaterial
-					color="white"
-					transparent
-					opacity={0.3}
-					depthWrite={false}
-				/>
+				<T is={TubeGeometry} args={[pathCurve, vectorPoints.length * 10, currentWidth, 4, false]} />
+				<T.MeshBasicMaterial color="white" transparent opacity={0.3} depthWrite={false} />
 			</T.Mesh>
 		{/if}
 
 		<T.Mesh>
-			<T is={TubeGeometry} args={[
-					pathCurve,
-					vectorPoints.length * 10,
-					currentWidth / 2,
-					4,
-					false
-				]} />
-			<T.MeshBasicMaterial
-				color={color}
+			<T
+				is={TubeGeometry}
+				args={[pathCurve, vectorPoints.length * 10, currentWidth / 2, 4, false]}
 			/>
+			<T.MeshBasicMaterial {color} />
 		</T.Mesh>
 	{/if}
 
 	<!-- Hit Box -->
-	<T.Mesh
-		onpointerenter={onPointerEnter}
-		onpointerleave={onPointerLeave}
-					onclick={openRoute}>
+	<T.Mesh onpointerenter={onPointerEnter} onpointerleave={onPointerLeave} onclick={openRoute}>
 		{#if pathCurve}
-			<T is={TubeGeometry} args={[
-					pathCurve,
-					vectorPoints.length,
-					0.15,
-					4,
-					false
-				]} />
+			<T is={TubeGeometry} args={[pathCurve, vectorPoints.length, 0.15, 4, false]} />
 			<T.MeshBasicMaterial transparent opacity={0} depthWrite={false} />
 		{/if}
 	</T.Mesh>
 
 	{#if (name || grade) && (isVisible || isHovered || isSelected)}
 		<CssObject position={labelPosition} pointerEvents={true}>
-			<div class={labelClass}
-					 role="link"
-					 tabindex="0"
-					 aria-label={`Open ${name || grade?.value || grade?.display || grade}`}
-						 style:border-left="5px solid {color}"
-						 onpointerenter={onPointerEnter}
-						 onpointerleave={onPointerLeave}
-						 onclick={openRoute}
-						 onkeydown={(event) => {
-							if (event.key === 'Enter' || event.key === ' ') {
-								event.preventDefault();
-								openRoute(event);
-							}
-						}}>
+			<div
+				class={labelClass}
+				role="link"
+				tabindex="0"
+				aria-label={`Open ${name || grade?.value}`}
+				style:border-left="5px solid {color}"
+				onpointerenter={onPointerEnter}
+				onpointerleave={onPointerLeave}
+				onclick={openRoute}
+				onkeydown={(event) => {
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						openRoute(event);
+					}
+				}}
+			>
 				{#if isHovered || isSelected || isClose}
-					{name} - {grade?.value || grade?.display || grade}
+					{name} - {grade?.value}
 				{:else}
-					{grade?.value || grade?.display || grade}
+					{grade?.value}
 				{/if}
 			</div>
 		</CssObject>

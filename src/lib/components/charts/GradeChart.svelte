@@ -1,10 +1,11 @@
 <script lang="ts">
 	import Chart from 'chart.js/auto';
+	import type { Route } from '@vorstieg/fels-types/types';
 	import { _ } from 'svelte-i18n';
+	import { gradeOrder, gradeRank, hardestRouteGrade } from '$lib/assets/js/route-summary';
 	import { colors } from '$lib/colors.js';
 
-	let { routes } = $props();
-	let canvas: HTMLCanvasElement = $state();
+	let { routes }: { routes: Route[] } = $props();
 	let gradeChartData = $derived(calculateGradeStats(routes));
 
 	let t_routes_label = $derived($_('charts.routes'));
@@ -15,90 +16,10 @@
 		}
 	});
 
-	function calculateGradeStats(routes: any[]) {
-		if (!routes || routes.length === 0) return null;
+	function calculateGradeStats(routes: Route[]) {
+		if (routes.length === 0) return null;
 
-		// Standard ordered grades (French scale)
-		const gradeOrder = [
-			'1a',
-			'1b',
-			'1c',
-			'2a',
-			'2b',
-			'2c',
-			'3a',
-			'3a+',
-			'3b',
-			'3b+',
-			'3c',
-			'3c+',
-			'4a',
-			'4a+',
-			'4b',
-			'4b+',
-			'4c',
-			'4c+',
-			'5a',
-			'5a+',
-			'5b',
-			'5b+',
-			'5c',
-			'5c+',
-			'6a',
-			'6a+',
-			'6b',
-			'6b+',
-			'6c',
-			'6c+',
-			'7a',
-			'7a+',
-			'7b',
-			'7b+',
-			'7c',
-			'7c+',
-			'8a',
-			'8a+',
-			'8b',
-			'8b+',
-			'8c',
-			'8c+',
-			'9a',
-			'9a+',
-			'9b',
-			'9b+'
-		];
-		const uiaaToFrench: Record<string, string> = {
-			I: '1a',
-			II: '2a',
-			III: '3a',
-			IV: '4a',
-			'IV+': '4b',
-			'V-': '4c',
-			V: '5a',
-			'V+': '5b',
-			'VI-': '5c',
-			VI: '6a',
-			'VI+': '6a+',
-			'VII-': '6b',
-			VII: '6b+',
-			'VII+': '6c',
-			'VIII-': '6c+',
-			VIII: '7a',
-			'VIII+': '7a+',
-			'IX-': '7b',
-			IX: '7b+',
-			'IX+': '7c',
-			'X-': '7c+',
-			X: '8a',
-			'X+': '8a+',
-			'XI-': '8b',
-			XI: '8b+',
-			'XI+': '9a'
-		};
-		const grades = routes
-			.map(extractRouteGrade)
-			.map(normalizeGrade)
-			.filter((grade): grade is string => getGradeIndex(grade) !== -1);
+		const grades = routes.map(hardestRouteGrade).filter((grade) => gradeRank(grade) !== -1);
 
 		const counts: Record<string, number> = {};
 		let minIdx = gradeOrder.length;
@@ -106,7 +27,7 @@
 		let hasData = false;
 
 		grades.forEach((g) => {
-			const idx = getGradeIndex(g);
+			const idx = gradeRank(g);
 
 			if (idx !== -1) {
 				counts[gradeOrder[idx]] = (counts[gradeOrder[idx]] || 0) + 1;
@@ -149,41 +70,9 @@
 			counts: dataCounts,
 			colors: segmentColors
 		};
-
-		function extractRouteGrade(route: any): string | null {
-			if (!route) return null;
-
-			const pitchGrades = Array.isArray(route.pitches)
-				? route.pitches.map((pitch: any) => pitch?.grade)
-				: [];
-			const grades = [route.grade, ...pitchGrades].filter(Boolean);
-			if (grades.length === 0) return null;
-
-			// Each multi-pitch route contributes only its hardest recognised climbing grade.
-			return grades.reduce((hardest, grade) =>
-				getGradeIndex(normalizeGrade(grade)) > getGradeIndex(normalizeGrade(hardest))
-					? grade
-					: hardest
-			);
-		}
-
-		function getGradeIndex(grade: string | null): number {
-			if (!grade) return -1;
-			const index = gradeOrder.indexOf(grade);
-			return index === -1 && gradeOrder.includes(grade + 'a')
-				? gradeOrder.indexOf(grade + 'a')
-				: index;
-		}
-
-		function normalizeGrade(grade: any): string | null {
-			if (!grade) return null;
-			let value = String(grade.standardizedValue || grade.french || grade).trim();
-			if (!value) return null;
-			return uiaaToFrench[value.toUpperCase()] || value.toLowerCase();
-		}
 	}
 
-	function initGradeChart(node: HTMLCanvasElement, config: any) {
+	function initGradeChart(node: HTMLCanvasElement, config: typeof chartConfig) {
 		if (!config || !config.data) return;
 		const { data, translations } = config;
 
@@ -210,12 +99,12 @@
 				plugins: {
 					legend: { display: false },
 					tooltip: {
-					backgroundColor: colors.ui.overlay,
+						backgroundColor: colors.ui.overlay,
 						padding: 10,
 						cornerRadius: 8,
 						displayColors: true,
 						callbacks: {
-							label: (ctx: any) => `${ctx.raw} ${translations.routes}`
+							label: (ctx) => `${ctx.raw} ${translations.routes}`
 						}
 					}
 				},
@@ -223,7 +112,7 @@
 					y: {
 						beginAtZero: true,
 						ticks: { stepSize: 1 },
-					grid: { color: colors.chart.grid }
+						grid: { color: colors.chart.grid }
 					},
 					x: {
 						grid: { display: false }
@@ -234,7 +123,7 @@
 		});
 
 		return {
-			update(newConfig: any) {
+			update(newConfig: typeof chartConfig) {
 				if (!newConfig || !newConfig.data) return;
 				const { data, translations } = newConfig;
 
@@ -244,7 +133,7 @@
 				chart.data.datasets[0].label = translations.routes;
 
 				if (chart.options.plugins?.tooltip?.callbacks) {
-					chart.options.plugins.tooltip.callbacks.label = (ctx: any) =>
+					chart.options.plugins.tooltip.callbacks.label = (ctx) =>
 						`${ctx.raw} ${translations.routes}`;
 				}
 
@@ -259,7 +148,7 @@
 
 {#if gradeChartData}
 	<div class="chart-wrapper">
-		<canvas bind:this={canvas} use:initGradeChart={chartConfig}></canvas>
+		<canvas use:initGradeChart={chartConfig}></canvas>
 	</div>
 {/if}
 

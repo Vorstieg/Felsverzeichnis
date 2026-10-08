@@ -1,5 +1,5 @@
 <script lang="ts">
-import { topoSymbols } from '@vorstieg/topo-renderer';
+	import { topoSymbols } from '@vorstieg/topo-renderer';
 	import { fly } from 'svelte/transition';
 
 	type LegendGroup = {
@@ -9,7 +9,11 @@ import { topoSymbols } from '@vorstieg/topo-renderer';
 		symbolIds: string[];
 	};
 
-	let { open = false, usedTypes = [], onClose = () => {} } = $props();
+	let {
+		open = false,
+		usedTypes = [],
+		onClose = () => {}
+	}: { open?: boolean; usedTypes?: string[]; onClose?: () => void } = $props();
 
 	const groups: LegendGroup[] = [
 		{
@@ -52,16 +56,34 @@ import { topoSymbols } from '@vorstieg/topo-renderer';
 			id: 'environment',
 			name: 'Environment',
 			icon: 'fa-tree',
-			symbolIds: ['bivouac', 'dwarf-pine', 'fixed-cable', 'grass', 'leaf-tree', 'needle-tree', 'snow', 'tree']
+			symbolIds: [
+				'bivouac',
+				'dwarf-pine',
+				'fixed-cable',
+				'grass',
+				'leaf-tree',
+				'needle-tree',
+				'snow',
+				'tree'
+			]
 		}
 	];
 
 	const usedSet = $derived(new Set(usedTypes));
 	const symbolMap = new Map(topoSymbols.map((symbol) => [symbol.id, symbol]));
-	const groupedSymbols = $derived(groups.map((group) => ({
-		...group,
-		symbols: group.symbolIds.map((id) => symbolMap.get(id)).filter((symbol) => symbol && usedSet.has(symbol.id))
-	})).filter((group) => group.symbols.length > 0));
+	const groupedSymbols = $derived(
+		groups
+			.map((group) => ({
+				...group,
+				symbols: group.symbolIds
+					.map((id) => symbolMap.get(id))
+					.filter(
+						(symbol): symbol is NonNullable<typeof symbol> =>
+							symbol !== undefined && usedSet.has(symbol.id)
+					)
+			}))
+			.filter((group) => group.symbols.length > 0)
+	);
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape' && open) onClose();
@@ -72,12 +94,12 @@ import { topoSymbols } from '@vorstieg/topo-renderer';
 
 {#if open}
 	<aside
-		class="topo-legend bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 p-4 pointer-events-auto z-[30000] flex flex-col max-h-[58vh] max-w-[calc(100vw-2rem)] overflow-hidden sm:max-h-[min(70vh,42rem)] sm:w-auto sm:max-w-[19rem]"
+		class="topo-legend pointer-events-auto z-[30000] flex max-h-[58vh] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white/90 p-4 shadow-xl backdrop-blur-md sm:max-h-[min(70vh,42rem)] sm:w-auto sm:max-w-[19rem]"
 		aria-label="Topo legend"
 		transition:fly={{ y: 18, duration: 180 }}
 	>
 		<div class="legend-title flex shrink-0 items-center justify-between gap-3 pb-2">
-			<h2 class="m-0 flex items-center gap-2 text-sm font-black uppercase text-black">
+			<h2 class="m-0 flex items-center gap-2 text-sm font-black text-black uppercase">
 				<i class="fa-solid fa-map-signs text-xs"></i>
 				Topo legend
 			</h2>
@@ -94,7 +116,9 @@ import { topoSymbols } from '@vorstieg/topo-renderer';
 		<div class="min-h-0 overflow-y-auto pr-2">
 			{#each groupedSymbols as group}
 				<section class="mb-3 last:mb-0">
-					<h3 class="legend-group-title mb-1 flex items-center gap-2 text-[0.6875rem] font-black uppercase text-black">
+					<h3
+						class="legend-group-title mb-1 flex items-center gap-2 text-[0.6875rem] font-black text-black uppercase"
+					>
 						<i class="fa-solid {group.icon}"></i>
 						{group.name}
 					</h3>
@@ -110,9 +134,7 @@ import { topoSymbols } from '@vorstieg/topo-renderer';
 			{/each}
 
 			{#if groupedSymbols.length === 0}
-				<div class="legend-empty text-sm font-black text-black">
-					No topo symbols used here.
-				</div>
+				<div class="legend-empty text-sm font-black text-black">No topo symbols used here.</div>
 			{/if}
 		</div>
 	</aside>

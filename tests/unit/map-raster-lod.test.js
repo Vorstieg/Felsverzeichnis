@@ -10,7 +10,7 @@ describe('slowRasterTileDecay', () => {
 	});
 
 	it('installs a tile zoom calculator on the requested source', () => {
-		const source = {};
+		const source = { type: 'raster' };
 		const map = { getSource: vi.fn(() => source) };
 
 		slowRasterTileDecay(map, 'satellite', 0.15);
@@ -20,7 +20,7 @@ describe('slowRasterTileDecay', () => {
 	});
 
 	it('reduces the default near-tile zoom adjustment by the decay factor', () => {
-		const source = {};
+		const source = { type: 'raster' };
 		slowRasterTileDecay({ getSource: () => source }, 'imagery', 0.25);
 
 		// Equal camera/tile distances and a forward-facing tile produce a zero offset.
@@ -28,7 +28,7 @@ describe('slowRasterTileDecay', () => {
 	});
 
 	it('uses the far-tile branch when the default zoom offset is below -1', () => {
-		const source = {};
+		const source = { type: 'raster' };
 		slowRasterTileDecay({ getSource: () => source }, 'imagery', 0.25);
 
 		const result = source.calculateTileZoom(12, 0, 10, 0.01, 0);
@@ -39,7 +39,7 @@ describe('slowRasterTileDecay', () => {
 	});
 
 	it('keeps the calculation finite when lateral tile distance is zero', () => {
-		const source = {};
+		const source = { type: 'raster' };
 		slowRasterTileDecay({ getSource: () => source }, 'imagery');
 
 		expect(source.calculateTileZoom(12, 0, 10, 0, 90)).toBeCloseTo(-7.08, 2);

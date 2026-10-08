@@ -1,99 +1,50 @@
 const protectedRouteTypes = new Set(['sports-climbing', 'via-ferrata']);
 
+/** @param {string | null | undefined} value */
 function hasText(value) {
-	return typeof value === 'string' && value.trim().length > 0;
+	return Boolean(value?.trim());
 }
 
-function hasCoordinates(value) {
-	if (!Array.isArray(value)) return false;
-	if (value.length >= 2 && value.every((entry) => typeof entry === 'number')) {
-		return Number.isFinite(value[0]) && Number.isFinite(value[1]);
-	}
-	return value.some(hasCoordinates);
-}
-
-function hasValidGeometry(geometry) {
-	return Boolean(geometry?.type && hasCoordinates(geometry.coordinates));
-}
-
-function hasAccessInformation(access) {
-	const features = access?.features || [];
-	if (
-		features.some((feature) =>
-			['approach', 'parking', 'transit', 'restriction', 'access'].includes(
-				feature?.properties?.kind
-			)
-		)
-	)
-		return true;
-
-	return [access, access?.properties].some((source) =>
-		[
-			'description',
-			'notes',
-			'restrictions',
-			'restriction',
-			'access',
-			'approach',
-			'parking',
-			'transit'
-		].some((key) => hasText(source?.[key]))
-	);
-}
-
-function has2DTopo(topo) {
+/** @param {import('@vorstieg/fels-types/types').FelsTopoDocument | null | undefined} topo */
+export function has2DTopo(topo) {
 	return Boolean(
 		topo?.image2D ||
-			topo?.outlines?.length ||
-			topo?.fixPoints?.some((point) => point.position2D) ||
-			topo?.textLabels?.some((label) => label.position2D) ||
-			topo?.routes?.some((route) => hasRouteLine(route, 'points2D'))
+		topo?.outlines?.length ||
+		topo?.fixPoints?.some((point) => point.position2D) ||
+		topo?.textLabels?.some((label) => label.position2D) ||
+		topo?.routes.some((route) => hasRouteLine(route, 'points2D'))
 	);
 }
 
+/** @param {import('@vorstieg/fels-types/types').Route} route
+ * @param {'points2D' | 'points3D'} property */
 function hasRouteLine(route, property) {
 	return Boolean(
-		route?.[property]?.length > 1 ||
-			route?.pitches?.some((pitch) => hasRouteLine(pitch, property)) ||
-			route?.variants?.some((variant) => hasRouteLine(variant, property))
+		route[property] ||
+		route.pitches?.some((pitch) => pitch[property]) ||
+		route.variants?.some((variant) => variant[property])
 	);
 }
 
-function hasRouteProtection(route, topo) {
-	return Boolean(
-		route?.protection ||
-			route?.bolts ||
-			route?.boltAmount ||
-			route?.fixPoints?.length ||
-			topo?.fixPoints?.some((point) => route?.fixPoints?.includes(point.id))
-	);
-}
-
-function routeNeedsProtection(route) {
-	const types = Array.isArray(route?.type) ? route.type : [route?.type];
-	return types.some((type) => protectedRouteTypes.has(type));
-}
-
-function target(cragPath, sectorId = null) {
-	return { cragPath, sectorId: sectorId || null };
-}
-
+/** @param {import('$lib/types/application').ImprovementTask} rule
+ * @param {string} cragPath
+ * @param {string | null} [sectorId]
+ * @returns {import('$lib/types/application').ImprovementIssue} */
 function issue(rule, cragPath, sectorId = null) {
-	return {
-		rule,
-		copyKey: `validation.rules.${rule}`,
-		task: rule,
-		target: target(cragPath, sectorId)
-	};
+	return { rule, copyKey: `validation.rules.${rule}`, task: rule, target: { cragPath, sectorId } };
 }
 
-/**
- * Returns the one most useful improvement for a crag detail page.
- * Sectors and routes are deliberately inspected only when they exist.
- */
+/** Suggest an improvement for optional content in existing published entries.
+ * @param {{crag: import('@vorstieg/fels-types/types').FelsEntry | null,
+ * current?: import('@vorstieg/fels-types/types').FelsEntry | null,
+ * sectors?: import('$lib/types/files').FelsLocation[],
+ * access?: import('$lib/types/application').AccessCollection | null,
+ * topo?: import('@vorstieg/fels-types/types').FelsTopoDocument | null,
+ * sectorTopos?: import('$lib/types/application').SectorTopo[],
+ * has3DTopo?: boolean, has2DTopo?: boolean, images?: string[], cragPath: string, sectorId?: string | null}} input */
 export function getCragValidationIssue({
 	crag,
-	current = crag,
+	sectors = [],
 	access,
 	topo,
 	sectorTopos = [],
@@ -103,71 +54,53 @@ export function getCragValidationIssue({
 	cragPath,
 	sectorId = null
 }) {
-	const cragProperties = crag?.properties || crag || {};
-	const currentProperties = current?.properties || current || {};
-	const sectors = cragProperties.sectors || [];
-
-	if (!hasAccessInformation(access)) return issue('access', cragPath);
-
-	const hasDescription = [
-		cragProperties.description_de,
-		cragProperties.description_en,
-		cragProperties.description
-	].some(hasText);
-	const type = cragProperties.type;
+	if (!access?.features.length) return issue('access', cragPath);
+	if (!crag) return null;
 	if (
-		!hasDescription ||
-		!(Array.isArray(type) ? type.length : hasText(type)) ||
-		!hasValidGeometry(crag?.geometry)
-	) {
+		![crag.properties.description_de, crag.properties.description_en].some(hasText) ||
+		!crag.properties.type?.length
+	)
 		return issue('core', cragPath);
-	}
-
 	const topoEntries = [
 		{ sectorId, topo, has3DTopo, has2DTopo: currentHas2DTopo ?? has2DTopo(topo) },
 		...sectorTopos.map((entry) => ({
-			sectorId: entry.sectorId,
-			topo: entry.topo,
-			has3DTopo: entry.has3DTopo,
+			...entry,
 			has2DTopo: entry.has2DTopo ?? has2DTopo(entry.topo)
 		}))
 	];
-	const uniqueTopos = topoEntries.filter((entry, index, entries) =>
-		entry.sectorId
-			? entries.findIndex((candidate) => candidate.sectorId === entry.sectorId) === index
-			: index === 0
+	const uniqueTopos = topoEntries.filter(
+		(entry, index, entries) =>
+			entries.findIndex((candidate) => candidate.sectorId === entry.sectorId) === index
 	);
-
 	if (
-		(sectorId || sectors.length > 0) &&
+		(sectorId || sectors.length) &&
 		!uniqueTopos.some((entry) => entry.has2DTopo || entry.has3DTopo)
-	) {
-		return issue('topo', cragPath, sectorId || sectors.find((sector) => sector?.id)?.id);
-	}
-
+	)
+		return issue('topo', cragPath, sectorId ?? sectors[0]?.entry.properties.id);
 	for (const entry of uniqueTopos) {
-		for (const route of entry.topo?.routes || []) {
+		for (const route of entry.topo?.routes ?? []) {
 			if (
 				!hasText(route.name) ||
-				!hasText(route.grade?.standardizedValue || route.grade?.french || route.grade?.value || route.grade?.display || route.grade) ||
-				(!hasRouteLine(route, 'points2D') && !hasRouteLine(route, 'points')) ||
-				(routeNeedsProtection(route) && !hasRouteProtection(route, entry.topo))
-			) {
+				!route.grade?.standardizedValue ||
+				(!hasRouteLine(route, 'points2D') && !hasRouteLine(route, 'points3D')) ||
+				(route.type &&
+					protectedRouteTypes.has(route.type) &&
+					!route.boltAmount &&
+					!route.fixPoints?.length)
+			)
 				return issue('routes', cragPath, entry.sectorId);
-			}
 		}
 	}
-
-	const hasVisualSubject = uniqueTopos.some(
-		(entry) => entry.has2DTopo || entry.has3DTopo || entry.topo?.routes?.length > 0
-	);
-	if (hasVisualSubject && !images.length && !currentProperties.previewImage) {
+	if (
+		!images.length &&
+		uniqueTopos.some((entry) => entry.has2DTopo || entry.has3DTopo || entry.topo?.routes.length)
+	)
 		return issue('visual', cragPath, sectorId);
-	}
-
 	return null;
 }
 
+/** @param {string} baseUrl
+ * @param {{cragPath: string, sectorId?: string | null, task: import('$lib/types/application').ImprovementTask, returnTo: string}} parameters */
 export function buildFelsstudioUrl(baseUrl, { cragPath, sectorId, task, returnTo }) {
 	if (!baseUrl) return null;
 	const url = new URL(baseUrl);

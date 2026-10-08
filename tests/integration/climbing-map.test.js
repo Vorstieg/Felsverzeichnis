@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/sv
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { goto } from '$app/navigation';
 import ClimbingMap from '$lib/components/ClimbingMap.svelte';
+import { createExpression, latest } from '@maplibre/maplibre-gl-style-spec';
 
 const mapState = vi.hoisted(() => ({ instance: null }));
 
@@ -109,9 +110,25 @@ vi.mock('maplibre-gl', () => {
 
 const locations = [
 	{
-		type: 'Feature',
-		geometry: { type: 'Point', coordinates: [16, 48] },
-		properties: { path: 'areas/alpine-crag', type: 'sports-climbing' }
+		path: 'areas/alpine-crag',
+		entry: {
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: [16, 48] },
+			properties: {
+				id: 'alpine-crag',
+				kind: 'crag',
+				name: 'Alpine Crag',
+				type: ['sports-climbing']
+			}
+		}
+	},
+	{
+		path: 'areas/alpine-crag/north',
+		entry: {
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: [16.01, 48.01] },
+			properties: { id: 'north', kind: 'sector', name: 'North' }
+		}
 	}
 ];
 
@@ -125,7 +142,7 @@ describe('ClimbingMap', () => {
 	}
 
 	it('initializes MapLibre with the requested camera target', async () => {
-		const map = await renderMap({ cameraTarget: { center: [10, 20], zoom: 12 } });
+		const map = await renderMap({ cameraTarget: { type: 'center', center: [10, 20], zoom: 12 } });
 
 		expect(map.options.center).toEqual([10, 20]);
 		expect(map.options.zoom).toBe(12);
@@ -142,13 +159,25 @@ describe('ClimbingMap', () => {
 		};
 		const topoPath = {
 			type: 'Feature',
-			geometry: { type: 'LineString', coordinates: [[16, 48], [16.01, 48.01]] },
+			geometry: {
+				type: 'LineString',
+				coordinates: [
+					[16, 48],
+					[16.01, 48.01]
+				]
+			},
 			properties: { role: 'approach' }
 		};
 		const accessFeatures = [
 			{
 				type: 'Feature',
-				geometry: { type: 'LineString', coordinates: [[16, 48], [16.02, 48.02]] },
+				geometry: {
+					type: 'LineString',
+					coordinates: [
+						[16, 48],
+						[16.02, 48.02]
+					]
+				},
 				properties: { kind: 'approach' }
 			},
 			{
@@ -166,7 +195,7 @@ describe('ClimbingMap', () => {
 			});
 			await map.handlers.get('load')();
 
-			expect(map.getSource('places').data.features).toHaveLength(1);
+			expect(map.getSource('places').data.features).toHaveLength(2);
 			expect(map.getSource('topo-paths').data.features).toEqual([topoPath]);
 			expect(map.getSource('access').data.features).toEqual(accessFeatures);
 			expect(map.getLayer('places-dots')).toBeTruthy();
@@ -174,6 +203,65 @@ describe('ClimbingMap', () => {
 			expect(map.getLayer('topo-paths')).toBeTruthy();
 			expect(map.getLayer('access-lines')).toBeTruthy();
 			expect(map.getLayer('access-points')).toBeTruthy();
+
+			const placesFilter = createExpression(map.getLayer('places').filter, { type: 'boolean' });
+			expect(placesFilter.result).toBe('success');
+			const matchesPlace = (zoom, type, kind) =>
+				placesFilter.value.evaluateWithoutErrorHandling({ zoom }, { type, properties: { kind } });
+			expect(matchesPlace(15, 'Point', 'sector')).toBe(false);
+			expect(matchesPlace(16, 'Point', 'sector')).toBe(true);
+			expect(matchesPlace(18, 'Point', 'sector')).toBe(true);
+			expect(matchesPlace(16, 'Polygon', 'sector')).toBe(false);
+			expect(matchesPlace(14, 'Point', 'crag')).toBe(true);
+
+			map.setZoom(16);
+			map.handlers.get('click:"places"')({
+				features: [{ properties: { filePath: 'areas/alpine-crag/north' } }]
+			});
+			expect(goto).toHaveBeenCalledWith('/map/crag/areas/alpine-crag/north');
+
+			const evaluateIcon = (expression, properties) => {
+				const compiled = createExpression(expression, latest.layout_symbol['icon-image']);
+				expect(compiled.result).toBe('success');
+				return compiled.value.evaluateWithoutErrorHandling(
+					{ zoom: 14 },
+					{ type: 'Point', properties },
+					{},
+					undefined,
+					[...map.images.keys()]
+				);
+			};
+			const iconExpression = map.getLayer('places').layout['icon-image'];
+			expect(evaluateIcon(iconExpression, { type: ['sports-climbing'] }).name).toBe(
+				'sports-climbing'
+			);
+			expect(evaluateIcon(iconExpression, { type: ['multi-pitch', 'sports-climbing'] }).name).toBe(
+				'multi-pitch'
+			);
+			expect(evaluateIcon(iconExpression, { type: [] })).toBeNull();
+			expect(evaluateIcon(iconExpression, { kind: 'area' })).toBeNull();
+			const resetExpression = map.layoutCalls.findLast((call) => call[1] === 'icon-image')[2];
+			expect(evaluateIcon(resetExpression, { type: ['sports-climbing'] }).name).toBe(
+				'sports-climbing'
+			);
+
+			map.setZoom(8);
+			map.handlers.get('click:"places-dots"')({
+				features: [{ properties: { filePath: 'areas/alpine-crag' } }]
+			});
+			const selectedExpression = map.layoutCalls.findLast((call) => call[1] === 'icon-image')[2];
+			expect(
+				evaluateIcon(selectedExpression, {
+					type: ['sports-climbing'],
+					filePath: 'areas/alpine-crag'
+				}).name
+			).toBe('selected-marker');
+			expect(
+				evaluateIcon(selectedExpression, {
+					type: ['sports-climbing'],
+					filePath: 'areas/other-crag'
+				}).name
+			).toBe('sports-climbing');
 		} finally {
 			globalThis.Image = originalImage;
 		}
@@ -191,7 +279,9 @@ describe('ClimbingMap', () => {
 		const lowZoomClick = map.handlers.get('click:"places-dots"');
 		const highZoomClick = map.handlers.get('click:"places"');
 		const event = {
-			features: [{ properties: { path: 'areas/alpine-crag' }, geometry: { coordinates: [16, 48] } }]
+			features: [
+				{ properties: { filePath: 'areas/alpine-crag' }, geometry: { coordinates: [16, 48] } }
+			]
 		};
 
 		map.setZoom(8);
@@ -204,11 +294,31 @@ describe('ClimbingMap', () => {
 		expect(goto).toHaveBeenCalledWith('/map/crag/areas/alpine-crag');
 	});
 
+	it('waits for navigation before the camera can update the URL hash', async () => {
+		const map = await renderMap();
+		let finishNavigation;
+		vi.mocked(goto).mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					finishNavigation = resolve;
+				})
+		);
+
+		map.handlers.get('click:"places-dots"')({
+			features: [{ properties: { filePath: 'areas/alpine-crag' } }]
+		});
+		expect(goto).toHaveBeenCalledWith('/map/crag/areas/alpine-crag');
+		expect(map.fly).toBeUndefined();
+
+		finishNavigation();
+		await waitFor(() => expect(map.fly).toMatchObject({ center: [16, 48], zoom: 16 }));
+	});
+
 	it('navigates from sector layers and focuses the map on a custom event', async () => {
 		const map = await renderMap();
 		const sectorClick = map.handlers.get('click:["sector-fill","sector-line","sector-labels"]');
 		sectorClick({
-			features: [{ properties: { path: 'areas/alpine-crag/north' } }],
+			features: [{ properties: { filePath: 'areas/alpine-crag/north' } }],
 			lngLat: { toArray: () => [16.01, 48.01] }
 		});
 		expect(goto).toHaveBeenCalledWith('/map/crag/areas/alpine-crag/north');

@@ -1,36 +1,45 @@
-<script>
+<script lang="ts">
 	import { base } from '$app/paths';
 	import { _ } from 'svelte-i18n';
-	import { normalizeTypes, getTypeBadgeClass } from '$lib/assets/js/route-types.js';
+	import { getTypeBadgeClass } from '$lib/assets/js/route-types.js';
 
-	/** @type {{crag: any}} */
-	let { crag } = $props();
+	let { crag }: { crag: import('$lib/types/files').FelsLocation } = $props();
 
-	let types = $derived(normalizeTypes(crag.properties.type));
-	let parts = $derived((crag.properties.path || '').split('/').filter(Boolean));
+	let types = $derived(crag.entry.properties.type ?? []);
+	let parts = $derived((crag.path || '').split('/').filter(Boolean));
 </script>
 
-<a href="{base}/map/crag/{crag.properties.path}" class="flex gap-3 sm:gap-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors group relative w-full items-center">
-	<div class="flex flex-col justify-between flex-1 min-w-0 h-full">
+<a
+	href="{base}/map/crag/{crag.path}"
+	class="group relative flex w-full items-center gap-3 border-b border-gray-100 py-3 transition-colors hover:bg-gray-50 sm:gap-4"
+>
+	<div class="flex h-full min-w-0 flex-1 flex-col justify-between">
 		<div>
-			<div class="flex flex-wrap items-center text-[9px] sm:text-[10px] mb-1 font-medium tracking-wide">
+			<div
+				class="mb-1 flex flex-wrap items-center text-[9px] font-medium tracking-wide sm:text-[10px]"
+			>
 				{#each parts as part, i}
-					{@const subpath = parts.slice(0, i + 1).join('/')}
-					<span class="text-slate-500 transition-colors px-0.5 -mx-0.5 rounded">
+					<span class="-mx-0.5 rounded px-0.5 text-slate-500 transition-colors">
 						{part}
 					</span>
 					{#if i < parts.length - 1}
-						<i class="fa-solid fa-chevron-right text-[7px] mx-1 text-slate-300"></i>
+						<i class="fa-solid fa-chevron-right mx-1 text-[7px] text-slate-300"></i>
 					{/if}
 				{/each}
 			</div>
-			<h3 class="font-bold text-base sm:text-lg text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-				{crag.properties.name}
+			<h3
+				class="truncate text-base font-bold text-slate-900 transition-colors group-hover:text-blue-600 sm:text-lg"
+			>
+				{crag.entry.properties.name}
 			</h3>
 		</div>
-		<div class="flex flex-wrap gap-1.5 mt-2">
+		<div class="mt-2 flex flex-wrap gap-1.5">
 			{#each types as type}
-				<span class="text-[9px] sm:text-[10px] px-2 py-0.5 rounded {getTypeBadgeClass(type)} font-semibold uppercase tracking-wide">
+				<span
+					class="rounded px-2 py-0.5 text-[9px] sm:text-[10px] {getTypeBadgeClass(
+						type
+					)} font-semibold tracking-wide uppercase"
+				>
 					{$_('types.' + type)}
 				</span>
 			{/each}

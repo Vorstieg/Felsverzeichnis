@@ -7,7 +7,7 @@
  * @returns {boolean} True if touch is supported
  */
 export function isTouchDevice() {
-	return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+	return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
 /**
@@ -30,7 +30,7 @@ export function getHitAreaSize(baseSize) {
 
 /**
  * Trigger haptic feedback if available (mobile devices)
- * @param {string} type - 'light', 'medium', 'heavy', 'selection', 'success', 'warning', 'error'
+ * @param {'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error'} type - 'light', 'medium', 'heavy', 'selection', 'success', 'warning', 'error'
  */
 export function vibrateOnAction(type = 'light') {
 	if (!navigator.vibrate) return;
@@ -53,7 +53,7 @@ export function vibrateOnAction(type = 'light') {
  * Extract touch point from touch event (similar to mouse event handling)
  * @param {TouchEvent} event - Touch event
  * @param {SVGSVGElement} svgElement - SVG element for coordinate transformation
- * @param {object} transform - D3 zoom transform {x, y, k}
+ * @param {Pick<import("d3-zoom").ZoomTransform, "x" | "y" | "k">} transform - D3 zoom transform {x, y, k}
  * @param {number} baseWidth - SVG base width
  * @param {number} baseHeight - SVG base height
  * @returns {{x: number, y: number} | null} Normalized point (0-1 range) or null
@@ -66,7 +66,9 @@ export function getTouchPoint(event, svgElement, transform, baseWidth, baseHeigh
 	pt.x = touch.clientX;
 	pt.y = touch.clientY;
 
-	const svgP = pt.matrixTransform(svgElement.getScreenCTM().inverse());
+	const matrix = svgElement.getScreenCTM();
+	if (!matrix) return null;
+	const svgP = pt.matrixTransform(matrix.inverse());
 
 	// Apply inverse D3 zoom transform to get coordinates in base space
 	const transformedX = (svgP.x - transform.x) / transform.k;
@@ -81,18 +83,20 @@ export function getTouchPoint(event, svgElement, transform, baseWidth, baseHeigh
 
 /**
  * Detect long press gesture
- * @param {Function} callback - Function to call on long press
+ * @param {(event: TouchEvent | MouseEvent) => void} callback - Function to call on long press
  * @param {number} duration - Duration in ms (default 500ms)
- * @returns {{start: Function, cancel: Function}} Handler functions
  */
 export function createLongPressDetector(callback, duration = 500) {
+	/** @type {ReturnType<typeof setTimeout> | null} */
 	let timer = null;
+	/** @type {{x: number, y: number} | null} */
 	let startPoint = null;
 	const moveThreshold = 10; // pixels
 
 	return {
+		/** @param {TouchEvent | MouseEvent} event */
 		start(event) {
-			const touch = event.touches ? event.touches[0] : event;
+			const touch = 'touches' in event ? event.touches[0] : event;
 			startPoint = { x: touch.clientX, y: touch.clientY };
 
 			timer = setTimeout(() => {
@@ -101,10 +105,11 @@ export function createLongPressDetector(callback, duration = 500) {
 			}, duration);
 		},
 
+		/** @param {TouchEvent | MouseEvent} event */
 		move(event) {
 			if (!timer || !startPoint) return;
 
-			const touch = event.touches ? event.touches[0] : event;
+			const touch = 'touches' in event ? event.touches[0] : event;
 			const dx = touch.clientX - startPoint.x;
 			const dy = touch.clientY - startPoint.y;
 			const distance = Math.sqrt(dx * dx + dy * dy);

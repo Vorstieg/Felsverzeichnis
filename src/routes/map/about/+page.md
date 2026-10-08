@@ -20,7 +20,6 @@ der zeigt, wie du umweltfreundlich und ganz ohne Auto zu den besten Kletterspots
 
 Viel Spaß beim Klettern und jederzeit sichere Touren!
 
-
 # Impressum
 
 ### Herausgeber:

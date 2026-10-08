@@ -1,11 +1,19 @@
-<script>
+<script lang="ts">
 	import { tick } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { downloadRouteGpx, getTourTracks } from '$lib/assets/js/route-gpx.js';
 
-	let { route, tracks = [], fallbackAccessTracks = [] } = $props();
-	let button = $state();
-	let menu = $state();
+	let {
+		route,
+		tracks = [],
+		fallbackAccessTracks = []
+	}: {
+		route: Pick<import('@vorstieg/fels-types/types').Route, 'id' | 'name'>;
+		tracks?: import('$lib/types/application').GpxTrack[];
+		fallbackAccessTracks?: import('$lib/types/application').GpxTrack[];
+	} = $props();
+	let button = $state<HTMLButtonElement>();
+	let menu = $state<HTMLDivElement>();
 	let open = $state(false);
 	let menuTop = $state(0);
 	let menuLeft = $state(0);
@@ -17,7 +25,7 @@
 	let descentOptions = $derived(descents.length ? descents : [null]);
 	let optionCount = $derived(approachOptions.length * descentOptions.length);
 
-	function portal(node) {
+	function portal(node: HTMLElement) {
 		document.body.appendChild(node);
 		return { destroy: () => node.remove() };
 	}
@@ -41,7 +49,7 @@
 		if (restoreFocus) button?.focus();
 	}
 
-	function download(approachIndex, descentIndex) {
+	function download(approachIndex: number, descentIndex: number) {
 		const selectedTracks = getTourTracks(tracks, fallbackAccessTracks, approachIndex, descentIndex);
 		const suffix = optionCount > 1 ? `-tour-${approachIndex + 1}-${descentIndex + 1}` : '-tour';
 		downloadRouteGpx(route, selectedTracks, suffix, {
@@ -68,10 +76,11 @@
 
 	$effect(() => {
 		if (!open) return;
-		const handlePointerDown = (event) => {
+		const handlePointerDown = (event: PointerEvent) => {
+			if (!(event.target instanceof Node)) return;
 			if (!button?.contains(event.target) && !menu?.contains(event.target)) closeMenu();
 		};
-		const handleKeydown = (event) => {
+		const handleKeydown = (event: KeyboardEvent) => {
 			if (event.key === 'Escape') {
 				event.preventDefault();
 				closeMenu(true);
@@ -112,7 +121,7 @@
 			class="fixed z-[30000] max-h-[min(20rem,calc(100vh-1rem))] overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 text-slate-800 shadow-xl"
 			style="top: {menuTop}px; left: {menuLeft}px; width: {menuWidth}px;"
 		>
-			<p class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+			<p class="px-3 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
 				{$_('ui.choose_tour_gpx')}
 			</p>
 			{#each approachOptions as approach, approachIndex}

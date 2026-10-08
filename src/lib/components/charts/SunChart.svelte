@@ -1,8 +1,8 @@
 <script lang="ts">
-    import Chart from 'chart.js/auto';
-    import { _ } from 'svelte-i18n';
+	import Chart from 'chart.js/auto';
+	import { _ } from 'svelte-i18n';
 
-	let { data } = $props();
+	let { data }: { data: import('$lib/types/application').SunInfo['chartData'] } = $props();
 	let canvas: HTMLCanvasElement;
 
 	let t_sun_altitude = $derived($_('charts.sun_altitude'));
@@ -20,7 +20,7 @@
 		};
 	});
 
-	function initSunChart(node: HTMLCanvasElement, config: any) {
+	function initSunChart(node: HTMLCanvasElement, config: typeof chartConfig) {
 		if (!config || !config.data) return;
 		const { data, translations } = config;
 
@@ -33,13 +33,15 @@
 			type: 'bar',
 			data: {
 				labels: [...data.labels],
-				datasets: [{
-					label: translations.sun_altitude + ' (°)',
-					data: [...data.altitudes],
-					backgroundColor: [...data.colors],
-					borderRadius: 4,
-					borderSkipped: false
-				}]
+				datasets: [
+					{
+						label: translations.sun_altitude + ' (°)',
+						data: [...data.altitudes],
+						backgroundColor: [...data.colors],
+						borderRadius: 4,
+						borderSkipped: false
+					}
+				]
 			},
 			options: {
 				responsive: true,
@@ -48,10 +50,10 @@
 					legend: { display: false },
 					tooltip: {
 						callbacks: {
-							label: (ctx: any) => {
+							label: (ctx) => {
 								const key = conditions[ctx.dataIndex];
 								const label = translations.conditions[key] || key;
-								return `${ctx.raw.toFixed(1)}° - ${label}`;
+								return `${ctx.parsed.y.toFixed(1)}° - ${label}`;
 							}
 						}
 					}
@@ -73,7 +75,7 @@
 		});
 
 		return {
-			update(newConfig: any) {
+			update(newConfig: typeof chartConfig) {
 				if (!newConfig || !newConfig.data) return;
 				const { data, translations } = newConfig;
 
@@ -84,10 +86,10 @@
 				chart.data.datasets[0].label = translations.sun_altitude + ' (°)';
 
 				if (chart.options.plugins?.tooltip?.callbacks) {
-					chart.options.plugins.tooltip.callbacks.label = (ctx: any) => {
+					chart.options.plugins.tooltip.callbacks.label = (ctx) => {
 						const key = conditions[ctx.dataIndex];
 						const label = translations.conditions[key] || key;
-						return `${ctx.raw.toFixed(1)}° - ${label}`;
+						return `${ctx.parsed.y.toFixed(1)}° - ${label}`;
 					};
 				}
 
@@ -105,14 +107,14 @@
 </div>
 
 <style>
-    .chart-wrapper {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-    }
-    canvas {
-        width: 100%;
-        height: 100%;
-    }
+	.chart-wrapper {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+	}
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
 </style>

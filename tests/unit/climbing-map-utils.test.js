@@ -7,26 +7,25 @@ import {
 } from '$lib/assets/js/climbing-map-utils.js';
 
 describe('climbing map utilities', () => {
-	it('normalizes array and comma-separated place types without mutating features', () => {
-		const feature = { properties: { path: 'a', type: ['sports-climbing', 'trad'] } };
-		const commaFeature = { properties: { type: 'bus,transit' } };
-		const result = createPlacesData([feature, commaFeature, { properties: { type: '' } }]);
-
+	it('uses canonical type arrays and keeps file locations outside entries', () => {
+		const entry = {
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: [16, 48] },
+			properties: { id: 'a', name: 'Crag', kind: 'crag', type: ['sports-climbing', 'trad'] }
+		};
+		const result = createPlacesData([{ entry, path: 'a' }]);
 		expect(result.type).toBe('FeatureCollection');
-		expect(result.features.map((item) => item.properties.type)).toEqual([
-			'sports-climbing',
-			'bus',
-			null
-		]);
-		expect(feature.properties.type).toEqual(['sports-climbing', 'trad']);
+		expect(result.features[0].properties.type).toEqual(['sports-climbing', 'trad']);
+		expect(result.features[0].properties.filePath).toBe('a');
+		expect(entry.properties).not.toHaveProperty('filePath');
 	});
 
-	it('returns an empty collection for non-array locations', () => {
-		expect(createPlacesData(null)).toEqual({ type: 'FeatureCollection', features: [] });
+	it('returns an empty collection without locations', () => {
+		expect(createPlacesData()).toEqual({ type: 'FeatureCollection', features: [] });
 	});
 
-	it('keeps only valid LineString topo paths with at least two coordinates', () => {
-		const valid = {
+	it('passes canonical LineString paths to the map', () => {
+		const path = {
 			type: 'Feature',
 			geometry: {
 				type: 'LineString',
@@ -34,16 +33,11 @@ describe('climbing map utilities', () => {
 					[1, 2],
 					[3, 4]
 				]
-			}
+			},
+			properties: { role: 'main' }
 		};
-		const invalid = [
-			{ type: 'Feature', geometry: { type: 'Point', coordinates: [1, 2] } },
-			{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[1, 2]] } },
-			null
-		];
-
-		expect(createTopoPathsData([valid, ...invalid]).features).toEqual([valid]);
-		expect(createTopoPathsData(undefined).features).toEqual([]);
+		expect(createTopoPathsData([path]).features).toEqual([path]);
+		expect(createTopoPathsData().features).toEqual([]);
 	});
 
 	it.each([
@@ -67,12 +61,7 @@ describe('climbing map utilities', () => {
 		const expression = selectionExpression('areas%2Falpine-crag');
 		expect(expression).toEqual([
 			'==',
-			['index-of', ['concat', ['get', 'path'], '/'], 'areas/alpine-crag/'],
-			0
-		]);
-		expect(selectionExpression('bad%')).toEqual([
-			'==',
-			['index-of', ['concat', ['get', 'path'], '/'], 'bad%/'],
+			['index-of', ['concat', ['get', 'filePath'], '/'], 'areas/alpine-crag/'],
 			0
 		]);
 		expect(selectionExpression('')).toBeNull();

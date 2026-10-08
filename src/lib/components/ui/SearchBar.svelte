@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { base } from '$app/paths';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
@@ -7,8 +7,19 @@
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import { getGeometryBounds, getBoundsCenter } from '$lib/assets/js/map-camera.js';
 
-	/** @type {{actionBase?: string, searchTerm?: string, showClear?: boolean, onClear?: function, containerClass?: string}} */
-	let { actionBase = '/map', searchTerm = $bindable(''), showClear = false, onClear = () => {}, containerClass = "mx-4 sm:mx-8 sm:max-w-120" } = $props();
+	let {
+		actionBase = '/map',
+		searchTerm = $bindable(''),
+		showClear = false,
+		onClear = () => {},
+		containerClass = 'mx-4 sm:mx-8 sm:max-w-120'
+	}: {
+		actionBase?: string;
+		searchTerm?: string;
+		showClear?: boolean;
+		onClear?: () => void;
+		containerClass?: string;
+	} = $props();
 
 	let isFocused = $state(false);
 	let dropdownHeight = $state(0);
@@ -16,9 +27,9 @@
 	let suggestions = $derived.by(() => {
 		if (!searchTerm || searchTerm.length < 3) return [];
 		const lowerSearch = searchTerm.toLowerCase();
-		const locations = $page.data.allLocations || $page.data.locations || $page.data.crags || [];
+		const locations = $page.data.allLocations ?? $page.data.locations ?? [];
 		return locations
-			.filter(loc => loc.properties?.name?.toLowerCase().includes(lowerSearch))
+			.filter((loc) => loc.entry.properties?.name?.toLowerCase().includes(lowerSearch))
 			.slice(0, 3);
 	});
 
@@ -31,10 +42,10 @@
 	});
 
 	$effect(() => {
-		$searchSuggestionsActive = (isFocused && suggestions.length > 0) ? dropdownHeight : 0;
+		$searchSuggestionsActive = isFocused && suggestions.length > 0 ? dropdownHeight : 0;
 	});
 
-	function handleKeydown(e) {
+	function handleKeydown(e: KeyboardEvent) {
 		if (!isFocused || suggestions.length === 0) return;
 
 		if (e.key === 'ArrowDown') {
@@ -48,7 +59,7 @@
 				e.preventDefault();
 				const selected = suggestions[activeIndex];
 				goto(cragUrl(selected));
-				const center = getBoundsCenter(getGeometryBounds(selected?.geometry));
+				const center = getBoundsCenter(getGeometryBounds(selected?.entry.geometry));
 				if (center) {
 					window.dispatchEvent(
 						new CustomEvent('crag-review:focus-map-target', {
@@ -62,35 +73,46 @@
 		}
 	}
 
-	function cragUrl(location) {
-		const center = getBoundsCenter(getGeometryBounds(location?.geometry));
+	function cragUrl(location: import('$lib/types/files').FelsLocation) {
+		const center = getBoundsCenter(getGeometryBounds(location?.entry.geometry));
 		const hash = center ? `#16/${center[1]}/${center[0]}` : '';
-		return `${base}/map/crag/${location.properties.path}${hash}`;
+		return `${base}/map/crag/${location.path}${hash}`;
 	}
 </script>
 
 <form action="{actionBase}/{searchTerm}" class="relative">
-	<div class="flex items-stretch shadow-md rounded-full bg-white relative z-[2010] {containerClass} border-3 border-white focus-within:border-ink transition-colors overflow-hidden">
-		<a href="{base}/map/about" class="flex items-center justify-center pl-4 shrink-0 text-slate-800 hover:text-ink transition-colors cursor-pointer" title="Info & Impressum">
-			<Logo class="w-6 h-6" />
+	<div
+		class="relative z-[2010] flex items-stretch rounded-full bg-white shadow-md {containerClass} focus-within:border-ink overflow-hidden border-3 border-white transition-colors"
+	>
+		<a
+			href="{base}/map/about"
+			class="hover:text-ink flex shrink-0 cursor-pointer items-center justify-center pl-4 text-slate-800 transition-colors"
+			title="Info & Impressum"
+		>
+			<Logo class="h-6 w-6" />
 		</a>
-		<input 
+		<input
 			bind:value={searchTerm}
-			onfocus={() => isFocused = true}
-			onblur={() => setTimeout(() => isFocused = false, 200)}
+			onfocus={() => (isFocused = true)}
+			onblur={() => setTimeout(() => (isFocused = false), 200)}
 			onkeydown={handleKeydown}
-			class="block py-2.5 pl-3 pr-3 w-full z-20 text-base text-slate-800 bg-transparent outline-none focus:outline-none focus:ring-0 border-0"
-			placeholder={$_('page.list.search_placeholder')} 
+			class="z-20 block w-full border-0 bg-transparent py-2.5 pr-3 pl-3 text-base text-slate-800 outline-none focus:ring-0 focus:outline-none"
+			placeholder={$_('page.list.search_placeholder')}
 			autocomplete="off"
 		/>
-		<button type="submit"
-			class="w-12 bg-white text-sm font-medium hover:bg-ink hover:text-white transition-colors shrink-0 flex items-center justify-center outline-none focus:outline-none">
+		<button
+			type="submit"
+			class="hover:bg-ink flex w-12 shrink-0 items-center justify-center bg-white text-sm font-medium transition-colors outline-none hover:text-white focus:outline-none"
+		>
 			<i class="fa-solid fa-magnifying-glass"></i>
 			<span class="sr-only">Search</span>
 		</button>
 		{#if showClear}
-			<button type="button" onclick={onClear}
-				class="w-12 bg-white text-sm font-medium hover:bg-ink hover:text-white transition-colors shrink-0 flex items-center justify-center outline-none focus:outline-none">
+			<button
+				type="button"
+				onclick={onClear}
+				class="hover:bg-ink flex w-12 shrink-0 items-center justify-center bg-white text-sm font-medium transition-colors outline-none hover:text-white focus:outline-none"
+			>
 				<i class="fa-solid fa-xmark"></i>
 				<span class="sr-only">Clear</span>
 			</button>
@@ -98,13 +120,17 @@
 	</div>
 
 	{#if isFocused && suggestions.length > 0}
-		<div bind:clientHeight={dropdownHeight} class="absolute top-full mt-2 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden z-[2000] {containerClass} transition-all duration-300" style="left: 0; right: 0;">
+		<div
+			bind:clientHeight={dropdownHeight}
+			class="absolute top-full z-[2000] mt-2 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl {containerClass} transition-all duration-300"
+			style="left: 0; right: 0;"
+		>
 			{#each suggestions as suggestion, i}
-				<a 
-					 href={cragUrl(suggestion)}
-					 onmousedown={(e) => e.preventDefault()}
-					 onclick={() => {
-						const center = getBoundsCenter(getGeometryBounds(suggestion?.geometry));
+				<a
+					href={cragUrl(suggestion)}
+					onmousedown={(e) => e.preventDefault()}
+					onclick={() => {
+						const center = getBoundsCenter(getGeometryBounds(suggestion.entry.geometry));
 						if (center) {
 							window.dispatchEvent(
 								new CustomEvent('crag-review:focus-map-target', {
@@ -114,14 +140,21 @@
 						}
 						isFocused = false;
 						searchTerm = '';
-					 }}
-					class="block px-6 py-3.5 text-slate-800 text-sm font-medium border-b border-slate-100 last:border-b-0 no-underline transition-colors {i === activeIndex ? 'bg-ink text-white' : 'hover:bg-gray-50'}"
+					}}
+					class="block border-b border-slate-100 px-6 py-3.5 text-sm font-medium text-slate-800 no-underline transition-colors last:border-b-0 {i ===
+					activeIndex
+						? 'bg-ink text-white'
+						: 'hover:bg-gray-50'}"
 				>
 					<div class="flex items-center justify-between">
-						<span>{suggestion.properties.name}</span>
-						{#if suggestion.properties.type}
-							<span class="text-xs {i === activeIndex ? 'text-white/80' : 'text-slate-400'} font-normal uppercase tracking-wider">
-								{$_('tags.' + (Array.isArray(suggestion.properties.type) ? suggestion.properties.type[0] : suggestion.properties.type))}
+						<span>{suggestion.entry.properties.name}</span>
+						{#if suggestion.entry.properties.type?.[0] != null}
+							<span
+								class="text-xs {i === activeIndex
+									? 'text-white/80'
+									: 'text-slate-400'} font-normal tracking-wider uppercase"
+							>
+								{$_('tags.' + suggestion.entry.properties.type[0])}
 							</span>
 						{/if}
 					</div>

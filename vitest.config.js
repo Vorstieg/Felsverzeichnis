@@ -21,7 +21,7 @@ export default defineConfig({
 			reporter: ['text', 'html', 'lcov'],
 			include: [
 				'src/lib/assets/js/climbing-map-utils.js',
-				'src/lib/assets/js/fetchCrags.js',
+				'src/lib/assets/js/fetchCrags.ts',
 				'src/lib/assets/js/grades.js',
 				'src/lib/assets/js/id-utils.js',
 				'src/lib/assets/js/storage-utils.js',

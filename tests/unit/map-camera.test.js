@@ -14,7 +14,8 @@ describe('map camera utilities', () => {
 					[
 						[16.2, 48.3],
 						[16.8, 48.1],
-						[16.5, 48.7]
+						[16.5, 48.7],
+						[16.2, 48.3]
 					]
 				]
 			})
@@ -24,18 +25,19 @@ describe('map camera utilities', () => {
 		]);
 	});
 
-	it('supports multi-geometries and rejects missing or empty coordinates', () => {
+	it('supports canonical multipolygons and absent geometry', () => {
 		expect(
 			getGeometryBounds({
-				type: 'MultiLineString',
+				type: 'MultiPolygon',
 				coordinates: [
 					[
-						[10, 20],
-						[12, 22]
-					],
-					[
-						[8, 24],
-						[14, 18]
+						[
+							[10, 20],
+							[12, 22],
+							[8, 24],
+							[14, 18],
+							[10, 20]
+						]
 					]
 				]
 			})
@@ -44,48 +46,67 @@ describe('map camera utilities', () => {
 			[14, 24]
 		]);
 		expect(getGeometryBounds(null)).toBeNull();
-		expect(getGeometryBounds({ type: 'Point', coordinates: [] })).toBeNull();
-		expect(getGeometryBounds({ type: 'Point', coordinates: ['16', 48] })).toBeNull();
 	});
 
 	it('calculates a bounds center and handles missing bounds', () => {
-		expect(getBoundsCenter([[10, 20], [14, 28]])).toEqual([12, 24]);
-		expect(getBoundsCenter(null)).toBeNull();
-});
-
-	it('returns no camera target when all locations are invalid', () => {
 		expect(
-			createLocationsCameraTarget([
-				{ geometry: null },
-				{ geometry: { type: 'Point', coordinates: [] } }
+			getBoundsCenter([
+				[10, 20],
+				[14, 28]
 			])
-		).toBeNull();
+		).toEqual([12, 24]);
+		expect(getBoundsCenter(null)).toBeNull();
 	});
 
-	it('centers a single valid location at zoom 16', () => {
+	it('returns no camera target without locations', () => {
+		expect(createLocationsCameraTarget([])).toBeNull();
+	});
+
+	it('centers a single location at zoom 16', () => {
 		expect(
 			createLocationsCameraTarget([
-				{ geometry: { type: 'Point', coordinates: [16, 48] } }
+				{
+					path: 'a',
+					entry: {
+						type: 'Feature',
+						properties: { id: 'a', name: 'A', kind: 'crag' },
+						geometry: { type: 'Point', coordinates: [16, 48] }
+					}
+				}
 			])
 		).toEqual({ type: 'center', center: [16, 48], zoom: 16 });
 	});
 
-	it('fits multiple valid locations into padded bounds', () => {
-		expect(
-			createLocationsCameraTarget([
-				{ geometry: { type: 'Point', coordinates: [16, 48] } },
-				{
+	it('fits multiple locations into padded bounds', () => {
+		const locations = [
+			{
+				path: 'a',
+				entry: {
+					type: 'Feature',
+					properties: { id: 'a', name: 'A', kind: 'crag' },
+					geometry: { type: 'Point', coordinates: [16, 48] }
+				}
+			},
+			{
+				path: 'b',
+				entry: {
+					type: 'Feature',
+					properties: { id: 'b', name: 'B', kind: 'area' },
 					geometry: {
-						type: 'LineString',
+						type: 'Polygon',
 						coordinates: [
-							[15, 47],
-							[17, 49]
+							[
+								[15, 47],
+								[17, 47],
+								[17, 49],
+								[15, 47]
+							]
 						]
 					}
-				},
-				{ geometry: { type: 'Point', coordinates: [] } }
-			])
-		).toEqual({
+				}
+			}
+		];
+		expect(createLocationsCameraTarget(locations)).toEqual({
 			type: 'bounds',
 			bounds: [
 				[15, 47],

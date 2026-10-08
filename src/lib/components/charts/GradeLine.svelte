@@ -1,20 +1,29 @@
 <script lang="ts">
+	import type { Route } from '@vorstieg/fels-types/types';
 	import { _ } from 'svelte-i18n';
 
-	let { routes } = $props();
+	let { routes }: { routes: Route[] } = $props();
 
 	let distribution = $derived.by(() => {
-		if (!routes || routes.length === 0) return [];
+		if (routes.length === 0) return [];
 
-		let easy = 0, medium = 0, hard = 0, veryHard = 0;
-		routes.forEach(r => {
-			const g = (r.grade?.standardizedValue || r.grade?.french || r.grade || '');
-			if (typeof g === 'string') {
-				if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5') || g.startsWith('2') || g.startsWith('1')) easy++;
-				else if (g.startsWith('6')) medium++;
-				else if (g.startsWith('7')) hard++;
-				else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
-			}
+		let easy = 0,
+			medium = 0,
+			hard = 0,
+			veryHard = 0;
+		routes.forEach((r) => {
+			const g = r.grade?.standardizedValue ?? '';
+			if (
+				g.startsWith('3') ||
+				g.startsWith('4') ||
+				g.startsWith('5') ||
+				g.startsWith('2') ||
+				g.startsWith('1')
+			)
+				easy++;
+			else if (g.startsWith('6')) medium++;
+			else if (g.startsWith('7')) hard++;
+			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
 		});
 
 		const total = easy + medium + hard + veryHard;
@@ -22,10 +31,25 @@
 
 		return [
 			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-400', label: '< 6a' },
-			{ count: medium, percent: (medium / total) * 100, colorClass: 'bg-yellow-400', label: '6a - 6c+' },
-			{ count: hard, percent: (hard / total) * 100, colorClass: 'bg-orange-500', label: '7a - 7c+' },
-			{ count: veryHard, percent: (veryHard / total) * 100, colorClass: 'bg-fuchsia-500', label: '> 8a' }
-		].filter(b => b.count > 0);
+			{
+				count: medium,
+				percent: (medium / total) * 100,
+				colorClass: 'bg-yellow-400',
+				label: '6a - 6c+'
+			},
+			{
+				count: hard,
+				percent: (hard / total) * 100,
+				colorClass: 'bg-orange-500',
+				label: '7a - 7c+'
+			},
+			{
+				count: veryHard,
+				percent: (veryHard / total) * 100,
+				colorClass: 'bg-fuchsia-500',
+				label: '> 8a'
+			}
+		].filter((b) => b.count > 0);
 	});
 </script>
 

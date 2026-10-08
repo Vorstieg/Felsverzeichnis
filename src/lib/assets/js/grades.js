@@ -1,3 +1,4 @@
+/** @type {Record<string, string>} */
 export const uiaaMap = {
 	'1a': 'I',
 	'2a': 'II',
@@ -27,6 +28,7 @@ export const uiaaMap = {
 	'9a': 'XI+'
 };
 
+/** @type {string[]} */
 export const standardGrades = [];
 for (let i = 1; i <= 9; i++) {
 	for (let x of ['a', 'b', 'c']) {
@@ -36,6 +38,8 @@ for (let i = 1; i <= 9; i++) {
 	}
 }
 
+/** @param {string} grade
+ * @param {string} scale */
 export function getGradeLabel(grade, scale) {
 	if (scale === 'uiaa') {
 		return uiaaMap[grade] || grade;

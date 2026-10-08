@@ -9,13 +9,17 @@ import {
 describe('route GPX export', () => {
 	it('exports only referenced geographic tracks with escaped names and elevation', () => {
 		const route = {
+			id: 'north-south',
 			name: 'North & South',
 			pathRefs: [{ pathId: 'approach', label: 'Walk <in>' }, { pathId: 'missing' }]
 		};
 		const topo = {
+			routes: [],
 			paths: {
+				type: 'FeatureCollection',
 				features: [
 					{
+						type: 'Feature',
 						id: 'approach',
 						geometry: {
 							type: 'LineString',
@@ -26,6 +30,7 @@ describe('route GPX export', () => {
 						}
 					},
 					{
+						type: 'Feature',
 						id: 'other',
 						geometry: {
 							type: 'LineString',
@@ -48,29 +53,9 @@ describe('route GPX export', () => {
 		expect(gpx).not.toContain('lat="49"');
 	});
 
-	it('ignores paths without usable geographic coordinates', () => {
-		const route = { pathRefs: [{ pathId: 'bad' }] };
-		const topo = {
-			paths: {
-				features: [
-					{
-						id: 'bad',
-						geometry: {
-							type: 'LineString',
-							coordinates: [
-								[200, 48],
-								[16, 49]
-							]
-						}
-					}
-				]
-			}
-		};
-		expect(getRouteTracks(topo, route)).toEqual([]);
-	});
-
 	it('keeps approach tracks separate from main route tracks', () => {
 		const route = {
+			id: 'ridge',
 			name: 'Ridge',
 			pathRefs: [
 				{ pathId: 'main', role: 'main' },
@@ -78,9 +63,12 @@ describe('route GPX export', () => {
 			]
 		};
 		const topo = {
+			routes: [],
 			paths: {
+				type: 'FeatureCollection',
 				features: [
 					{
+						type: 'Feature',
 						id: 'main',
 						geometry: {
 							type: 'LineString',
@@ -91,6 +79,7 @@ describe('route GPX export', () => {
 						}
 					},
 					{
+						type: 'Feature',
 						id: 'walk',
 						geometry: {
 							type: 'LineString',
@@ -108,8 +97,10 @@ describe('route GPX export', () => {
 		expect(tracks.filter((track) => track.role === 'approach')).toHaveLength(1);
 
 		const access = {
+			type: 'FeatureCollection',
 			features: [
 				{
+					type: 'Feature',
 					properties: { kind: 'approach', name: 'Path' },
 					geometry: {
 						type: 'LineString',
@@ -119,7 +110,11 @@ describe('route GPX export', () => {
 						]
 					}
 				},
-				{ properties: { kind: 'parking' }, geometry: { type: 'Point', coordinates: [16, 48] } }
+				{
+					type: 'Feature',
+					properties: { kind: 'parking' },
+					geometry: { type: 'Point', coordinates: [16, 48] }
+				}
 			]
 		};
 		expect(getAccessTracks(access)).toHaveLength(1);
@@ -139,7 +134,7 @@ describe('route GPX export', () => {
 		];
 		const selected = getTourTracks(tracks, [], 1, 1);
 		expect(selected.map((track) => track.name)).toEqual(['Approach B', 'Main route', 'Descent B']);
-		const gpx = routeTracksToGpx({ name: 'Tour' }, selected);
+		const gpx = routeTracksToGpx({ id: 'tour', name: 'Tour' }, selected);
 		expect(gpx.match(/<trk>/g)).toHaveLength(3);
 		expect(
 			gpx.match(/<type>approach<\/type>|<type>main<\/type>|<type>descent<\/type>/g)

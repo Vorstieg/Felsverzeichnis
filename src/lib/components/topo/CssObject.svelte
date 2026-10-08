@@ -1,15 +1,27 @@
-<script>
+<script lang="ts">
 	import { T, useThrelte, useTask } from '@threlte/core';
 	import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 	import { Vector3 } from 'three';
 
 	// Use $props() to get pointerEvents and restProps (like position)
-	let { pointerEvents = false, scaleWithZoom = false, referenceDistance = 15, children, ...props } = $props();
+	let {
+		pointerEvents = false,
+		scaleWithZoom = false,
+		referenceDistance = 15,
+		children,
+		...props
+	}: {
+		pointerEvents?: boolean;
+		scaleWithZoom?: boolean;
+		referenceDistance?: number;
+		children?: import('svelte').Snippet;
+		position?: import('@vorstieg/fels-types/types').Point3D;
+	} = $props();
 
-	let element = $state(); // Bind to the wrapper div element
-	let innerElement = $state();
-	let cssObject = $state();
-	
+	let element = $state<HTMLDivElement>(); // Bind to the wrapper div element
+	let innerElement = $state<HTMLDivElement>();
+	let cssObject = $state<CSS2DObject>();
+
 	const { camera } = useThrelte();
 	const vec = new Vector3();
 
@@ -22,10 +34,10 @@
 			// If distance = referenceDistance, scale = 1.
 			// If distance = 2 * referenceDistance, scale = 0.5.
 			let scale = referenceDistance / Math.max(0.1, distance);
-			
+
 			// Clamp scale to reasonable limits to avoid disappearance or huge elements
 			scale = Math.max(0.1, Math.min(5, scale));
-			
+
 			innerElement.style.transform = `scale(${scale})`;
 		}
 	});
@@ -44,14 +56,5 @@
 </div>
 
 {#if element !== undefined}
-	<T
-		{...props}
-		is={CSS2DObject}
-		args={[element]}
-		bind:ref={cssObject}
-	>
-		{#snippet children({ ref })}
-			{@render children?.({ ref })}
-		{/snippet}
-	</T>
+	<T {...props} is={CSS2DObject} args={[element]} bind:ref={cssObject}></T>
 {/if}
