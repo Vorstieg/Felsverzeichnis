@@ -14,6 +14,12 @@ export default defineConfig({
 	test: {
 		environment: 'jsdom',
 		setupFiles: ['./tests/setup.js'],
+		server: {
+			deps: {
+				// Let Vite transform the renderer's SVG asset imports.
+				inline: ['@vorstieg/topo-renderer']
+			}
+		},
 		include: ['tests/**/*.{test,spec}.{js,ts}'],
 		exclude: ['tests/e2e/**'],
 		coverage: {

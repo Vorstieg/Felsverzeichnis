@@ -39,6 +39,8 @@ jobs:
 
       - name: Build application
         run: npm run build
+        env:
+          VITE_FELSLAGER_URL: https://lager.felsverzeichnis.at/api/fs
 
       # adapter-node leaves some server dependencies external. Include only the
       # production dependency tree so the server never has to run npm install.
