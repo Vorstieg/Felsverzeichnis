@@ -10,8 +10,8 @@ import { colors } from '$lib/colors.js';
 
 export const siteTitle = 'Klettergebiete rund um Wien';
 export const siteDescription = 'Finde Klettergebiete die von Wien aus öffentlich erreichbar sind';
-export const siteLink = 'https://felsverzeichnis.vorstieg.eu/';
-export const fsApiUrl = env.PUBLIC_FS_API_URL || 'https://felslager.vorstieg.eu/api/fs';
+export const siteLink = 'https://www.felsverzeichnis.at/';
+export const fsApiUrl = env.PUBLIC_FS_API_URL || 'https://lager.felsverzeichnis.at/api/fs';
 export const felsstudioUrl = env.PUBLIC_FELSSTUDIO_URL || '';
 
 // Controls how many posts are shown per page on the main blog index pages
