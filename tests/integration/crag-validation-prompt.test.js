@@ -19,27 +19,26 @@ describe('CragValidationPrompt', () => {
 		render(CragValidationPrompt, {
 			props: {
 				issue,
-				editorUrl: 'https://studio.example/edit',
-				returnTo: 'https://site.example/map/crag/area/crag'
+				editorUrl: 'https://studio.example/'
 			}
 		});
 		expect(screen.getByText('validation.title')).toBeInTheDocument();
 		const link = screen.getByRole('link');
 		expect(link).toHaveAttribute('target', '_blank');
-		expect(link).toHaveAttribute('href', expect.stringContaining('task=access'));
+		expect(link).toHaveAttribute('href', 'https://studio.example/crags/editor/area/crag');
 	});
 
 	it('allows local dismissal for thirty days and hides the CTA when no editor is configured', async () => {
 		const { rerender } = render(CragValidationPrompt, {
-			props: { issue, editorUrl: '', returnTo: '' }
+			props: { issue, editorUrl: '' }
 		});
 		expect(screen.queryByRole('link')).not.toBeInTheDocument();
 		await fireEvent.click(screen.getByRole('button'));
 		expect(screen.queryByText('validation.title')).not.toBeInTheDocument();
 		render(CragValidationPrompt, {
-			props: { issue, editorUrl: 'https://studio.example/edit', returnTo: '' }
+			props: { issue, editorUrl: 'https://studio.example/' }
 		});
 		expect(screen.queryByText('validation.title')).not.toBeInTheDocument();
-		await rerender({ issue: null, editorUrl: '', returnTo: '' });
+		await rerender({ issue: null, editorUrl: '' });
 	});
 });

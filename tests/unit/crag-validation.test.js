@@ -149,14 +149,17 @@ describe('crag validation', () => {
 		};
 		expect(getCragValidationIssue({ ...base, topo: boulderTopo })).toBeNull();
 
-		const url = buildFelsstudioUrl('https://studio.example/edit?source=map', {
+		const url = buildFelsstudioUrl('https://studio.example/?source=map', {
 			cragPath: 'area/a crag',
-			sectorId: 'north/wall',
-			task: 'routes',
-			returnTo: 'https://site.example/map?a=1&b=2'
+			sectorId: 'north/wall'
 		});
-		expect(url).toBe(
-			'https://studio.example/edit?source=map&cragPath=area%2Fa+crag&sectorId=north%2Fwall&task=routes&returnTo=https%3A%2F%2Fsite.example%2Fmap%3Fa%3D1%26b%3D2'
+		expect(url).toBe('https://studio.example/crags/editor/area/a%20crag/north/wall?source=map');
+	});
+
+	it('links to an existing crag and preserves the configured application base path', () => {
+		expect(buildFelsstudioUrl('https://studio.example/studio/', { cragPath: 'area/crag' })).toBe(
+			'https://studio.example/studio/crags/editor/area/crag'
 		);
+		expect(buildFelsstudioUrl('', { cragPath: 'area/crag' })).toBeNull();
 	});
 });

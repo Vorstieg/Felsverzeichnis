@@ -407,11 +407,7 @@
 				{/if}
 			</div>
 
-			<CragValidationPrompt
-				issue={validationIssue}
-				editorUrl={felsstudioUrl}
-				returnTo={data.meta.url}
-			/>
+			<CragValidationPrompt issue={validationIssue} editorUrl={felsstudioUrl} />
 
 			<div class="dynamic-reveal-images sm:mb-8">
 				{#if (images?.length ?? 0) > 0}

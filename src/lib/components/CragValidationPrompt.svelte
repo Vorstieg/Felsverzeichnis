@@ -5,23 +5,17 @@
 
 	let {
 		issue,
-		editorUrl = '',
-		returnTo = ''
+		editorUrl = ''
 	}: {
 		issue: import('$lib/types/application').ImprovementIssue | null;
 		editorUrl?: string;
-		returnTo?: string;
 	} = $props();
 	let dismissed = $state(false);
 	const maxAge = 30 * 24 * 60 * 60 * 1000;
 	let storageKey = $derived(
 		issue ? `fels-validation-dismissal:${issue.target.cragPath}:${issue.rule}` : ''
 	);
-	let href = $derived(
-		issue && editorUrl
-			? buildFelsstudioUrl(editorUrl, { ...issue.target, task: issue.task, returnTo })
-			: null
-	);
+	let href = $derived(issue && editorUrl ? buildFelsstudioUrl(editorUrl, issue.target) : null);
 
 	$effect(() => {
 		if (!browser || !issue) return;

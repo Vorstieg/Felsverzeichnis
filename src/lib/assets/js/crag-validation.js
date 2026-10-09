@@ -100,13 +100,14 @@ export function getCragValidationIssue({
 }
 
 /** @param {string} baseUrl
- * @param {{cragPath: string, sectorId?: string | null, task: import('$lib/types/application').ImprovementTask, returnTo: string}} parameters */
-export function buildFelsstudioUrl(baseUrl, { cragPath, sectorId, task, returnTo }) {
+ * @param {{cragPath: string, sectorId?: string | null}} parameters */
+export function buildFelsstudioUrl(baseUrl, { cragPath, sectorId }) {
 	if (!baseUrl) return null;
 	const url = new URL(baseUrl);
-	url.searchParams.set('cragPath', cragPath);
-	if (sectorId) url.searchParams.set('sectorId', sectorId);
-	url.searchParams.set('task', task);
-	url.searchParams.set('returnTo', returnTo);
+	const entryPath = sectorId ? `${cragPath}/${sectorId}` : cragPath;
+	url.pathname = `${url.pathname.replace(/\/$/, '')}/crags/editor/${entryPath
+		.split('/')
+		.map(encodeURIComponent)
+		.join('/')}`;
 	return url.toString();
 }
