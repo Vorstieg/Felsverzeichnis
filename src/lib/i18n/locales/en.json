@@ -66,6 +66,8 @@
 		"slate": "Slate"
 	},
 	"topo": {
+		"switch_to_2d": "Switch to 2D Topo",
+		"switch_to_3d": "Switch to 3D Topo",
 		"no_topo": "No Topo",
 		"loading": "Loading 3D Model...",
 		"wall_direction": "Wall Direction",
@@ -177,6 +179,7 @@
 		"via-ferrata": "Via Ferrata",
 		"Hochtour": "High Alpine Tour",
 		"Klettersteig": "Via Ferrata",
+		"Gletscher": "Glacier",
 		"Gletscherwanderung": "Glacier Hike",
 		"Schneefeld": "Snowfield",
 		"Gratwanderung": "Ridge Traverse",

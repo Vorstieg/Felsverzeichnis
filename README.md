@@ -13,7 +13,26 @@ Felsverzeichnis is a web application designed to help climbers discover and expl
 
 ## Development
 
-To get started with development, follow these steps:
+### Dev Container (Recommended)
+
+This project includes a Dev Container configuration (`.devcontainer`) for VS Code, IntelliJ IDEA, and GitHub Codespaces:
+
+- Includes **Node.js 22**, Git, GitHub CLI (`gh`), and Playwright Chromium system dependencies.
+- Automatic port forwarding for Vite dev server (`http://localhost:5173`) and preview (`http://localhost:4173`).
+- Configures extensions and formatting for Svelte, Tailwind CSS, Prettier, and ESLint.
+
+> **Note on `@vorstieg` packages:** Project dependencies include packages hosted on GitHub Packages (`npm.pkg.github.com`). Before or after launching the container, configure authentication:
+>
+> 1. Copy `.npmrc.example` to `.npmrc`:
+>    ```bash
+>    cp .npmrc.example .npmrc
+>    ```
+> 2. Add your GitHub Personal Access Token (with `read:packages` permission) or export `NODE_AUTH_TOKEN`.
+> 3. Run `npm install`.
+
+### Local Development
+
+To get started with local development, follow these steps:
 
 1.  **Clone the repository:**
     ```bash

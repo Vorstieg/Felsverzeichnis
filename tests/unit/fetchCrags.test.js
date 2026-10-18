@@ -23,6 +23,7 @@ async function loadFetchCrags() {
 
 describe('fetchCrags', () => {
 	beforeEach(() => {
+		window.localStorage.clear();
 		vi.restoreAllMocks();
 		vi.stubGlobal(
 			'fetch',
@@ -59,5 +60,21 @@ describe('fetchCrags', () => {
 		fetch.mockResolvedValueOnce({ ok: false });
 		const fetchCrags = await loadFetchCrags();
 		await expect(fetchCrags()).rejects.toThrow('Failed to fetch entry directory');
+	});
+
+	it('hydrates from localStorage in browser mode and revalidates stale cache in the background', async () => {
+		window.localStorage.setItem(
+			'felsverzeichnis:crags-cache-v1',
+			JSON.stringify({
+				timestamp: 1,
+				crags: [{ path: 'b', entry: entries[2] }]
+			})
+		);
+		const fetchCrags = await loadFetchCrags();
+		const staleResult = await fetchCrags({ limit: -1 });
+		expect(staleResult.map((x) => x.path)).toEqual(['b']);
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(4));
+		const refreshedResult = await fetchCrags({ limit: -1 });
+		expect(refreshedResult.map((x) => x.path)).toEqual(['a', 'b', 'z']);
 	});
 });

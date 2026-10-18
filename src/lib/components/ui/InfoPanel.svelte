@@ -248,6 +248,19 @@
 		presentPromise.catch(() => {});
 	};
 
+	function resetPanelCssVariables() {
+		document.body.style.setProperty('--info-panel-height', '10000px');
+		document.body.style.setProperty('--info-panel-height-num', '10000');
+		document.body.style.setProperty('--controls-opacity', '1');
+		document.body.style.setProperty('--controls-pointer', 'auto');
+		document.body.style.setProperty('--controls-scale', '1');
+		if (controlsElement) {
+			controlsElement.style.opacity = '1';
+			controlsElement.style.pointerEvents = '';
+			controlsElement.style.transform = '';
+		}
+	}
+
 	$effect(() => {
 		if (!isDesktop && paneElement && !pane && CupertinoPaneClass && isOpen) {
 			pane = new CupertinoPaneClass(paneElement, {
@@ -276,16 +289,7 @@
 			}
 			pane.destroy({ animate: true });
 			pane = null;
-			document.body.style.setProperty('--info-panel-height', '10000px');
-			document.body.style.setProperty('--info-panel-height-num', '10000');
-			document.body.style.setProperty('--controls-opacity', '1');
-			document.body.style.setProperty('--controls-pointer', 'auto');
-			document.body.style.setProperty('--controls-scale', '1');
-			if (controlsElement) {
-				controlsElement.style.opacity = '1';
-				controlsElement.style.pointerEvents = '';
-				controlsElement.style.transform = '';
-			}
+			resetPanelCssVariables();
 		} else if (isDesktop && pane) {
 			document.body.style.overscrollBehaviorY = 'auto';
 			if (observer) {
@@ -294,44 +298,8 @@
 			}
 			pane.destroy({ animate: false });
 			pane = null;
-			document.body.style.setProperty('--info-panel-height', '10000px');
-			document.body.style.setProperty('--info-panel-height-num', '10000');
-			document.body.style.setProperty('--controls-opacity', '1');
-			document.body.style.setProperty('--controls-pointer', 'auto');
-			document.body.style.setProperty('--controls-scale', '1');
-			if (controlsElement) {
-				controlsElement.style.opacity = '1';
-				controlsElement.style.pointerEvents = '';
-				controlsElement.style.transform = '';
-			}
+			resetPanelCssVariables();
 		}
-
-		return () => {
-			if (observer) {
-				observer.disconnect();
-				observer = null;
-			}
-			if (!isDesktop && paneElement) {
-				paneElement.removeEventListener('touchstart', handleTouchStart);
-				paneElement.removeEventListener('touchmove', handleTouchMove);
-				paneElement.removeEventListener('touchend', handleTouchEnd);
-			}
-			if (pane) {
-				pane.destroy({ animate: false });
-				pane = null;
-			}
-			document.body.style.overscrollBehaviorY = 'auto';
-			document.body.style.setProperty('--info-panel-height', '10000px');
-			document.body.style.setProperty('--info-panel-height-num', '10000');
-			document.body.style.setProperty('--controls-opacity', '1');
-			document.body.style.setProperty('--controls-pointer', 'auto');
-			document.body.style.setProperty('--controls-scale', '1');
-			if (controlsElement) {
-				controlsElement.style.opacity = '1';
-				controlsElement.style.pointerEvents = '';
-				controlsElement.style.transform = '';
-			}
-		};
 	});
 
 	$effect(() => {
@@ -352,9 +320,24 @@
 	});
 
 	onDestroy(() => {
+		if (observer) {
+			observer.disconnect();
+			observer = null;
+		}
+		if (paneElement) {
+			paneElement.removeEventListener('touchstart', handleTouchStart);
+			paneElement.removeEventListener('touchmove', handleTouchMove);
+			paneElement.removeEventListener('touchend', handleTouchEnd);
+		}
 		if (pane) {
 			pane.destroy({ animate: false });
+			pane = null;
 		}
+		if (paneElement?.parentElement === document.body) {
+			paneElement.remove();
+		}
+		document.body.style.overscrollBehaviorY = 'auto';
+		resetPanelCssVariables();
 	});
 </script>
 
@@ -467,7 +450,7 @@
 	:global(.cupertino-pane-wrapper .draggable::after) {
 		content: '';
 		position: absolute;
-		top: -30px;
+		top: 0px;
 		bottom: -80px;
 		left: -100vw;
 		right: -100vw;

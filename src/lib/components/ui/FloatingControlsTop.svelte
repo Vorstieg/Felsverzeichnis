@@ -3,7 +3,7 @@
 </script>
 
 <div
-	class="style-selector-btn pointer-events-none fixed right-4 z-[1000] flex flex-col items-end gap-2 sm:right-auto sm:left-8 sm:items-start"
+	class="style-selector-btn pointer-events-none fixed right-4 z-[30000] flex flex-col items-end gap-2 sm:right-auto sm:left-8 sm:items-start"
 >
 	{@render children?.()}
 </div>
@@ -23,7 +23,10 @@
 			opacity: var(--controls-opacity, 1);
 			transform: scale(var(--controls-scale, 1));
 			transform-origin: center;
-			pointer-events: var(--controls-pointer, auto);
+			pointer-events: none;
 		}
+	}
+	.style-selector-btn > :global(*) {
+		pointer-events: var(--controls-pointer, auto);
 	}
 </style>

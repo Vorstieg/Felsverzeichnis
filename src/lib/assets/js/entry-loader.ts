@@ -24,20 +24,32 @@ export function createEntryLoader(options: Parameters<typeof createCragCache>[0]
 			location = await read(folder);
 		}
 		if (!location) return null;
-		const ancestors: FelsLocation[] = [];
+		const ancestorFolders: string[] = [];
 		folder = parentPath(location.path);
 		while (folder) {
-			const ancestor = await read(folder);
-			if (ancestor) ancestors.push(ancestor);
+			ancestorFolders.push(folder);
 			folder = parentPath(folder);
 		}
-		const directory = (await cache.fetchDirectory(location.path)) ?? [];
+		const [resolvedAncestors, rawDirectory] = await Promise.all([
+			Promise.all(ancestorFolders.map((ancestorFolder) => read(ancestorFolder))),
+			cache.fetchDirectory(location.path)
+		]);
+		const ancestors = resolvedAncestors.filter(
+			(ancestor): ancestor is FelsLocation => ancestor !== null
+		);
+		const directory = rawDirectory ?? [];
 		const children = locations.filter((item) => parentPath(item.path) === location.path);
-		for (const file of directory.filter((file) => file.type === 'dir')) {
-			const childPath = `${location.path}/${file.name}`;
-			if (children.some((child) => child.path === childPath)) continue;
-			const child = await read(childPath);
-			if (child) children.push(child);
+		const missingChildPaths = directory
+			.filter((file) => file.type === 'dir')
+			.map((file) => `${location.path}/${file.name}`)
+			.filter((childPath) => !children.some((child) => child.path === childPath));
+		if (missingChildPaths.length > 0) {
+			const resolvedChildren = await Promise.all(
+				missingChildPaths.map((childPath) => read(childPath))
+			);
+			for (const child of resolvedChildren) {
+				if (child) children.push(child);
+			}
 		}
 		return {
 			location,
@@ -50,11 +62,17 @@ export function createEntryLoader(options: Parameters<typeof createCragCache>[0]
 	}
 
 	async function core(context: NonNullable<Awaited<ReturnType<typeof resolve>>>) {
-		const topo = await cache.fetchTopo(context.paths.getTopoPath());
-		let access = await cache.fetchAccess(context.paths.getAccessPath());
+		const [topo, directAccess] = await Promise.all([
+			cache.fetchTopo(context.paths.getTopoPath()),
+			cache.fetchAccess(context.paths.getAccessPath())
+		]);
+		let access = directAccess;
 		for (const ancestor of context.ancestors) {
-			if (access) break;
-			access = await cache.fetchAccess(paths(ancestor.path).getAccessPath());
+			if (access?.features?.length) break;
+			const ancestorAccess = await cache.fetchAccess(paths(ancestor.path).getAccessPath());
+			if (ancestorAccess && (!access || ancestorAccess.features?.length)) {
+				access = ancestorAccess;
+			}
 		}
 		return { topo, access };
 	}
@@ -69,8 +87,11 @@ export function createEntryLoader(options: Parameters<typeof createCragCache>[0]
 			await Promise.all(
 				children.map(async (child) => {
 					const childPaths = paths(child.path);
-					const document = await cache.fetchTopo(childPaths.getTopoPath());
-					const files = (await cache.fetchDirectory(child.path)) ?? [];
+					const [document, rawFiles] = await Promise.all([
+						cache.fetchTopo(childPaths.getTopoPath()),
+						cache.fetchDirectory(child.path)
+					]);
+					const files = rawFiles ?? [];
 					return {
 						sectorId: child.entry.properties.id,
 						sectorName: child.entry.properties.name,

@@ -28,6 +28,26 @@
 			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1523221470947393"
 			crossorigin="anonymous"
 		></script>
+		<style>
+			@keyframes app-boot-spin {
+				to {
+					transform: translate(-50%, -50%) rotate(360deg);
+				}
+			}
+			#svelte:not(:has(> :not(script)))::after {
+				content: '';
+				position: fixed;
+				top: 50%;
+				left: 50%;
+				width: 2.25rem;
+				height: 2.25rem;
+				border: 3px solid #e2e8f0;
+				border-top-color: #1e293b;
+				border-radius: 9999px;
+				transform: translate(-50%, -50%);
+				animation: app-boot-spin 0.75s linear infinite;
+			}
+		</style>
 	</head>
 	<body>
 		<div id="svelte">%sveltekit.body%</div>

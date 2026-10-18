@@ -16,47 +16,55 @@ export const load = async ({ params, url, parent, fetch }) => {
 		const currentLocation = context.paths;
 		const cragData = currentData;
 		const sectors = context.children;
-		if (browser) void loader.cacheFolder(context.location.path);
 		const loaded = await loader.core(context);
 		const { access: accessData, topo: topoDocument } = loaded;
+		const enrichTopoPaths = (
+			/** @type {import('@vorstieg/fels-types/types').FelsTopoDocument | null | undefined} */ doc
+		) => {
+			const pathRoles = new Map(
+				(doc?.routes || []).flatMap((route) =>
+					(route.pathRefs || []).map((reference) => [
+						reference.pathId,
+						{
+							...reference,
+							routeType: route.type
+						}
+					])
+				)
+			);
+			return (doc?.paths?.features || []).map((feature) => {
+				const reference = feature.id === undefined ? undefined : pathRoles.get(feature.id);
+				return {
+					...feature,
+					properties: {
+						...(feature.properties || {}),
+						role: reference?.role || feature.properties?.role || 'main',
+						routeType: reference?.routeType || feature.properties?.routeType || '',
+						label: reference?.label || feature.properties?.label || feature.properties?.name || ''
+					}
+				};
+			});
+		};
+
+		const topoPaths = enrichTopoPaths(topoDocument);
+
 		const streamDetails = async () => {
 			const details = await loader.details(context, loaded);
+			if (browser) void loader.cacheFolder(context.location.path);
 			const transit = details.access?.features.find(
 				(feature) => feature.properties.kind === 'transit'
 			);
 			const parking = details.access?.features.find(
 				(feature) => feature.properties.kind === 'parking'
 			);
+			const sectorTopoPaths = details.sectorTopos.flatMap((sector) => enrichTopoPaths(sector.topo));
 			return {
 				...details,
+				topoPaths: topoPaths.length ? topoPaths : sectorTopoPaths,
 				transit: transit?.geometry.type === 'Point' ? transit.geometry.coordinates : undefined,
 				parking: parking?.geometry.type === 'Point' ? parking.geometry.coordinates : undefined
 			};
 		};
-
-		const pathRoles = new Map(
-			(topoDocument?.routes || []).flatMap((route) =>
-				(route.pathRefs || []).map((reference) => [
-					reference.pathId,
-					{
-						...reference,
-						routeType: route.type
-					}
-				])
-			)
-		);
-		const topoPaths = (topoDocument?.paths?.features || []).map((feature) => {
-			const reference = feature.id === undefined ? undefined : pathRoles.get(feature.id);
-			return {
-				...feature,
-				properties: {
-					...(feature.properties || {}),
-					role: reference?.role || feature.properties?.role || 'main',
-					routeType: reference?.routeType || feature.properties?.routeType || '',
-					label: reference?.label || feature.properties?.label || feature.properties?.name || ''
-				}
-			};
-		});
 
 		return {
 			currentLocation: currentLocation,

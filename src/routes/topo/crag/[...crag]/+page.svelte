@@ -89,7 +89,6 @@
 
 	let isSlowNetwork = $state(false);
 	let forceHighRes = $state(false);
-	let displayModeMenuOpen = $state(false);
 
 	let infoPanelComponent = $state<{ moveToLowest: () => void }>();
 	let isInfoPanelOpen = $state(true);
@@ -264,6 +263,8 @@
 		const { newPos, newCenter } = applyOffsetToTarget(baseTargetPos, center, sphere.radius);
 
 		camera.position.copy(newPos);
+		camera.lookAt(newCenter);
+		camera.updateMatrixWorld();
 		controls.target.copy(newCenter);
 		controls.update();
 	}
@@ -408,12 +409,14 @@
 			: null
 	);
 
+	let isNavigatingToMap = $state(false);
 	let isNavigatingAway = $derived(
-		!!(
-			$navigating &&
-			$navigating.to &&
-			!$navigating.to.url.pathname.startsWith(base + '/topo/crag/')
-		)
+		isNavigatingToMap ||
+			!!(
+				$navigating &&
+				$navigating.to &&
+				!$navigating.to.url.pathname.startsWith(base + '/topo/crag/')
+			)
 	);
 
 	let activeRouteId = $derived(pendingRouteId ?? data.route?.id);
@@ -500,18 +503,46 @@
 	let hasInitializedCamera = $state(false);
 
 	$effect(() => {
-		if (!camera) {
+		if (displayMode !== '3d') {
 			hasInitializedCamera = false;
 			modelLoaded = false;
+			lastFocusedRouteId = null;
+			camera = undefined;
+			controls = undefined;
 		}
 	});
 
-	$effect(() => {
-		if (modelLoaded && camera && controls && !hasInitializedCamera) {
-			hasInitializedCamera = true;
-			if (activeRouteId == null) {
-				focusOverview();
+	function focusCurrentView() {
+		if (activeRouteId != null) {
+			let routeToFocus = data.route?.id === activeRouteId ? data.route : null;
+			if (!routeToFocus && data.topo && data.topo.routes) {
+				for (const r of data.topo.routes) {
+					if (r.id === activeRouteId) {
+						routeToFocus = r;
+						break;
+					}
+					if (r.pitches) {
+						const pitch = r.pitches.find((p) => p.id === activeRouteId);
+						if (pitch) {
+							routeToFocus = { ...pitch, orientation3D: r.orientation3D };
+							break;
+						}
+					}
+				}
 			}
+			if (routeToFocus) {
+				lastFocusedRouteId = activeRouteId;
+				focusRoute(routeToFocus);
+				return;
+			}
+		}
+		focusOverview();
+	}
+
+	$effect(() => {
+		if (displayMode === '3d' && modelLoaded && camera && controls && !hasInitializedCamera) {
+			hasInitializedCamera = true;
+			focusCurrentView();
 		}
 	});
 
@@ -634,11 +665,16 @@
 		return direction === 'Unknown' ? null : $_('directions.' + direction);
 	}
 
+	function getTagLabel(tag: string) {
+		const translated = $_('tags.' + tag);
+		return translated === 'tags.' + tag ? tag : translated;
+	}
+
 	function getSectorTypes(sector: import('$lib/types/files').FelsLocation) {
-		return (sector.entry.properties.type ?? []).map((id) => {
-			const translated = $_('tags.' + id);
-			return { id, name: translated === 'tags.' + id ? id : translated };
-		});
+		return (sector.entry.properties.type ?? []).map((id) => ({
+			id,
+			name: getTagLabel(id)
+		}));
 	}
 </script>
 
@@ -659,7 +695,7 @@
 					goto(base + '/topo/crag/' + data.path + '/' + route.id + $page.url.search)}
 				bind:hoveredRouteId
 			/>
-		{:else}
+		{:else if has3D}
 			<div
 				id="css-renderer-target"
 				style="position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; height: 100%; z-index: 1; overflow: hidden;"
@@ -865,75 +901,41 @@
 	{/snippet}
 
 	<div
-		class="pointer-events-none fixed top-2 right-0 left-0 z-[1000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto"
+		class="pointer-events-none fixed top-2 left-4 z-[5000] h-fit overflow-visible py-2 sm:top-3 sm:left-8"
 	>
-		<div
-			class="pointer-events-auto mx-4 sm:mx-0 sm:ml-8 sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80"
-		>
-			<div class="pointer-events-auto flex h-[50px] items-center sm:h-[40px]">
-				<FloatingButton
-					class="w-auto gap-2 px-4 text-sm font-bold"
-					icon="fa-arrow-left"
-					title={$_('ui.to_map')}
-					href="{base}/map/crag/{data.path}"
-				>
-					<span>{$_('ui.to_map')}</span>
-				</FloatingButton>
-			</div>
+		<div class="pointer-events-auto flex h-[50px] items-center sm:h-[40px]">
+			<FloatingButton
+				class="w-auto gap-2 px-4 text-sm font-bold"
+				icon={isNavigatingAway ? 'fa-spinner fa-spin' : 'fa-arrow-left'}
+				title={$_('ui.to_map')}
+				href="{base}/map/crag/{data.path}"
+				onclick={() => {
+					isNavigatingToMap = true;
+				}}
+			>
+				<span>{$_('ui.to_map')}</span>
+			</FloatingButton>
 		</div>
 	</div>
 
 	<FloatingControlsTop>
 		{#if has2D && has3D}
-			<div
-				class="pointer-events-auto flex flex-col items-end gap-2 sm:items-start"
-				role="group"
-				aria-label="Topo display mode"
-				onmouseleave={() => (displayModeMenuOpen = false)}
+			<FloatingButton
+				title={displayMode === '3d'
+					? $_('topo.switch_to_2d') || '2D Topo'
+					: $_('topo.switch_to_3d') || '3D Topo'}
+				onclick={() => {
+					const nextMode = displayMode === '3d' ? '2d' : '3d';
+					displayMode = nextMode;
+					const url = new URL($page.url.href);
+					url.searchParams.set('mode', nextMode);
+					goto(url.pathname + url.search, { replaceState: true, keepFocus: true });
+				}}
 			>
-				<FloatingButton
-					icon="fa-map"
-					title="Choose topo display mode"
-					onmouseenter={() => (displayModeMenuOpen = true)}
-					onfocus={() => (displayModeMenuOpen = true)}
-					onclick={() => (displayModeMenuOpen = !displayModeMenuOpen)}
-				/>
-				{#if displayModeMenuOpen}
-					<div
-						class="z-0 flex flex-col justify-center gap-2"
-						transition:slide={{ duration: 200, axis: 'y' }}
-					>
-						<button
-							class="hover:bg-ink flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-1 border-gray-200 bg-white text-[12px] font-bold text-gray-600 shadow-md hover:text-white max-sm:h-11 max-sm:w-11 max-sm:text-[14px] {displayMode ===
-							'3d'
-								? 'border-blue-200 bg-blue-50 text-blue-600'
-								: ''}"
-							onclick={() => {
-								displayModeMenuOpen = false;
-								const url = new URL($page.url.href);
-								url.searchParams.set('mode', '3d');
-								goto(url.pathname + url.search, { replaceState: true, keepFocus: true });
-							}}
-						>
-							3D
-						</button>
-						<button
-							class="hover:bg-ink flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-1 border-gray-200 bg-white text-[12px] font-bold text-gray-600 shadow-md hover:text-white max-sm:h-11 max-sm:w-11 max-sm:text-[14px] {displayMode ===
-							'2d'
-								? 'border-blue-200 bg-blue-50 text-blue-600'
-								: ''}"
-							onclick={() => {
-								displayModeMenuOpen = false;
-								const url = new URL($page.url.href);
-								url.searchParams.set('mode', '2d');
-								goto(url.pathname + url.search, { replaceState: true, keepFocus: true });
-							}}
-						>
-							2D
-						</button>
-					</div>
-				{/if}
-			</div>
+				<span class="text-xs font-bold sm:text-sm">
+					{displayMode === '3d' ? '2D' : '3D'}
+				</span>
+			</FloatingButton>
 		{/if}
 
 		<div class="pointer-events-auto hidden flex-col items-start gap-2 sm:flex">
@@ -1076,7 +1078,7 @@
 									class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
 									style="background-color: #64748bd9;"
 								>
-									{$_('tags.' + tag)}
+									{getTagLabel(tag)}
 								</span>
 							{/each}
 						{/if}
@@ -1171,7 +1173,7 @@
 									class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
 									style="background-color: #64748bd9;"
 								>
-									{$_('tags.' + tag)}
+									{getTagLabel(tag)}
 								</span>
 							{/each}
 						{/if}

@@ -46,7 +46,9 @@
 
 	let mapElement: HTMLDivElement;
 	let map: maplibregl.Map;
+	let mapReady = $state(false);
 	let tileLayerMenuOpen = $state(false);
+	let isTouchStyleMenu = false;
 	let currentPathname = $derived($navigating?.to?.url?.pathname ?? $page.url.pathname);
 	let detailsShown = $derived(
 		currentPathname !== base + '/map' && currentPathname !== base + '/map/'
@@ -75,29 +77,27 @@
 		colors.routeTypes['alpine-tour'],
 		'via-ferrata',
 		colors.routeTypes['via-ferrata'],
-		'bus',
-		colors.map.bus,
-		'train',
-		colors.map.train,
-		'parking-space',
-		colors.map.parking,
 		colors.routeTypes['sports-climbing']
+	];
+
+	const defaultPlacesFilter: ExpressionSpecification = [
+		'all',
+		['!=', ['geometry-type'], 'Polygon'],
+		['any', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
 	];
 
 	const placesLayer: LayerSpecification = {
 		id: 'places',
 		type: 'symbol',
 		source: 'places',
-		minzoom: 11.5,
-		filter: [
-			'all',
-			['!=', ['geometry-type'], 'Polygon'],
-			['any', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
-		],
+		minzoom: 0,
+		filter: defaultPlacesFilter,
 		layout: {
 			'icon-image': placeIcon,
 			'icon-size': 0.55,
 			'icon-allow-overlap': true,
+			'icon-ignore-placement': true,
+			'symbol-z-order': 'source',
 			'text-optional': true,
 			'text-field': ['get', 'name'],
 			'text-offset': [0, 1.8],
@@ -172,15 +172,57 @@
 		}
 	};
 
+	const accessLineOutlineLayer: LayerSpecification = {
+		id: 'access-lines-outline',
+		type: 'line',
+		source: 'access',
+		filter: ['==', ['get', 'kind'], 'approach'],
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': colors.text.white,
+			'line-width': 6.5,
+			'line-opacity': 0.95
+		}
+	};
+
 	const accessLineLayer: LayerSpecification = {
 		id: 'access-lines',
 		type: 'line',
 		source: 'access',
 		filter: ['==', ['get', 'kind'], 'approach'],
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
 		paint: {
 			'line-color': colors.gpxRoles.approach,
 			'line-width': 4,
-			'line-opacity': 0.9
+			'line-dasharray': [0.1, 1.8],
+			'line-opacity': 0.95
+		}
+	};
+
+	const accessPointColor: ExpressionSpecification = [
+		'match',
+		['get', 'kind'],
+		'hut',
+		colors.routeTypes.trad,
+		'#000000'
+	];
+
+	const accessDotsLayer: LayerSpecification = {
+		id: 'access-dots',
+		type: 'circle',
+		source: 'access',
+		maxzoom: 14,
+		filter: ['==', ['geometry-type'], 'Point'],
+		paint: {
+			'circle-color': accessPointColor,
+			'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5],
+			'circle-radius-transition': { duration: 400 },
+			'circle-stroke-width': 15,
+			'circle-stroke-color': 'rgba(0, 0, 0, 0)',
+			'circle-opacity': ['step', ['zoom'], 1, 13.5, 0],
+			'circle-opacity-transition': { duration: 400 },
+			'circle-stroke-opacity': ['step', ['zoom'], 1, 13.5, 0],
+			'circle-stroke-opacity-transition': { duration: 400 }
 		}
 	};
 
@@ -188,19 +230,27 @@
 		id: 'access-points',
 		type: 'symbol',
 		source: 'access',
-		minzoom: 0,
+		minzoom: 11.5,
 		filter: ['==', ['geometry-type'], 'Point'],
 		layout: {
 			'icon-image': [
 				'match',
 				['get', 'kind'],
 				'parking',
-				'parking',
+				'access-parking',
 				'hut',
 				'access-hut',
 				'transit',
-				['match', ['coalesce', ['get', 'mode'], 'bus'], 'train', 'train', 'bus', 'bus', 'bus'],
-				'bus'
+				[
+					'match',
+					['coalesce', ['get', 'mode'], 'bus'],
+					'train',
+					'access-train',
+					'bus',
+					'access-bus',
+					'access-bus'
+				],
+				'access-bus'
 			],
 			'icon-size': 0.65,
 			'icon-allow-overlap': true,
@@ -223,7 +273,23 @@
 		paint: {
 			'text-color': colors.text.ink,
 			'text-halo-color': colors.text.white,
-			'text-halo-width': 3
+			'text-halo-width': 3,
+			'icon-opacity': ['step', ['zoom'], 0, 13.5, 1],
+			'icon-opacity-transition': { duration: 400 },
+			'text-opacity': ['step', ['zoom'], 0, 13.5, 1],
+			'text-opacity-transition': { duration: 400 }
+		}
+	};
+
+	const topoPathsOutlineLayer: LayerSpecification = {
+		id: 'topo-paths-outline',
+		type: 'line',
+		source: 'topo-paths',
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': colors.text.white,
+			'line-width': 6.5,
+			'line-opacity': 0.95
 		}
 	};
 
@@ -268,7 +334,13 @@
 				]
 			],
 			'line-width': 4,
-			'line-opacity': 0.85
+			'line-dasharray': [
+				'case',
+				['in', ['get', 'role'], ['literal', ['approach', 'descent']]],
+				['literal', [0.1, 1.8]],
+				['literal', [1]]
+			],
+			'line-opacity': 0.9
 		}
 	};
 
@@ -310,8 +382,6 @@
 		});
 
 		map.on('load', async () => {
-			syncTopoPathLayers();
-			await generateSelectedMarker();
 			await drawLayers();
 			applyCameraTarget();
 			updateSelectionStyle($page.params.crag || '');
@@ -321,17 +391,10 @@
 			if (map.getSource('places')) {
 				return; // Places already exists, meaning this is not a fresh style load that wiped our sources
 			}
-			await generateSelectedMarker();
 			await drawLayers();
-
 			slowRasterTileDecay(map);
-			syncTopoPathLayers();
-			map.once('idle', async () => {
-				await generateSelectedMarker();
-				await drawLayers();
-				applyCameraTarget();
-				updateSelectionStyle($page.params.crag || '');
-			});
+			applyCameraTarget();
+			updateSelectionStyle($page.params.crag || '');
 		});
 
 		map.on('mouseenter', 'places', function () {
@@ -381,7 +444,7 @@
 	}
 
 	function handleFocusMapTarget(e: CustomEvent<MapFocusTarget>) {
-		if (!map || !map.isStyleLoaded()) return;
+		if (!map) return;
 		const target = e.detail;
 		if (target && target.center) {
 			map.flyTo({
@@ -432,21 +495,23 @@
 	}
 
 	async function drawLayers() {
-		if (!map || !map.isStyleLoaded()) return;
+		if (!map) return;
 		try {
+			await Promise.all([
+				generateSelectedMarker(),
+				addMapImage('sports-climbing', base + '/icons/sports-climbing.png'),
+				addMapImage('multi-pitch', base + '/icons/multi-pitch.png'),
+				addMapImage('bouldering', base + '/icons/bouldering.png'),
+				addMapImage('alpine-tour', base + '/icons/alpine-tour.png'),
+				addMapImage('via-ferrata', base + '/icons/via-ferrata.png'),
+				addMapImage('access-parking', base + '/icons/parking.png'),
+				addMapImage('access-train', base + '/icons/train.png'),
+				addMapImage('access-bus', base + '/icons/bus.png'),
+				addMapImage('access-hut', base + '/icons/hut.png')
+			]);
+			mapReady = true;
+			syncAccessLayers();
 			syncTopoPathLayers();
-			await addMapImage('sports-climbing', base + '/icons/sports-climbing.png');
-			await addMapImage('multi-pitch', base + '/icons/multi-pitch.png');
-			await addMapImage('bouldering', base + '/icons/bouldering.png');
-			await addMapImage('alpine-tour', base + '/icons/alpine-tour.png');
-			await addMapImage('via-ferrata', base + '/icons/via-ferrata.png');
-			await addMapImage('train', base + '/icons/train.png');
-			await addMapImage('bus', base + '/icons/bus.png');
-			await addMapImage('parking', base + '/icons/parking.png');
-			await addMapImage('parking-space', base + '/icons/parking.png');
-			await addMapImage('access-hut', base + '/icons/hut.png');
-			if (access?.features?.length) addAccessLayers();
-			addTopoPathLayers();
 			addPlacesLayers();
 		} catch (error) {
 			console.error('Failed to restore map layers after style change', error);
@@ -457,15 +522,48 @@
 		return createPlacesData(locations);
 	}
 
+	const LAYER_ORDER = [
+		'sector-fill',
+		'sector-line',
+		'sector-labels',
+		'access-lines-outline',
+		'access-lines',
+		'topo-paths-outline',
+		'topo-paths',
+		'access-dots',
+		'places-dots',
+		'access-points',
+		'places'
+	];
+
+	function addLayerInOrder(layer: LayerSpecification) {
+		if (map.getLayer(layer.id)) return;
+		const layerIndex = LAYER_ORDER.indexOf(layer.id);
+		let beforeId: string | undefined;
+		if (layerIndex !== -1) {
+			for (let i = layerIndex + 1; i < LAYER_ORDER.length; i++) {
+				if (map.getLayer(LAYER_ORDER[i])) {
+					beforeId = LAYER_ORDER[i];
+					break;
+				}
+			}
+		}
+		if (beforeId) {
+			map.addLayer(layer, beforeId);
+		} else {
+			map.addLayer(layer);
+		}
+	}
+
 	function addPlacesLayers() {
 		if (!map.getSource('places')) {
 			map.addSource('places', { type: 'geojson', cluster: false, data: getPlacesData() });
 		}
-		if (!map.getLayer('sector-fill')) map.addLayer(sectorFillLayer);
-		if (!map.getLayer('sector-line')) map.addLayer(sectorLineLayer);
-		if (!map.getLayer('sector-labels')) map.addLayer(sectorLabelsLayer);
-		if (!map.getLayer('places-dots')) map.addLayer(placesDotsLayer);
-		if (!map.getLayer('places')) map.addLayer(placesLayer);
+		addLayerInOrder(sectorFillLayer);
+		addLayerInOrder(sectorLineLayer);
+		addLayerInOrder(sectorLabelsLayer);
+		addLayerInOrder(placesDotsLayer);
+		addLayerInOrder(placesLayer);
 	}
 
 	function getAccessData() {
@@ -480,15 +578,16 @@
 	}
 
 	function addTopoPathLayers() {
-		if (!map?.isStyleLoaded()) return;
+		if (!map || !mapReady) return;
 		if (!map.getSource('topo-paths')) {
 			map.addSource('topo-paths', { type: 'geojson', data: getTopoPathsData() });
 		}
-		if (!map.getLayer('topo-paths')) map.addLayer(topoPathsLayer);
+		addLayerInOrder(topoPathsOutlineLayer);
+		addLayerInOrder(topoPathsLayer);
 	}
 
 	function syncTopoPathLayers() {
-		if (!map?.isStyleLoaded()) return;
+		if (!map || !mapReady) return;
 		if (topoPaths?.length) {
 			addTopoPathLayers();
 			map.getSource<GeoJSONSource>('topo-paths')?.setData(getTopoPathsData());
@@ -498,56 +597,67 @@
 	}
 
 	function removeTopoPathLayers() {
-		if (!map?.isStyleLoaded()) return;
+		if (!map || !mapReady) return;
 		if (map.getLayer('topo-paths')) map.removeLayer('topo-paths');
+		if (map.getLayer('topo-paths-outline')) map.removeLayer('topo-paths-outline');
 		if (map.getSource('topo-paths')) map.removeSource('topo-paths');
 	}
 
 	function addAccessLayers() {
-		if (!map?.isStyleLoaded() || !access?.features?.length) return;
+		if (!map || !mapReady || !access?.features?.length) return;
 		if (!map.getSource('access'))
 			map.addSource('access', { type: 'geojson', data: getAccessData() });
-		if (!map.getLayer('access-lines')) map.addLayer(accessLineLayer);
-		if (!map.getLayer('access-points')) map.addLayer(accessPointsLayer);
+		addLayerInOrder(accessLineOutlineLayer);
+		addLayerInOrder(accessLineLayer);
+		addLayerInOrder(accessDotsLayer);
+		addLayerInOrder(accessPointsLayer);
 	}
 
-	function removeAccessLayers() {
-		if (!map?.isStyleLoaded()) return;
-		if (map.getLayer('access-points')) map.removeLayer('access-points');
-		if (map.getLayer('access-lines')) map.removeLayer('access-lines');
-		if (map.getSource('access')) map.removeSource('access');
-	}
-
-	$effect(() => {
-		const source = map?.getSource<GeoJSONSource>('places');
-		if (source) {
-			source.setData(getPlacesData());
-			const selectedPath = $page.params.crag || '';
-			updateSelectionStyle(selectedPath);
-			setTimeout(() => updateSelectionStyle(selectedPath), 150);
-		}
-	});
-
-	$effect(() => {
-		const lifecycleKey = topoPaths;
-		if (!lifecycleKey) return;
-		syncTopoPathLayers();
-	});
-
-	$effect(() => {
-		const lifecycleKey = accessKey;
-		if (!lifecycleKey) return;
-		if (!map?.isStyleLoaded()) return;
+	function syncAccessLayers() {
+		if (!map || !mapReady) return;
 		if (access?.features?.length) {
 			addAccessLayers();
 			map.getSource<GeoJSONSource>('access')?.setData(getAccessData());
 		} else {
 			removeAccessLayers();
 		}
+	}
+
+	function removeAccessLayers() {
+		if (!map || !mapReady) return;
+		if (map.getLayer('access-points')) map.removeLayer('access-points');
+		if (map.getLayer('access-dots')) map.removeLayer('access-dots');
+		if (map.getLayer('access-lines')) map.removeLayer('access-lines');
+		if (map.getLayer('access-lines-outline')) map.removeLayer('access-lines-outline');
+		if (map.getSource('access')) map.removeSource('access');
+	}
+
+	$effect(() => {
+		const placesData = getPlacesData();
+		if (!map || !mapReady) return;
+		const source = map.getSource<GeoJSONSource>('places');
+		if (source) {
+			source.setData(placesData);
+			updateSelectionStyle($page.params.crag || '');
+		}
+	});
+
+	$effect(() => {
+		topoPaths;
+		if (!mapReady) return;
+		syncTopoPathLayers();
+	});
+
+	$effect(() => {
+		accessKey;
+		access;
+		if (!mapReady) return;
+		syncAccessLayers();
 	});
 
 	$effect(() => {
 		cameraTarget;
+		if (!mapReady) return;
 		applyCameraTarget();
 	});
 
@@ -555,25 +665,13 @@
 		const selectedPath = $page.params.crag || '';
 		updateSelectionStyle(selectedPath);
 
-		let active = true;
-		// Bomb-proof polling to ensure it catches MapLibre's canvas renderer regardless of async tile/layer lag
+		let timer: ReturnType<typeof setTimeout> | undefined;
 		if (selectedPath) {
-			setTimeout(() => {
-				if (active) updateSelectionStyle(selectedPath);
-			}, 50);
-			setTimeout(() => {
-				if (active) updateSelectionStyle(selectedPath);
-			}, 200);
-			setTimeout(() => {
-				if (active) updateSelectionStyle(selectedPath);
-			}, 600);
-			setTimeout(() => {
-				if (active) updateSelectionStyle(selectedPath);
-			}, 1200);
+			timer = setTimeout(() => updateSelectionStyle(selectedPath), 150);
 		}
 
 		return () => {
-			active = false;
+			if (timer) clearTimeout(timer);
 		};
 	});
 
@@ -581,16 +679,26 @@
 		if (!map || !map.getLayer('places-dots')) return;
 
 		if (!selectedPath) {
+			map.setFilter?.('places', defaultPlacesFilter);
 			map.setPaintProperty('places-dots', 'circle-color', placeTypeColor);
 			map.setPaintProperty('places-dots', 'circle-opacity', ['step', ['zoom'], 1, 13.5, 0]);
 			map.setPaintProperty('places-dots', 'circle-stroke-opacity', ['step', ['zoom'], 1, 13.5, 0]);
 			map.setPaintProperty('places', 'text-color', 'rgba(47,57,72,1)');
 			map.setPaintProperty('places', 'icon-opacity', ['step', ['zoom'], 0, 13.5, 1]);
+			map.setPaintProperty('places', 'text-opacity', ['step', ['zoom'], 0, 13.5, 1]);
+			map.setLayoutProperty('places', 'symbol-sort-key', 0);
 			map.setLayoutProperty('places', 'icon-image', placeIcon);
 			return;
 		}
 
 		const isSelected = selectionExpression(selectedPath);
+		if (!isSelected) return;
+
+		map.setFilter?.('places', [
+			'all',
+			['!=', ['geometry-type'], 'Polygon'],
+			['any', isSelected, ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
+		]);
 
 		// For dots, we set opacity to 0 when selected to avoid bleed-through
 		map.setPaintProperty('places-dots', 'circle-opacity', [
@@ -616,7 +724,7 @@
 			'rgba(47,57,72,1)'
 		]);
 
-		// For icons, make sure the teardrop is visible even at low zoom levels!
+		// For icons and text, make sure the selected marker is visible at all zoom levels
 		map.setPaintProperty('places', 'icon-opacity', [
 			'step',
 			['zoom'],
@@ -624,6 +732,16 @@
 			13.5,
 			1 // Zoom >= 13.5 (show all markers)
 		]);
+		map.setPaintProperty('places', 'text-opacity', [
+			'step',
+			['zoom'],
+			['case', isSelected, 1, 0], // Zoom < 13.5 (show ONLY selected marker label)
+			13.5,
+			1 // Zoom >= 13.5 (show all marker labels)
+		]);
+
+		// Render selected marker above all other markers
+		map.setLayoutProperty('places', 'symbol-sort-key', ['case', isSelected, 10, 0]);
 
 		// Swap the icon image instantly
 		map.setLayoutProperty('places', 'icon-image', [
@@ -672,7 +790,7 @@
 	}
 
 	function applyCameraTarget() {
-		if (!map || !map.isStyleLoaded() || !cameraTarget || isManuallyPanning) return;
+		if (!map || !mapReady || !cameraTarget || isManuallyPanning) return;
 
 		const uiPadding = getMapPadding();
 
@@ -714,16 +832,19 @@
 	}
 
 	function setTransportTileLayer() {
+		mapReady = false;
 		map.setStyle(base + '/transport.json');
 		tileLayerMenuOpen = false;
 	}
 
 	function setSatelliteTileLayer() {
+		mapReady = false;
 		map.setStyle(base + '/satellite.json');
 		tileLayerMenuOpen = false;
 	}
 
 	function setTerrainTileLayer() {
+		mapReady = false;
 		map.setStyle(base + '/terrain.json');
 		tileLayerMenuOpen = false;
 	}
@@ -750,8 +871,15 @@
 	<button
 		aria-label="Choose map style"
 		class="hover:bg-ink flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-1 border-gray-200 bg-white text-gray-600 shadow-md transition-all hover:text-white max-sm:h-11 max-sm:w-11"
-		onmouseenter={() => (tileLayerMenuOpen = !tileLayerMenuOpen)}
-		><i class="fa-solid fa-layer-group text-lg"></i></button
+		ontouchstart={() => {
+			isTouchStyleMenu = true;
+		}}
+		onmouseenter={() => {
+			if (!isTouchStyleMenu) tileLayerMenuOpen = !tileLayerMenuOpen;
+		}}
+		onclick={() => {
+			if (isTouchStyleMenu) tileLayerMenuOpen = !tileLayerMenuOpen;
+		}}><i class="fa-solid fa-layer-group text-lg"></i></button
 	>
 	{#if tileLayerMenuOpen}
 		<div

@@ -36,14 +36,14 @@ export const colors = Object.freeze({
 	}),
 	gpxRoles: Object.freeze({
 		main: '#8b5cf6',
-		approach: '#10b981',
-		descent: '#f97316',
+		approach: '#eab308',
+		descent: '#eab308',
 		variant: '#cccccc'
 	}),
 	topoPaths: Object.freeze({
 		main: '#3b82f6',
-		approach: '#f97316',
-		descent: '#f97316',
+		approach: '#eab308',
+		descent: '#eab308',
 		variant: '#cccccc',
 		fixedRope: '#1d70b8'
 	}),

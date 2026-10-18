@@ -63,8 +63,23 @@ vi.mock('maplibre-gl', () => {
 		addSource(id, source) {
 			this.sources.set(id, { ...source, setData: vi.fn() });
 		}
-		addLayer(layer) {
-			this.layers.set(layer.id, layer);
+		addLayer(layer, beforeId) {
+			if (beforeId && this.layers.has(beforeId)) {
+				const next = new Map();
+				for (const [k, v] of this.layers.entries()) {
+					if (k === beforeId) next.set(layer.id, layer);
+					next.set(k, v);
+				}
+				this.layers = next;
+			} else {
+				this.layers.set(layer.id, layer);
+			}
+		}
+		removeLayer(id) {
+			this.layers.delete(id);
+		}
+		removeSource(id) {
+			this.sources.delete(id);
 		}
 		setPaintProperty(...args) {
 			this.paintCalls.push(args);
@@ -262,6 +277,98 @@ describe('ClimbingMap', () => {
 					filePath: 'areas/other-crag'
 				}).name
 			).toBe('sports-climbing');
+
+			const accessIconExpression = map.getLayer('access-points').layout['icon-image'];
+			expect(evaluateIcon(accessIconExpression, { kind: 'parking' }).name).toBe('access-parking');
+			expect(evaluateIcon(accessIconExpression, { kind: 'hut' }).name).toBe('access-hut');
+			expect(evaluateIcon(accessIconExpression, { kind: 'transit', mode: 'train' }).name).toBe(
+				'access-train'
+			);
+			expect(evaluateIcon(accessIconExpression, { kind: 'transit', mode: 'bus' }).name).toBe(
+				'access-bus'
+			);
+			expect(map.images.has('parking')).toBe(false);
+		} finally {
+			globalThis.Image = originalImage;
+		}
+	});
+
+	it('continues syncing topo paths and access features when map.isStyleLoaded() returns false during tile loads or source updates', async () => {
+		const originalImage = globalThis.Image;
+		globalThis.Image = class {
+			set src(value) {
+				this._src = value;
+				queueMicrotask(() => this.onload?.());
+			}
+		};
+		const topoPath = {
+			type: 'Feature',
+			geometry: {
+				type: 'LineString',
+				coordinates: [
+					[16, 48],
+					[16.01, 48.01]
+				]
+			},
+			properties: { role: 'approach' }
+		};
+		const accessFeatures = [
+			{
+				type: 'Feature',
+				geometry: { type: 'Point', coordinates: [16.02, 48.02] },
+				properties: { kind: 'parking', name: 'Parking' }
+			}
+		];
+
+		try {
+			const view = render(ClimbingMap, {
+				props: {
+					locations,
+					topoPaths: [],
+					access: null,
+					accessKey: ''
+				}
+			});
+			await waitFor(() => expect(mapState.instance).toBeTruthy());
+			const map = mapState.instance;
+			await map.handlers.get('load')();
+
+			// Simulate MapLibre returning false from isStyleLoaded() while flying / loading tiles / dirty sources
+			map.isStyleLoaded = () => false;
+
+			await view.rerender({
+				locations,
+				topoPaths: [topoPath],
+				access: { type: 'FeatureCollection', features: accessFeatures },
+				accessKey: 'areas/alpine-crag'
+			});
+
+			expect(map.getLayer('topo-paths-outline')).toBeTruthy();
+			expect(map.getLayer('topo-paths')).toBeTruthy();
+			expect(map.getSource('topo-paths').setData).toHaveBeenCalledWith({
+				type: 'FeatureCollection',
+				features: [topoPath]
+			});
+			expect(map.getLayer('access-lines-outline')).toBeTruthy();
+			expect(map.getLayer('access-lines')).toBeTruthy();
+			expect(map.getLayer('access-dots')).toBeTruthy();
+			expect(map.getLayer('access-points')).toBeTruthy();
+			expect(map.getLayer('places').minzoom).toBe(0);
+			expect(map.getSource('access').setData).toHaveBeenCalledWith({
+				type: 'FeatureCollection',
+				features: accessFeatures
+			});
+
+			const layerIds = [...map.layers.keys()];
+			expect(layerIds.indexOf('access-lines-outline')).toBeLessThan(
+				layerIds.indexOf('access-lines')
+			);
+			expect(layerIds.indexOf('access-lines')).toBeLessThan(layerIds.indexOf('access-dots'));
+			expect(layerIds.indexOf('topo-paths-outline')).toBeLessThan(layerIds.indexOf('topo-paths'));
+			expect(layerIds.indexOf('topo-paths')).toBeLessThan(layerIds.indexOf('access-dots'));
+			expect(layerIds.indexOf('access-dots')).toBeLessThan(layerIds.indexOf('places-dots'));
+			expect(layerIds.indexOf('places-dots')).toBeLessThan(layerIds.indexOf('access-points'));
+			expect(layerIds.indexOf('access-points')).toBeLessThan(layerIds.indexOf('places'));
 		} finally {
 			globalThis.Image = originalImage;
 		}

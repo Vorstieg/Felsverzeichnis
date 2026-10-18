@@ -9,8 +9,29 @@
 
 	import { _, locale } from 'svelte-i18n';
 	import ClimbingMap from '$lib/components/ClimbingMap.svelte';
+	import type { PathFeature } from '@vorstieg/fels-types/types';
 
 	let { children }: { children?: import('svelte').Snippet } = $props();
+
+	let streamedTopoPaths = $state<PathFeature[] | null>(null);
+	$effect(() => {
+		const stream = $page.data.streamed?.details;
+		streamedTopoPaths = null;
+		if (stream) {
+			void stream
+				.then((res) => {
+					if ($page.data.streamed?.details === stream && res?.topoPaths?.length) {
+						streamedTopoPaths = res.topoPaths;
+					}
+				})
+				.catch(() => {});
+		}
+	});
+	let activeTopoPaths = $derived(
+		$page.data.topoPaths?.length
+			? $page.data.topoPaths
+			: (streamedTopoPaths ?? $page.data.topoPaths)
+	);
 
 	let displayTitle = $derived($page.data.name || $_('site.title'));
 	let displayDescription = $derived.by(() => {
@@ -50,7 +71,7 @@
 	<ClimbingMap
 		locations={$page.data.locations ?? []}
 		access={$page.data.access}
-		topoPaths={$page.data.topoPaths}
+		topoPaths={activeTopoPaths}
 		accessKey={$page.url.pathname +
 			':' +
 			($page.data.access?.features || []).map((feature) => feature.id || '').join(',')}

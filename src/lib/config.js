@@ -74,6 +74,7 @@ export const securityRatings = new Map([
 export const alpineRouteTags = [
 	'Hochtour',
 	'Klettersteig',
+	'Gletscher',
 	'Gletscherwanderung',
 	'Schneefeld',
 	'Gratwanderung',

@@ -254,4 +254,60 @@ describe('map crag loader', () => {
 		expect(result.cragPathUrl).toBe(path);
 		await result.streamed.details;
 	});
+
+	it('falls back to parent access when sector access has empty features and aggregates sector topoPaths for parent crags', async () => {
+		const sectorPath = 'areas/alpine-crag/north';
+		const sector = {
+			...crag,
+			properties: { id: 'north', kind: 'sector', name: 'North Wall' }
+		};
+		const fetchForSector = vi.fn(async (url) => {
+			if (url.endsWith('/areas/alpine-crag/north/north.json')) return response(sector);
+			if (url.endsWith('/areas/alpine-crag/north/north-access.json'))
+				return response({ type: 'FeatureCollection', features: [] });
+			if (url.endsWith('/areas/alpine-crag/alpine-crag-access.json')) return response(access);
+			if (url.endsWith('/areas/alpine-crag/north/north-topo.json')) return response(topo);
+			return response(null, false);
+		});
+
+		const sectorResult = await load({
+			...makeArgs(fetchForSector, { crag: sectorPath }),
+			parent: async () => ({
+				locations: [{ entry: crag, path: 'areas/alpine-crag' }],
+				allLocations: [
+					{ entry: crag, path: 'areas/alpine-crag' },
+					{ entry: sector, path: sectorPath }
+				]
+			})
+		});
+		const sectorDetails = await sectorResult.streamed.details;
+		expect(sectorDetails.access).toEqual(access);
+
+		const fetchForParentWithoutOwnTopo = vi.fn(async (url) => {
+			if (url.endsWith('/areas/alpine-crag/alpine-crag.json')) return response(crag);
+			if (url.endsWith('/areas/alpine-crag/alpine-crag-access.json')) return response(access);
+			if (url.endsWith('/areas/alpine-crag/north/north-topo.json')) return response(topo);
+			if (url.endsWith('/areas/alpine-crag')) return response([]);
+			return response(null, false);
+		});
+
+		const parentResult = await load({
+			...makeArgs(fetchForParentWithoutOwnTopo, { crag: 'areas/alpine-crag' }),
+			parent: async () => ({
+				locations: [{ entry: crag, path: 'areas/alpine-crag' }],
+				allLocations: [
+					{ entry: crag, path: 'areas/alpine-crag' },
+					{ entry: sector, path: sectorPath }
+				]
+			})
+		});
+		expect(parentResult.topoPaths).toEqual([]);
+		const parentDetails = await parentResult.streamed.details;
+		expect(parentDetails.topoPaths).toHaveLength(1);
+		expect(parentDetails.topoPaths[0].properties).toMatchObject({
+			role: 'approach',
+			routeType: 'sports-climbing',
+			label: 'Trail'
+		});
+	});
 });

@@ -24,6 +24,19 @@
 		class?: string;
 		children?: import('svelte').Snippet;
 	} = $props();
+	let isTouch = false;
+
+	function handleTouchStart() {
+		isTouch = true;
+	}
+
+	function handleMouseEnter() {
+		if (!isTouch) onmouseenter();
+	}
+
+	function handleFocus() {
+		if (!isTouch) onfocus();
+	}
 </script>
 
 {#if href}
@@ -32,8 +45,10 @@
 			? activeClasses
 			: inactiveClasses} {className ? className : 'w-10 max-sm:w-11'}"
 		{href}
-		{onmouseenter}
-		{onfocus}
+		{onclick}
+		ontouchstart={handleTouchStart}
+		onmouseenter={handleMouseEnter}
+		onfocus={handleFocus}
 		aria-label={title}
 		{title}
 	>
@@ -48,8 +63,9 @@
 			? activeClasses
 			: inactiveClasses} {className ? className : 'w-10 max-sm:w-11'}"
 		{onclick}
-		{onmouseenter}
-		{onfocus}
+		ontouchstart={handleTouchStart}
+		onmouseenter={handleMouseEnter}
+		onfocus={handleFocus}
 		aria-label={title}
 		{title}
 	>

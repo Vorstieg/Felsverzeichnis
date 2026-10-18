@@ -1,0 +1,42 @@
+{
+	"name": "Felsverzeichnis",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"forwardPorts": [5173, 4173],
+	"portsAttributes": {
+		"5173": {
+			"label": "Vite Dev Server",
+			"onAutoForward": "openBrowser"
+		},
+		"4173": {
+			"label": "Vite Preview Server",
+			"onAutoForward": "notify"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "esbenp.prettier-vscode",
+				"[svelte]": {
+					"editor.defaultFormatter": "svelte.svelte-vscode"
+				},
+				"eslint.validate": ["javascript", "svelte"]
+			},
+			"extensions": [
+				"svelte.svelte-vscode",
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
+				"bradlc.vscode-tailwindcss",
+				"ms-playwright.playwright"
+			]
+		}
+	},
+	"remoteUser": "root",
+	"updateRemoteUserUID": false,
+	"postCreateCommand": "bash .devcontainer/post-create.sh"
+}

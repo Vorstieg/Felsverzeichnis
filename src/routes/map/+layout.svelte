@@ -34,7 +34,7 @@
 </script>
 
 <div
-	class="pointer-events-none fixed top-2 right-0 left-0 z-[1000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto"
+	class="pointer-events-none fixed top-2 right-0 left-0 z-[5000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto"
 >
 	<div
 		class="pointer-events-auto mx-4 sm:mx-0 sm:ml-8 sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80"

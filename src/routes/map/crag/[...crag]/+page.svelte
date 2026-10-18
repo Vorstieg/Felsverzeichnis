@@ -201,12 +201,17 @@
 		return direction === 'Unknown' ? null : $_('directions.' + direction);
 	}
 
+	function getTagLabel(tag: string) {
+		const translated = $_('tags.' + tag);
+		return translated === 'tags.' + tag ? tag : translated;
+	}
+
 	/** @param {import("$lib/types/files").FelsLocation} sector */
 	function getSectorTypes(sector: import('$lib/types/files').FelsLocation) {
-		return (sector.entry.properties.type ?? []).map((id) => {
-			const translated = $_('tags.' + id);
-			return { id, name: translated === 'tags.' + id ? id : translated };
-		});
+		return (sector.entry.properties.type ?? []).map((id) => ({
+			id,
+			name: getTagLabel(id)
+		}));
 	}
 
 	/** @param {import("$lib/types/files").FelsLocation} sector */
@@ -318,7 +323,7 @@
 									class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
 									style="background-color: #64748bd9;"
 								>
-									{$_('tags.' + tag)}
+									{getTagLabel(tag)}
 								</span>
 							{/each}
 						</div>

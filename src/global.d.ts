@@ -22,6 +22,9 @@ declare global {
 			allLocations?: FelsLocation[];
 			access?: AccessCollection | null;
 			topoPaths?: PathFeature[];
+			streamed?: {
+				details?: Promise<{ topoPaths?: PathFeature[] }>;
+			};
 			cameraTarget?: MapCameraTarget | null;
 		}
 	}

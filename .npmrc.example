@@ -1,0 +1,5 @@
+# GitHub Packages configuration for @vorstieg packages
+# Replace YOUR_GITHUB_PAT with a personal access token having `read:packages` scope,
+# or set the NODE_AUTH_TOKEN environment variable.
+@vorstieg:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}

@@ -45,6 +45,11 @@
 		$searchSuggestionsActive = isFocused && suggestions.length > 0 ? dropdownHeight : 0;
 	});
 
+	function getTagLabel(tag: string) {
+		const translated = $_('tags.' + tag);
+		return translated === 'tags.' + tag ? tag : translated;
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if (!isFocused || suggestions.length === 0) return;
 
@@ -154,7 +159,7 @@
 									? 'text-white/80'
 									: 'text-slate-400'} font-normal tracking-wider uppercase"
 							>
-								{$_('tags.' + suggestion.entry.properties.type[0])}
+								{getTagLabel(suggestion.entry.properties.type[0])}
 							</span>
 						{/if}
 					</div>
