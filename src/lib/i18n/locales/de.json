@@ -32,7 +32,7 @@
 	"types": {
 		"sports-climbing": "Sportklettern",
 		"bouldering": "Bouldern",
-		"multi-pitch": "Mehrseillänge",
+		"multi-pitch": "Mehrseillängen",
 		"trad": "Traditionell",
 		"alpine-tour": "Hochtour",
 		"via-ferrata": "Klettersteig"
@@ -80,6 +80,9 @@
 		"seasonality": "Saisonalität",
 		"protection": "Absicherung",
 		"routes": "Routen",
+		"show_routes": "Routen anzeigen",
+		"hide_routes": "Routen verbergen",
+		"multi_pitch_routes": "Mehrseillängen",
 		"rock_type": "Steinart",
 		"length": "Länge",
 		"grade": "Grad",
@@ -180,7 +183,7 @@
 		"Boulder-Start": "Boulder-Start",
 		"sports-climbing": "Sportklettern",
 		"bouldering": "Bouldern",
-		"multi-pitch": "Mehrseillänge",
+		"multi-pitch": "Mehrseillängen",
 		"trad": "Traditionell",
 		"alpine-tour": "Hochtour",
 		"via-ferrata": "Klettersteig",

@@ -17,6 +17,12 @@ export function createEntryLoader(options: Parameters<typeof createCragCache>[0]
 				? { path: folder, entry }
 				: (locations.find((location) => location.path === folder) ?? null);
 		};
+		const readAncestor = async (folder: string): Promise<FelsLocation | null> => {
+			if (locations.length > 0) {
+				return locations.find((location) => location.path === folder) ?? null;
+			}
+			return read(folder);
+		};
 		let location = await read(path);
 		let folder = path;
 		while (!location && allowRoute && folder.includes('/')) {
@@ -31,7 +37,7 @@ export function createEntryLoader(options: Parameters<typeof createCragCache>[0]
 			folder = parentPath(folder);
 		}
 		const [resolvedAncestors, rawDirectory] = await Promise.all([
-			Promise.all(ancestorFolders.map((ancestorFolder) => read(ancestorFolder))),
+			Promise.all(ancestorFolders.map((ancestorFolder) => readAncestor(ancestorFolder))),
 			cache.fetchDirectory(location.path)
 		]);
 		const ancestors = resolvedAncestors.filter(

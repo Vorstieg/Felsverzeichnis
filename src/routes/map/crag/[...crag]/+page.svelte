@@ -5,7 +5,6 @@
 	import GradeChart from '$lib/components/charts/GradeChart.svelte';
 	import SunChart from '$lib/components/charts/SunChart.svelte';
 	import BestSeasonChart from '$lib/components/charts/BestSeasonChart.svelte';
-	import RouteList from '$lib/components/topo/RouteList.svelte';
 	import {
 		calculateBestSeason,
 		calculateSunInfo,
@@ -108,7 +107,7 @@
 	let has3DTopo = $derived(details?.has3DTopo);
 	let gradeRoutes = $derived(details?.gradeRoutes);
 	let accessTracks = $derived(getAccessTracks(data.access));
-	let trackRoutes = $derived((gradeRoutes || []).filter((route) => route.downloadTracks?.length));
+
 	let has2DTopo = $derived(details?.has2DTopo);
 	let tags = $derived(data.currentData?.properties?.tags?.filter((tag) => tag != null));
 	let equipment = $derived(data.currentData.properties.equipment);
@@ -467,25 +466,9 @@
 					<span>{description}</span>
 
 					{#if gradeRoutes?.length}
-						{#if gradeRoutes.length < 8}
-							<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
-								<RouteList routes={gradeRoutes} fallbackAccessTracks={accessTracks} />
-							</div>
-						{:else}
-							<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
-								<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
-									{$_('topo.grade_distribution')}
-								</h3>
-								<div class="h-40 w-full sm:h-56">
-									<GradeChart routes={gradeRoutes} />
-								</div>
-							</div>
-						{/if}
-						{#if gradeRoutes.length >= 8 && trackRoutes.length}
-							<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
-								<RouteList routes={trackRoutes} fallbackAccessTracks={accessTracks} />
-							</div>
-						{/if}
+						<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
+							<GradeChart routes={gradeRoutes} fallbackAccessTracks={accessTracks} />
+						</div>
 					{/if}
 
 					{#if hasSeasonData}

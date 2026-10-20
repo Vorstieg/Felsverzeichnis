@@ -9,6 +9,7 @@
 
 	let {
 		routes,
+		title,
 		topo = null,
 		fallbackAccessTracks = [],
 		activeRouteId,
@@ -17,6 +18,7 @@
 		onRouteHover
 	}: {
 		routes: RouteSummary[];
+		title?: string;
 		topo?: FelsTopoDocument | null;
 		fallbackAccessTracks?: GpxTrack[];
 		activeRouteId?: Route['id'] | null;
@@ -51,7 +53,11 @@
 </script>
 
 <div class="w-full">
-	<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.routes')} ({routes.length})</h3>
+	{#if title !== null && title !== ''}
+		<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
+			{title ?? `${$_('topo.routes')} (${routes.length})`}
+		</h3>
+	{/if}
 	<div class="border border-gray-200 bg-white shadow-sm sm:rounded-xl">
 		<table class="!m-0 min-w-full divide-y divide-gray-200">
 			<thead class="bg-gray-50">
@@ -121,6 +127,9 @@
 						</td>
 						<td class="w-1 px-6 py-4 text-sm whitespace-nowrap text-gray-500">
 							{length !== null ? `${length}m` : '—'}
+							{#if route.pitches?.length}
+								<span class="ml-1 text-xs text-gray-400">({route.pitches.length} SL)</span>
+							{/if}
 						</td>
 					</tr>
 				{/each}
