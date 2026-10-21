@@ -38,5 +38,6 @@
 	},
 	"remoteUser": "root",
 	"updateRemoteUserUID": false,
+	"shutdownAction": "none",
 	"postCreateCommand": "bash .devcontainer/post-create.sh"
 }

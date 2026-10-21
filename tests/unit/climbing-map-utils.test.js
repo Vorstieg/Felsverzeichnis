@@ -145,6 +145,10 @@ describe('climbing map utilities', () => {
 		expect(getPreferredClimbingType(['sports-climbing', 'multi-pitch'])).toBe('multi-pitch');
 		expect(getPreferredClimbingType(['bouldering', 'multi-pitch'])).toBe('multi-pitch');
 		expect(getPreferredClimbingType(['trad', 'bouldering'])).toBe('bouldering');
+		expect(getPreferredClimbingType(['bouldering'])).toBe('bouldering');
+		expect(getPreferredClimbingType('bouldering')).toBe('bouldering');
+		expect(getPreferredClimbingType(undefined)).toBe('');
 		expect(getPreferredClimbingType([])).toBe('');
+		expect(sortClimbingTypes('bouldering')).toEqual(['bouldering']);
 	});
 });

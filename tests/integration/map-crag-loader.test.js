@@ -19,7 +19,10 @@ const topo = {
 		{
 			id: 'route-1',
 			type: 'sports-climbing',
-			pathRefs: [{ pathId: 'approach-1', role: 'approach', label: 'Trail' }],
+			pathRefs: [
+				{ pathId: 'main-1', role: 'main', label: 'Route Line' },
+				{ pathId: 'approach-1', role: 'approach', label: 'Trail' }
+			],
 			points2D: [
 				[0.1, 0.9],
 				[0.9, 0.1]
@@ -29,6 +32,18 @@ const topo = {
 	paths: {
 		type: 'FeatureCollection',
 		features: [
+			{
+				type: 'Feature',
+				id: 'main-1',
+				geometry: {
+					type: 'LineString',
+					coordinates: [
+						[16, 48],
+						[16.02, 48.02]
+					]
+				},
+				properties: { name: 'Main Line' }
+			},
 			{
 				type: 'Feature',
 				id: 'approach-1',
@@ -119,10 +134,11 @@ describe('map crag loader', () => {
 
 		expect(result.name).toBe('Alpine Crag');
 		expect(result.cameraTarget).toEqual({ type: 'center', center: [16, 48], zoom: 16 });
+		expect(result.topoPaths).toHaveLength(1);
 		expect(result.topoPaths[0].properties).toMatchObject({
-			role: 'approach',
+			role: 'main',
 			routeType: 'sports-climbing',
-			label: 'Trail'
+			label: 'Route Line'
 		});
 
 		const details = await result.streamed.details;
@@ -305,9 +321,60 @@ describe('map crag loader', () => {
 		const parentDetails = await parentResult.streamed.details;
 		expect(parentDetails.topoPaths).toHaveLength(1);
 		expect(parentDetails.topoPaths[0].properties).toMatchObject({
-			role: 'approach',
+			role: 'main',
 			routeType: 'sports-climbing',
-			label: 'Trail'
+			label: 'Route Line'
 		});
+	});
+
+	it('resolves an individual route on a crag and shows route-specific tracks', async () => {
+		const result = await load(makeArgs(makeFetch(), { crag: 'areas/alpine-crag/route-1' }));
+
+		expect(result.route).toBeDefined();
+		expect(result.route.id).toBe('route-1');
+		expect(result.routeId).toBe('route-1');
+		expect(result.cragPathUrl).toBe('areas/alpine-crag');
+		expect(result.meta.title).toBe('route-1 - Alpine Crag');
+		expect(result.topoPaths).toHaveLength(2);
+		expect(result.topoPaths.map((p) => p.properties.role)).toEqual(['main', 'approach']);
+	});
+
+	it('returns a 404 for a missing route on an existing crag', async () => {
+		await expect(
+			load(makeArgs(makeFetch(), { crag: 'areas/alpine-crag/missing-route' }))
+		).rejects.toMatchObject({ status: 404 });
+	});
+
+	it('resolves an individual route belonging to a child sector', async () => {
+		const sectorPath = 'areas/alpine-crag/north';
+		const sector = {
+			...crag,
+			properties: { id: 'north', kind: 'sector', name: 'North Wall' }
+		};
+		const fetchForSector = vi.fn(async (url) => {
+			if (url.endsWith('/areas/alpine-crag/alpine-crag.json')) return response(crag);
+			if (url.endsWith('/areas/alpine-crag/alpine-crag-access.json')) return response(access);
+			if (url.endsWith('/areas/alpine-crag/north/north.json')) return response(sector);
+			if (url.endsWith('/areas/alpine-crag/north/north-access.json')) return response(access);
+			if (url.endsWith('/areas/alpine-crag/north/north-topo.json')) return response(topo);
+			if (url.endsWith('/areas/alpine-crag')) return response([]);
+			return response(null, false);
+		});
+
+		const result = await load({
+			...makeArgs(fetchForSector, { crag: `${sectorPath}/route-1` }),
+			parent: async () => ({
+				locations: [{ entry: crag, path: 'areas/alpine-crag' }],
+				allLocations: [
+					{ entry: crag, path: 'areas/alpine-crag' },
+					{ entry: sector, path: sectorPath }
+				]
+			})
+		});
+
+		expect(result.route).toBeDefined();
+		expect(result.route.id).toBe('route-1');
+		expect(result.cragPathUrl).toBe(sectorPath);
+		expect(result.meta.title).toBe('route-1 - North Wall');
 	});
 });

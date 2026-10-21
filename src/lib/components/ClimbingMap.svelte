@@ -35,6 +35,8 @@
 		topoPaths = [],
 		accessKey = '',
 		cameraTarget = null,
+		selectedRouteId = null,
+		selectedRouteParentId = null,
 		isHidden = false
 	}: {
 		locations?: FelsLocation[];
@@ -42,6 +44,8 @@
 		topoPaths?: PathFeature[];
 		accessKey?: string;
 		cameraTarget?: MapCameraTarget | null;
+		selectedRouteId?: string | null;
+		selectedRouteParentId?: string | null;
 		isHidden?: boolean;
 	} = $props();
 
@@ -292,30 +296,6 @@
 		paint: { 'line-color': placeTypeColor, 'line-width': 2, 'line-opacity': 0.7 }
 	};
 
-	const sectorLabelsLayer: LayerSpecification = {
-		id: 'sector-labels',
-		type: 'symbol',
-		source: 'places',
-		filter: [
-			'all',
-			['==', ['geometry-type'], 'Polygon'],
-			['==', ['get', 'kind'], 'sector'],
-			['>=', ['zoom'], 16],
-			['has', 'name']
-		],
-		layout: {
-			'text-field': ['get', 'name'],
-			'text-size': 12,
-			'text-anchor': 'center',
-			'text-allow-overlap': false
-		},
-		paint: {
-			'text-color': colors.map.sectorText,
-			'text-halo-color': colors.map.sectorTextHalo,
-			'text-halo-width': 2
-		}
-	};
-
 	const accessLineOutlineLayer: LayerSpecification = {
 		id: 'access-lines-outline',
 		type: 'line',
@@ -488,6 +468,45 @@
 		}
 	};
 
+	const topoPathsSelectedGlowLayer: LayerSpecification = {
+		id: 'topo-paths-selected-glow',
+		type: 'line',
+		source: 'topo-paths',
+		filter: ['==', ['get', 'role'], 'impossible_none'],
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': colors.topo.routeSelected,
+			'line-width': 12,
+			'line-opacity': 0.4
+		}
+	};
+
+	const topoPathsSelectedCasingLayer: LayerSpecification = {
+		id: 'topo-paths-selected-casing',
+		type: 'line',
+		source: 'topo-paths',
+		filter: ['==', ['get', 'role'], 'impossible_none'],
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': colors.text.white,
+			'line-width': 8,
+			'line-opacity': 1
+		}
+	};
+
+	const topoPathsSelectedLayer: LayerSpecification = {
+		id: 'topo-paths-selected',
+		type: 'line',
+		source: 'topo-paths',
+		filter: ['==', ['get', 'role'], 'impossible_none'],
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': colors.topo.routeSelected,
+			'line-width': 5,
+			'line-opacity': 1
+		}
+	};
+
 	onMount(async () => {
 		map = new maplibregl.Map({
 			container: mapElement,
@@ -536,6 +555,7 @@
 			await drawLayers();
 			applyCameraTarget();
 			updateSelectionStyle($page.params.crag || '');
+			syncSelectedRouteHighlight();
 			slowRasterTileDecay(map);
 		});
 		map.on('style.load', async () => {
@@ -546,6 +566,7 @@
 			slowRasterTileDecay(map);
 			applyCameraTarget();
 			updateSelectionStyle($page.params.crag || '');
+			syncSelectedRouteHighlight();
 		});
 
 		map.on('mouseenter', 'places', function (e) {
@@ -581,7 +602,48 @@
 			}
 		});
 
-		const sectorLayerIds = ['sector-fill', 'sector-line', 'sector-labels'];
+		const topoPathLayerIds = [
+			'topo-paths',
+			'topo-paths-outline',
+			'topo-paths-selected',
+			'topo-paths-selected-casing',
+			'topo-paths-selected-glow'
+		];
+
+		map.on('mouseenter', topoPathLayerIds, (e) => {
+			const feature = e.features?.[0];
+			if (feature?.properties?.routeId) {
+				map.getCanvas().style.cursor = 'pointer';
+			}
+		});
+
+		map.on('mouseleave', topoPathLayerIds, () => {
+			map.getCanvas().style.cursor = 'default';
+		});
+
+		map.on('click', topoPathLayerIds, (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
+			const feature = e.features?.[0];
+			const properties = feature?.properties as
+				| { routeId?: string; targetPath?: string }
+				| undefined;
+			if (!properties?.routeId) return;
+
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
+
+			const targetPath = properties.targetPath || $page.params.crag;
+			if (targetPath) {
+				const cleanPath = targetPath.replace(/^\/?(map\/crag\/)?/, '').replace(/\/+$/, '');
+				const pathWithRoute = cleanPath.endsWith(`/${properties.routeId}`)
+					? cleanPath
+					: `${cleanPath}/${properties.routeId}`;
+				goto(`${base}/map/crag/${pathWithRoute}`);
+			}
+		});
+
+		const sectorLayerIds = ['sector-fill', 'sector-line'];
 		map.on('mouseenter', sectorLayerIds, () => {
 			map.getCanvas().style.cursor = 'pointer';
 		});
@@ -589,6 +651,7 @@
 			map.getCanvas().style.cursor = 'default';
 		});
 		map.on('click', sectorLayerIds, (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
 			if (e.originalEvent) {
 				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
 			}
@@ -603,6 +666,7 @@
 			map.getCanvas().style.cursor = 'default';
 		});
 		map.on('click', 'sector-selected-casing', (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
 			if (e.originalEvent) {
 				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
 			}
@@ -841,11 +905,13 @@
 		'sector-fill',
 		'sector-selected-casing',
 		'sector-line',
-		'sector-labels',
 		'access-lines-outline',
 		'access-lines',
 		'topo-paths-outline',
 		'topo-paths',
+		'topo-paths-selected-glow',
+		'topo-paths-selected-casing',
+		'topo-paths-selected',
 		'access-dots',
 		'places-dots',
 		'access-points',
@@ -865,7 +931,6 @@
 		addLayerInOrder(sectorFillLayer);
 		addLayerInOrder(sectorSelectedCasingLayer);
 		addLayerInOrder(sectorLineLayer);
-		addLayerInOrder(sectorLabelsLayer);
 		addLayerInOrder(placesDotsLayer);
 		addLayerInOrder(placesLayer);
 	}
@@ -900,6 +965,40 @@
 		return createTopoPathsData(topoPaths);
 	}
 
+	function getSelectedRouteFilter(): ExpressionSpecification {
+		if (!selectedRouteId) {
+			return ['==', ['get', 'role'], 'impossible_none'];
+		}
+		const routeMatch: ExpressionSpecification = selectedRouteParentId
+			? [
+					'any',
+					['==', ['get', 'routeId'], selectedRouteId],
+					['==', ['get', 'routeId'], selectedRouteParentId],
+					['==', ['get', 'routeId'], '']
+				]
+			: [
+					'any',
+					['==', ['get', 'routeId'], selectedRouteId],
+					['==', ['get', 'routeId'], '']
+				];
+
+		return ['all', ['==', ['get', 'role'], 'main'], routeMatch];
+	}
+
+	function syncSelectedRouteHighlight() {
+		if (!map || !mapReady) return;
+		const filter = getSelectedRouteFilter();
+		if (map.getLayer('topo-paths-selected-glow')) {
+			map.setFilter('topo-paths-selected-glow', filter);
+		}
+		if (map.getLayer('topo-paths-selected-casing')) {
+			map.setFilter('topo-paths-selected-casing', filter);
+		}
+		if (map.getLayer('topo-paths-selected')) {
+			map.setFilter('topo-paths-selected', filter);
+		}
+	}
+
 	function addTopoPathLayers() {
 		if (!map || !mapReady) return;
 		if (!map.getSource('topo-paths')) {
@@ -907,6 +1006,10 @@
 		}
 		addLayerInOrder(topoPathsOutlineLayer);
 		addLayerInOrder(topoPathsLayer);
+		addLayerInOrder(topoPathsSelectedGlowLayer);
+		addLayerInOrder(topoPathsSelectedCasingLayer);
+		addLayerInOrder(topoPathsSelectedLayer);
+		syncSelectedRouteHighlight();
 	}
 
 	function syncTopoPathLayers() {
@@ -921,6 +1024,9 @@
 
 	function removeTopoPathLayers() {
 		if (!map || !mapReady) return;
+		if (map.getLayer('topo-paths-selected')) map.removeLayer('topo-paths-selected');
+		if (map.getLayer('topo-paths-selected-casing')) map.removeLayer('topo-paths-selected-casing');
+		if (map.getLayer('topo-paths-selected-glow')) map.removeLayer('topo-paths-selected-glow');
 		if (map.getLayer('topo-paths')) map.removeLayer('topo-paths');
 		if (map.getLayer('topo-paths-outline')) map.removeLayer('topo-paths-outline');
 		if (map.getSource('topo-paths')) map.removeSource('topo-paths');
@@ -969,6 +1075,13 @@
 		topoPaths;
 		if (!mapReady) return;
 		syncTopoPathLayers();
+	});
+
+	$effect(() => {
+		selectedRouteId;
+		selectedRouteParentId;
+		if (!mapReady) return;
+		syncSelectedRouteHighlight();
 	});
 
 	$effect(() => {
@@ -1029,13 +1142,6 @@
 				['==', ['get', 'filePath'], '']
 			]);
 			setLayerFilter('sector-line', defaultSectorFilter);
-			setLayerFilter('sector-labels', [
-				'all',
-				['==', ['geometry-type'], 'Polygon'],
-				['==', ['get', 'kind'], 'sector'],
-				['>=', ['zoom'], 16],
-				['has', 'name']
-			]);
 			setLayerFilter('area-fill', defaultAreaFilter);
 			setLayerFilter('area-selected-casing', defaultAreaFilter);
 			setLayerFilter('area-line', defaultAreaFilter);
@@ -1070,8 +1176,6 @@
 			setLayerPaint('sector-line', 'line-color', placeTypeColor);
 			setLayerPaint('sector-line', 'line-width', 2);
 			setLayerPaint('sector-line', 'line-opacity', 0.7);
-			setLayerPaint('sector-labels', 'text-color', colors.map.sectorText);
-			setLayerLayout('sector-labels', 'text-size', 12);
 			setLayerPaint('places-dots', 'circle-color', placeTypeColor);
 			setLayerPaint('places-dots', 'circle-opacity', ['step', ['zoom'], 1, 13.5, 0]);
 			setLayerPaint('places-dots', 'circle-stroke-opacity', ['step', ['zoom'], 1, 13.5, 0]);
@@ -1129,13 +1233,6 @@
 			isPolygonExactMatch
 		]);
 		setLayerFilter('sector-line', sectorSelectionFilter);
-		setLayerFilter('sector-labels', [
-			'all',
-			['==', ['geometry-type'], 'Polygon'],
-			['==', ['get', 'kind'], 'sector'],
-			['has', 'name'],
-			['any', isSelected, ['>=', ['zoom'], 16]]
-		]);
 
 		const areaSelectionFilter: ExpressionSpecification = [
 			'all',
@@ -1197,13 +1294,6 @@
 		]);
 		setLayerPaint('sector-line', 'line-width', ['case', isPolygonExactMatch, 2.5, 2]);
 		setLayerPaint('sector-line', 'line-opacity', ['case', isPolygonExactMatch, 0.9, 0.7]);
-		setLayerPaint('sector-labels', 'text-color', [
-			'case',
-			isPolygonExactMatch,
-			'#dc2626',
-			colors.map.sectorText
-		]);
-		setLayerLayout('sector-labels', 'text-size', ['case', isPolygonExactMatch, 13, 12]);
 
 		// For dots, we set opacity to 0 when selected to avoid bleed-through
 		setLayerPaint('places-dots', 'circle-opacity', [

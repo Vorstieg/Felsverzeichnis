@@ -11,12 +11,13 @@ export const CLIMBING_TYPE_PRIORITY = [
 
 /**
  * Returns climbing types sorted by priority: multi-pitch > sports-climbing > bouldering > ...
- * @param {string[]} [types]
+ * @param {string[] | string} [types]
  * @returns {string[]}
  */
 export function sortClimbingTypes(types = []) {
-	if (!types || !types.length) return [];
-	const unique = Array.from(new Set(types.filter(Boolean)));
+	const list = Array.isArray(types) ? types : types ? [types] : [];
+	if (!list.length) return [];
+	const unique = Array.from(new Set(list.filter(Boolean)));
 	return unique.sort((a, b) => {
 		const indexA = CLIMBING_TYPE_PRIORITY.indexOf(a);
 		const indexB = CLIMBING_TYPE_PRIORITY.indexOf(b);
@@ -26,7 +27,7 @@ export function sortClimbingTypes(types = []) {
 
 /**
  * Returns the preferred climbing type based on priority: multi-pitch > sports-climbing > bouldering > ...
- * @param {string[]} [types]
+ * @param {string[] | string} [types]
  * @returns {string}
  */
 export function getPreferredClimbingType(types = []) {

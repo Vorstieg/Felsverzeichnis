@@ -50,11 +50,17 @@ export const colors = Object.freeze({
 	topo: Object.freeze({
 		route: '#ffdf12',
 		routeHover: '#ff0000',
-		routeSelected: '#3b82f6',
-		gradeEasy: '#4ade80',
+		routeSelected: '#dc2626',
+		gradeEasy: '#22c55e',
+		grade5: '#84cc16',
+		grade6Low: '#facc15',
+		grade6High7Low: '#f97316',
+		grade7High: '#ef4444',
+		grade8: '#a855f7',
+		grade9: '#ec4899',
 		gradeMedium: '#facc15',
 		gradeHard: '#f97316',
-		gradeVeryHard: '#d946ef',
+		gradeVeryHard: '#a855f7',
 		gradeUnknown: '#cccccc'
 	}),
 	map: Object.freeze({
