@@ -457,7 +457,7 @@ describe('ClimbingMap', () => {
 
 	it('navigates from sector layers and focuses the map on a custom event', async () => {
 		const map = await renderMap();
-		const sectorClick = map.handlers.get('click:["sector-fill","sector-line","sector-labels"]');
+		const sectorClick = map.handlers.get('click:["sector-fill","sector-line"]');
 		sectorClick({
 			features: [{ properties: { filePath: 'areas/alpine-crag/north' } }],
 			lngLat: { toArray: () => [16.01, 48.01] }
@@ -583,7 +583,7 @@ describe('ClimbingMap', () => {
 			// Test click priority: sectors take precedence over crags
 			vi.mocked(goto).mockClear();
 			const originalEvent = {};
-			const sectorClick = map.handlers.get('click:["sector-fill","sector-line","sector-labels"]');
+			const sectorClick = map.handlers.get('click:["sector-fill","sector-line"]');
 			sectorClick({
 				originalEvent,
 				features: [{ properties: { filePath: 'areas/val-valley/rock/wall' } }]
@@ -608,6 +608,103 @@ describe('ClimbingMap', () => {
 				);
 				expect(compiled.result).toBe('success');
 			}
+		} finally {
+			globalThis.Image = originalImage;
+		}
+	});
+
+	it('handles clicks on main route paths and highlights selected route main path', async () => {
+		const originalImage = globalThis.Image;
+		globalThis.Image = class {
+			onload = null;
+			set src(_) {
+				this.onload?.();
+			}
+		};
+
+		const routePath = {
+			type: 'Feature',
+			id: 'main-1',
+			geometry: {
+				type: 'LineString',
+				coordinates: [
+					[16.0, 48.0],
+					[16.01, 48.01]
+				]
+			},
+			properties: {
+				role: 'main',
+				routeId: 'route-123',
+				targetPath: 'areas/alpine-crag/north',
+				routeType: 'sports-climbing'
+			}
+		};
+
+		try {
+			const view = render(ClimbingMap, {
+				props: {
+					locations: [],
+					topoPaths: [routePath],
+					access: null,
+					accessKey: 'test',
+					selectedRouteId: null
+				}
+			});
+			await waitFor(() => expect(mapState.instance).toBeTruthy());
+			const map = mapState.instance;
+			await map.handlers.get('load')();
+
+			expect(map.getLayer('topo-paths-selected-glow')).toBeTruthy();
+			expect(map.getLayer('topo-paths-selected-casing')).toBeTruthy();
+			expect(map.getLayer('topo-paths-selected')).toBeTruthy();
+			expect(map.getLayer('topo-paths-selected').paint['line-color']).toBe('#dc2626');
+			expect(map.getLayer('topo-paths-selected-glow').paint['line-color']).toBe('#dc2626');
+
+			// When selectedRouteId is null, highlight filter matches nothing
+			expect(map.getLayer('topo-paths-selected').filter).toEqual([
+				'==',
+				['get', 'role'],
+				'impossible_none'
+			]);
+
+			// Test click on topo path
+			vi.mocked(goto).mockClear();
+			const topoPathClick = map.handlers.get(
+				'click:' +
+					JSON.stringify([
+						'topo-paths',
+						'topo-paths-outline',
+						'topo-paths-selected',
+						'topo-paths-selected-casing',
+						'topo-paths-selected-glow'
+					])
+			);
+			expect(topoPathClick).toBeTruthy();
+
+			const clickEvent = {
+				originalEvent: {},
+				features: [routePath]
+			};
+			topoPathClick(clickEvent);
+			expect(clickEvent.originalEvent._felsHandled).toBe(true);
+			expect(goto).toHaveBeenCalledWith('/map/crag/areas/alpine-crag/north/route-123');
+
+			// Rerender with selectedRouteId
+			await view.rerender({
+				locations: [],
+				topoPaths: [routePath],
+				access: null,
+				accessKey: 'test',
+				selectedRouteId: 'route-123'
+			});
+
+			// Now highlight filter targets route-123
+			const selectedFilter = map.getLayer('topo-paths-selected').filter;
+			expect(selectedFilter).toEqual([
+				'all',
+				['==', ['get', 'role'], 'main'],
+				['any', ['==', ['get', 'routeId'], 'route-123'], ['==', ['get', 'routeId'], '']]
+			]);
 		} finally {
 			globalThis.Image = originalImage;
 		}

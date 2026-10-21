@@ -5,22 +5,29 @@
 	import { _ } from 'svelte-i18n';
 	import { gradeOrder, gradeRank, hardestRouteGrade } from '$lib/assets/js/route-summary';
 	import { colors } from '$lib/colors.js';
+	import { getGradeColor } from '$lib/assets/js/grades.js';
 	import RouteList from '$lib/components/topo/RouteList.svelte';
+	import GradeLine from '$lib/components/charts/GradeLine.svelte';
 
 	let {
 		routes,
 		title,
-		fallbackAccessTracks = []
+		fallbackAccessTracks = [],
+		activeRouteId,
+		pendingRouteId,
+		initialExpanded = false,
+		onRouteSelect
 	}: {
 		routes: (RouteSummary | Route)[];
 		title?: string;
 		fallbackAccessTracks?: GpxTrack[];
+		activeRouteId?: Route['id'] | null;
+		pendingRouteId?: Route['id'] | null;
+		initialExpanded?: boolean;
+		onRouteSelect?: (route: Route) => void;
 	} = $props();
 
 	let gradeChartData = $derived(calculateGradeStats(routes));
-	let trackRoutes = $derived(
-		(routes as RouteSummary[]).filter((route) => route.downloadTracks?.length)
-	);
 
 	let userExpanded = $state<boolean | null>(null);
 
@@ -29,7 +36,7 @@
 		userExpanded = null;
 	});
 
-	let isExpanded = $derived(userExpanded !== null ? userExpanded : routes.length < 8);
+	let isExpanded = $derived(userExpanded !== null ? userExpanded : initialExpanded);
 
 	let t_routes_label = $derived($_('charts.routes'));
 	let chartConfig = $derived({
@@ -70,18 +77,7 @@
 			const grade = gradeOrder[i];
 			labels.push(grade);
 			dataCounts.push(counts[grade] || 0);
-
-			let hue;
-			if (i <= 23) {
-				hue = 140 - (i / 23) * 60;
-			} else if (i <= 29) {
-				hue = 65 - ((i - 24) / 5) * 25;
-			} else if (i <= 35) {
-				hue = 25 - ((i - 30) / 5) * 25;
-			} else {
-				hue = 290 - ((i - 36) / 9) * 30;
-			}
-			segmentColors.push(`hsl(${hue}, 85%, 45%)`);
+			segmentColors.push(getGradeColor({ standardizedValue: grade }));
 		}
 
 		return {
@@ -181,21 +177,40 @@
 	</div>
 {/if}
 
-{#if gradeChartData}
-	<div class={title ? 'h-40 w-full sm:h-56' : 'chart-wrapper'}>
-		<div class="chart-wrapper">
-			<canvas use:initGradeChart={chartConfig}></canvas>
+{#if !isExpanded}
+	<div
+		class="cursor-pointer transition-opacity hover:opacity-90"
+		role="button"
+		tabindex="0"
+		onclick={() => (userExpanded = true)}
+		onkeydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				userExpanded = true;
+			}
+		}}
+		aria-label={$_('topo.show_routes')}
+	>
+		<GradeLine routes={routes as Route[]} />
+	</div>
+{:else}
+	{#if gradeChartData}
+		<div class={title ? 'h-40 w-full sm:h-56' : 'chart-wrapper'}>
+			<div class="chart-wrapper">
+				<canvas use:initGradeChart={chartConfig}></canvas>
+			</div>
 		</div>
-	</div>
-{/if}
+	{/if}
 
-{#if isExpanded}
 	<div class="mt-4">
-		<RouteList routes={routes as RouteSummary[]} title="" {fallbackAccessTracks} />
-	</div>
-{:else if trackRoutes.length > 0}
-	<div class="mt-4">
-		<RouteList routes={trackRoutes} title={$_('topo.gpx_tracks')} {fallbackAccessTracks} />
+		<RouteList
+			routes={routes as RouteSummary[]}
+			title=""
+			{fallbackAccessTracks}
+			{activeRouteId}
+			{pendingRouteId}
+			{onRouteSelect}
+		/>
 	</div>
 {/if}
 

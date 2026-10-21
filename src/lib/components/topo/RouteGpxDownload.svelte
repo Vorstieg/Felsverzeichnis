@@ -6,11 +6,13 @@
 	let {
 		route,
 		tracks = [],
-		fallbackAccessTracks = []
+		fallbackAccessTracks = [],
+		class: className = ''
 	}: {
 		route: Pick<import('@vorstieg/fels-types/types').Route, 'id' | 'name'>;
 		tracks?: import('$lib/types/application').GpxTrack[];
 		fallbackAccessTracks?: import('$lib/types/application').GpxTrack[];
+		class?: string;
 	} = $props();
 	let button = $state<HTMLButtonElement>();
 	let menu = $state<HTMLDivElement>();
@@ -107,10 +109,12 @@
 		aria-expanded={open}
 		aria-haspopup={optionCount > 1 ? 'true' : undefined}
 		aria-label="{$_('ui.download_tour_gpx')}: {route.name}"
-		class="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:border-blue-400 hover:bg-blue-100"
+		class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold shadow-xs transition-all active:scale-95 {open
+			? 'border-slate-300 bg-slate-200 text-slate-900'
+			: 'border-slate-200 bg-slate-100 text-slate-700 hover:border-slate-300 hover:bg-slate-200 hover:text-slate-900'} {className}"
 	>
-		<i class="fa-solid fa-download" aria-hidden="true"></i>
-		GPX
+		<i class="fa-solid fa-download text-[11px] {open ? 'text-slate-700' : 'text-slate-500'}" aria-hidden="true"></i>
+		<span>GPX</span>
 	</button>
 	{#if open}
 		<div
@@ -129,7 +133,7 @@
 					<button
 						type="button"
 						onclick={() => download(approachIndex, descentIndex)}
-						class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-blue-50 focus-visible:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-500"
+						class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-2 focus-visible:outline-slate-500"
 					>
 						<span class="min-w-0">
 							<span class="block text-sm font-semibold text-slate-800"
@@ -141,7 +145,7 @@
 								>
 							{/if}
 						</span>
-						<i class="fa-solid fa-download shrink-0 text-blue-600" aria-hidden="true"></i>
+						<i class="fa-solid fa-download shrink-0 text-slate-500" aria-hidden="true"></i>
 					</button>
 				{/each}
 			{/each}

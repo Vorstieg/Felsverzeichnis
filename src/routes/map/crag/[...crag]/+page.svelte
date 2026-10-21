@@ -18,8 +18,20 @@
 	import CragValidationPrompt from '$lib/components/CragValidationPrompt.svelte';
 	import { getCragValidationIssue } from '$lib/assets/js/crag-validation.js';
 	import ImageViewer from '$lib/components/ui/ImageViewer.svelte';
-	import { getAccessTracks } from '$lib/assets/js/route-gpx.js';
+	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
+	import RouteList from '$lib/components/topo/RouteList.svelte';
+	import RouteDetail from '$lib/components/topo/RouteDetail.svelte';
+	import { getAccessTracks, getRouteTracks } from '$lib/assets/js/route-gpx.js';
+	import {
+		getParentRoute,
+		getPitchDisplayName,
+		getRouteDisplayName
+	} from '$lib/assets/js/topo-loader-utils.js';
+	import { getGradeColor, getGradeDistribution } from '$lib/assets/js/grades.js';
 	import { hardestRouteGrade } from '$lib/assets/js/route-summary';
+	import type { Route } from '@vorstieg/fels-types/types';
+	import type { SteepnessMetrics } from '$lib/types/application';
+	import { navigating } from '$app/stores';
 
 	let fullscreenImageIndex = $state(-1);
 	let sunInfo = $state<import('$lib/types/application').SunInfo>({ hours: 'N/A', chartData: null });
@@ -33,24 +45,60 @@
 	);
 	let wallDirection = $state('N/A');
 	let breadcrumbScrollContainer = $state<HTMLDivElement>();
+	let breadcrumbsAtStart = $state(true);
 	let breadcrumbsAtEnd = $state(true);
 	let isScrolled = $state(false);
 
 	function checkBreadcrumbScroll() {
 		if (breadcrumbScrollContainer) {
 			const { scrollLeft, scrollWidth, clientWidth } = breadcrumbScrollContainer;
-			breadcrumbsAtEnd = Math.ceil(scrollWidth - clientWidth - scrollLeft) <= 5;
+			const maxScroll = Math.max(0, scrollWidth - clientWidth);
+			breadcrumbsAtStart = scrollLeft <= 5;
+			breadcrumbsAtEnd = maxScroll - scrollLeft <= 5;
+		}
+	}
+
+	function scrollToRight() {
+		if (breadcrumbScrollContainer) {
+			breadcrumbScrollContainer.scrollLeft = breadcrumbScrollContainer.scrollWidth;
+			checkBreadcrumbScroll();
 		}
 	}
 
 	$effect(() => {
-		// Re-evaluate on data changes
+		// By default always scrolled to the right
 		data;
-		setTimeout(checkBreadcrumbScroll, 50);
+		scrollToRight();
+		requestAnimationFrame(scrollToRight);
+		const timer = setTimeout(scrollToRight, 60);
 
 		const handleResize = () => checkBreadcrumbScroll();
 		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
+
+		const container = breadcrumbScrollContainer;
+		const handleWheel = (event: WheelEvent) => {
+			if (!container) return;
+			const canScroll = container.scrollWidth > container.clientWidth;
+			if (canScroll && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+				event.preventDefault();
+				container.scrollLeft += event.deltaY;
+				checkBreadcrumbScroll();
+			}
+		};
+		container?.addEventListener('wheel', handleWheel, { passive: false });
+
+		return () => {
+			clearTimeout(timer);
+			window.removeEventListener('resize', handleResize);
+			container?.removeEventListener('wheel', handleWheel);
+		};
+	});
+
+	let breadcrumbMaskClass = $derived.by(() => {
+		if (breadcrumbsAtStart && breadcrumbsAtEnd) return '';
+		if (!breadcrumbsAtStart && !breadcrumbsAtEnd) return 'breadcrumb-mask-both';
+		if (!breadcrumbsAtStart) return 'breadcrumb-mask-left';
+		return 'breadcrumb-mask-right';
 	});
 
 	let { data }: { data: import('./$types').PageData } = $props();
@@ -86,11 +134,62 @@
 		}
 	});
 
+	let routeMetrics = $state<SteepnessMetrics | null>(null);
+	function handleMetrics(event: CustomEvent<SteepnessMetrics>) {
+		routeMetrics = event.detail;
+	}
+
+	let activeRouteId = $derived(data.route?.id ?? null);
+	let pendingRouteId = $derived.by(() => {
+		const toPath = $navigating?.to?.url?.pathname;
+		if (toPath && toPath.startsWith(`${base}/map/crag/`)) {
+			const parts = toPath.split('/');
+			return parts[parts.length - 1];
+		}
+		return null;
+	});
+
+	let activeTopo = $derived(details?.topoJson ?? data.topo);
+	let referencedTracks = $derived(
+		data.route
+			? getRouteTracks(activeTopo, getParentRoute(activeTopo?.routes, data.route.id) || data.route)
+			: []
+	);
+
+	let routeTopoPath = $derived(
+		data.route ? `${data.cragPathUrl}/${data.route.id}` : data.cragPathUrl
+	);
+
+	let parentRoute = $derived(
+		data.route ? getParentRoute(activeTopo?.routes, data.route.id) : null
+	);
+	let routeDisplayName = $derived(
+		data.route ? getRouteDisplayName(data.route, parentRoute, $_) : ''
+	);
+	let displayRoute = $derived(
+		data.route ? { ...data.route, name: routeDisplayName } : null
+	);
+	let displayPitches = $derived(
+		(data.route?.pitches ?? []).map((pitch, idx) => ({
+			...pitch,
+			name: getPitchDisplayName(pitch, idx, $_)
+		}))
+	);
+
+	function handleRouteSelect(route: Route) {
+		const sectorId =
+			'sectorId' in route ? (route as import('$lib/types/application').RouteSummary).sectorId : null;
+		const sector = sectorId ? sectors.find((s) => s.entry.properties.id === sectorId) : null;
+		const targetPath = sector ? sector.path : data.cragPathUrl;
+		goto(`${base}/map/crag/${targetPath}/${route.id}`);
+	}
+
 	$effect(() => {
-		if (details?.topoJson) {
-			sunInfo = calculateSunInfo(details.topoJson);
-			wallDirection = calculateWallDirection(details.topoJson);
-			seasonChartData = calculateBestSeason(details.topoJson, null);
+		const topoToUse = details?.topoJson ?? data.topo;
+		if (topoToUse) {
+			sunInfo = calculateSunInfo(topoToUse, data.route ?? null);
+			wallDirection = calculateWallDirection(topoToUse, data.route ?? null);
+			seasonChartData = calculateBestSeason(topoToUse, data.route ?? null);
 		} else {
 			sunInfo = { hours: 'N/A', chartData: null };
 			wallDirection = 'N/A';
@@ -107,6 +206,7 @@
 	let has3DTopo = $derived(details?.has3DTopo);
 	let gradeRoutes = $derived(details?.gradeRoutes);
 	let accessTracks = $derived(getAccessTracks(data.access));
+	let fallbackAccessTracks = $derived(accessTracks);
 
 	let has2DTopo = $derived(details?.has2DTopo);
 	let tags = $derived(data.currentData?.properties?.tags?.filter((tag) => tag != null));
@@ -147,34 +247,12 @@
 	function getSectorGradeDistribution(sector: import('$lib/types/files').FelsLocation) {
 		if (!gradeRoutes) return [];
 		const routes = gradeRoutes.filter((r) => r.sectorId === sector.entry.properties.id);
-		if (routes.length === 0) return [];
-
-		let easy = 0,
-			medium = 0,
-			hard = 0,
-			veryHard = 0;
-		routes.forEach((r) => {
-			const g = hardestRouteGrade(r)?.standardizedValue ?? '';
-			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
-			else if (g.startsWith('6')) medium++;
-			else if (g.startsWith('7')) hard++;
-			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
-		});
-
-		const total = easy + medium + hard + veryHard;
-		if (total === 0) return [];
-
-		return [
-			{ count: easy, percent: (easy / total) * 100, colorClass: '#4ade80', label: '< 6a' },
-			{ count: medium, percent: (medium / total) * 100, colorClass: '#facc15', label: '6a - 6c+' },
-			{ count: hard, percent: (hard / total) * 100, colorClass: '#f97316', label: '7a - 7c+' },
-			{ count: veryHard, percent: (veryHard / total) * 100, colorClass: '#d946ef', label: '> 8a' }
-		].filter((b) => b.count > 0);
+		return getGradeDistribution(routes);
 	}
 
 	function getConicGradient(distribution: ReturnType<typeof getSectorGradeDistribution>) {
 		if (distribution.length === 0) return 'transparent';
-		if (distribution.length === 1) return distribution[0].colorClass;
+		if (distribution.length === 1) return distribution[0].color;
 
 		let gradient = 'conic-gradient(';
 		let currentPercent = 0;
@@ -182,7 +260,7 @@
 		distribution.forEach((bucket, index) => {
 			const start = currentPercent;
 			const end = currentPercent + bucket.percent;
-			gradient += `${bucket.colorClass} ${start}% ${end}%`;
+			gradient += `${bucket.color} ${start}% ${end}%`;
 			if (index < distribution.length - 1) gradient += ', ';
 			currentPercent = end;
 		});
@@ -247,36 +325,69 @@
 
 <main class="z-[500] flex h-full min-h-0 w-full flex-1 flex-col">
 	<div
-		class="header-dynamic flex w-screen flex-row items-center justify-self-center px-6 pr-20 pb-2 transition-colors duration-300 sm:w-auto sm:justify-self-start {isScrolled
+		class="header-dynamic flex w-screen flex-row items-center justify-self-center px-6 pr-24 pb-2 transition-colors duration-300 sm:w-auto sm:justify-self-start sm:pr-28 {isScrolled
 			? 'border-b border-gray-200 bg-white shadow-sm'
 			: ''}"
 	>
-		<div class="flex max-w-full min-w-0 flex-col">
+		<div class="flex max-w-full min-w-0 flex-1 flex-col">
 			<div
-				class="breadcrumb-dynamic relative z-20 w-full {breadcrumbsAtEnd ? '' : 'breadcrumb-mask'}"
+				class="breadcrumb-dynamic relative z-20 w-full mr-2 sm:mr-3 {breadcrumbMaskClass}"
 			>
 				<div
 					bind:this={breadcrumbScrollContainer}
 					onscroll={checkBreadcrumbScroll}
-					class="no-scrollbar flex items-center overflow-x-auto pr-6 text-[10px] font-medium tracking-wide sm:text-xs"
+					class="no-scrollbar flex items-center gap-1 overflow-x-auto pl-1 pr-3 py-0.5 text-xs font-medium tracking-wide sm:text-sm sm:pr-4"
 				>
 					{#each breadcrumbParts as part, i}
 						{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
+						{@const isLastCragPart = i === breadcrumbParts.length - 1}
 						<a
-							href="{base}/map/{encodeURIComponent(subpath)}"
-							class="-mx-0.5 shrink-0 rounded px-0.5 text-slate-500 transition-colors hover:text-slate-700 hover:underline focus:ring-2 focus:ring-slate-400 focus:outline-none"
+							href={isLastCragPart && data.route
+								? `${base}/map/crag/${data.cragPathUrl}`
+								: `${base}/map/${encodeURIComponent(subpath)}`}
+							class="shrink-0 rounded-md px-2 py-0.5 transition-all sm:px-2.5 sm:py-1 no-underline {isLastCragPart && !data.route
+								? 'bg-slate-200/80 font-bold text-slate-800'
+								: 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95'}"
 						>
-							{part}
+							{isLastCragPart && data.currentData?.properties?.name
+								? data.currentData.properties.name
+								: part}
 						</a>
-						{#if i < breadcrumbParts.length - 1}
-							<i class="fa-solid fa-chevron-right mx-1.5 shrink-0 text-[8px] text-slate-300"></i>
+						{#if i < breadcrumbParts.length - 1 || data.route}
+							<i class="fa-solid fa-chevron-right shrink-0 text-[8px] text-slate-300 sm:text-[10px]"></i>
 						{/if}
 					{/each}
+					{#if data.route}
+						<span
+							class="shrink-0 rounded-md bg-slate-200/80 px-2 py-0.5 font-bold text-slate-800 sm:px-2.5 sm:py-1"
+							aria-current="page"
+						>
+							{routeDisplayName || data.route.id}
+						</span>
+					{/if}
 				</div>
 			</div>
-			<h1 class="title-dynamic my-0 font-bold text-slate-800">
-				{data.currentData?.properties?.name}
-			</h1>
+			<div class="flex items-center gap-3">
+				<h1 class="title-dynamic my-0 truncate font-bold text-slate-800">
+					{data.route ? routeDisplayName : data.currentData?.properties?.name}
+				</h1>
+				{#if data.route?.grade}
+					<span
+						class="shrink-0 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700 shadow-sm sm:px-4 sm:text-sm"
+						style="border-left: 5px solid {getGradeColor(data.route.grade)};"
+					>
+						{data.route.grade?.value ?? ''}
+					</span>
+				{/if}
+				{#if displayRoute && referencedTracks.length}
+					<RouteGpxDownload
+						route={displayRoute}
+						tracks={referencedTracks}
+						{fallbackAccessTracks}
+						class="sm:px-3 sm:text-sm"
+					/>
+				{/if}
+			</div>
 		</div>
 	</div>
 	<div
@@ -298,6 +409,69 @@
 				<div class="mt-4 h-10 w-full rounded-full bg-gray-200"></div>
 				<div class="h-10 w-full rounded-full bg-gray-200"></div>
 			</div>
+		{:else if displayRoute}
+			<RouteDetail
+				route={displayRoute}
+				rockType={data.rockType}
+				{wallDirection}
+				{sunInfo}
+				metrics={routeMetrics}
+				onMetrics={handleMetrics}
+			>
+				{#snippet actions()}
+					{#if has3DTopo || has2DTopo}
+						<div
+							class="buttons-inline no-scrollbar -mx-2 mt-1 mb-4 flex gap-3 overflow-x-auto px-2 pt-1 pb-2 sm:mt-4 sm:mb-6"
+						>
+							{#if has3DTopo}
+								<div class="shrink-0">
+									<TopoButton mode="3d" path={routeTopoPath} variant="compact" />
+								</div>
+							{/if}
+							{#if has2DTopo}
+								<div class="shrink-0">
+									<TopoButton mode="2d" path={routeTopoPath} variant="compact" />
+								</div>
+							{/if}
+						</div>
+					{/if}
+				{/snippet}
+
+				{#if displayPitches.length}
+					<div class="mt-4 mb-5">
+						<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
+							{$_('topo.pitches', { default: 'Seillängen' })} ({displayPitches.length})
+						</h3>
+						<RouteList
+							routes={displayPitches}
+							title=""
+							{activeRouteId}
+							{pendingRouteId}
+							onRouteSelect={(pitch) => {
+								goto(`${base}/map/crag/${data.cragPathUrl}/${pitch.id}`);
+							}}
+						/>
+					</div>
+				{/if}
+
+				{#if hasSeasonData}
+					<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
+						<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.seasonality')}</h3>
+						<div class="mb-6 h-48 w-full">
+							<BestSeasonChart data={seasonChartData} />
+						</div>
+					</div>
+				{/if}
+
+				{#if sunInfo.chartData}
+					<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
+						<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.sun_course')}</h3>
+						<div class="h-32 w-full">
+							<SunChart data={sunInfo.chartData} />
+						</div>
+					</div>
+				{/if}
+			</RouteDetail>
 		{:else}
 			{#if (type?.length ?? 0) > 0 || (tags?.length ?? 0) > 0 || topoJson}
 				<div class="dynamic-reveal flex flex-col gap-3 sm:mt-4 sm:mb-6">
@@ -467,7 +641,13 @@
 
 					{#if gradeRoutes?.length}
 						<div class="not-prose mt-5 mb-5 w-full sm:mt-8 sm:mb-8">
-							<GradeChart routes={gradeRoutes} fallbackAccessTracks={accessTracks} />
+							<GradeChart
+								routes={gradeRoutes}
+								fallbackAccessTracks={accessTracks}
+								{activeRouteId}
+								{pendingRouteId}
+								onRouteSelect={handleRouteSelect}
+							/>
 						</div>
 					{/if}
 
@@ -587,22 +767,52 @@
 	{#if data.currentData}
 		<div class="buttons-footer shrink-0 border-t border-gray-200 bg-white/80 px-6 backdrop-blur-md">
 			<div
-				class="no-scrollbar mt-1 flex items-center overflow-x-auto pb-1 text-[10px] font-medium tracking-wide sm:text-xs"
+				class="no-scrollbar mt-1 flex items-center gap-1 overflow-x-auto pb-1 text-xs font-medium tracking-wide"
 			>
 				{#each breadcrumbParts as part, i}
 					{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
+					{@const isLastCragPart = i === breadcrumbParts.length - 1}
 					<a
-						href="{base}/map/{encodeURIComponent(subpath)}"
-						class="-mx-0.5 shrink-0 rounded px-0.5 text-slate-500 transition-colors hover:text-slate-700 hover:underline focus:ring-2 focus:ring-slate-400 focus:outline-none"
+						href={isLastCragPart && data.route
+							? `${base}/map/crag/${data.cragPathUrl}`
+							: `${base}/map/${encodeURIComponent(subpath)}`}
+						class="shrink-0 rounded-md px-2 py-0.5 transition-all no-underline {isLastCragPart && !data.route
+							? 'bg-slate-200/80 font-bold text-slate-800'
+							: 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95'}"
 					>
-						{part}
+						{isLastCragPart && data.currentData?.properties?.name
+							? data.currentData.properties.name
+							: part}
 					</a>
-					{#if i < breadcrumbParts.length - 1}
-						<i class="fa-solid fa-chevron-right mx-1.5 shrink-0 text-[8px] text-slate-300"></i>
+					{#if i < breadcrumbParts.length - 1 || data.route}
+						<i class="fa-solid fa-chevron-right shrink-0 text-[8px] text-slate-300"></i>
 					{/if}
 				{/each}
+				{#if data.route}
+					<span
+						class="shrink-0 rounded-md bg-slate-200/80 px-2 py-0.5 font-bold text-slate-800"
+						aria-current="page"
+					>
+						{data.route.name || data.route.id}
+					</span>
+				{/if}
 			</div>
-			{#if has3DTopo || has2DTopo || (topo && topo.link && topo.link.trim() !== '') || transit || parking}
+			{#if data.route}
+				{#if has3DTopo || has2DTopo}
+					<div class="no-scrollbar -mx-2 flex gap-3 overflow-x-auto px-2 pt-1 pb-1">
+						{#if has3DTopo}
+							<div class="shrink-0">
+								<TopoButton mode="3d" path={routeTopoPath} variant="compact"></TopoButton>
+							</div>
+						{/if}
+						{#if has2DTopo}
+							<div class="shrink-0">
+								<TopoButton mode="2d" path={routeTopoPath} variant="compact"></TopoButton>
+							</div>
+						{/if}
+					</div>
+				{/if}
+			{:else if has3DTopo || has2DTopo || (topo && topo.link && topo.link.trim() !== '') || transit || parking}
 				<div class="no-scrollbar -mx-2 flex gap-3 overflow-x-auto px-2 pt-1 pb-1">
 					{#if has3DTopo}
 						<div class="shrink-0">
@@ -670,16 +880,19 @@
 </main>
 
 <style>
-	.breadcrumb-mask {
-		mask-image: linear-gradient(to right, black 70%, transparent 90%);
-		-webkit-mask-image: linear-gradient(to right, black 70%, transparent 90%);
+	.breadcrumb-mask-left {
+		mask-image: linear-gradient(to right, transparent 0, black 28px);
+		-webkit-mask-image: linear-gradient(to right, transparent 0, black 28px);
 	}
 
-	@media (min-width: 640px) {
-		.breadcrumb-mask {
-			mask-image: linear-gradient(to right, black 85%, transparent 100%);
-			-webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-		}
+	.breadcrumb-mask-right {
+		mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+		-webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+	}
+
+	.breadcrumb-mask-both {
+		mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
+		-webkit-mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
 	}
 
 	@media (max-width: 639px) {
@@ -702,9 +915,9 @@
 		}
 
 		.breadcrumb-dynamic {
-			max-height: calc((1 - var(--info-panel-high-progress, 0)) * 32px);
+			max-height: calc((1 - var(--info-panel-high-progress, 0)) * 36px);
 			opacity: calc(1 - var(--info-panel-high-progress, 0));
-			margin-bottom: calc((1 - var(--info-panel-high-progress, 0)) * 0.125rem);
+			margin-bottom: calc((1 - var(--info-panel-high-progress, 0)) * 0.25rem);
 			overflow: hidden;
 		}
 
@@ -740,9 +953,9 @@
 		}
 
 		.breadcrumb-dynamic {
-			max-height: 32px;
+			max-height: 42px;
 			opacity: 1;
-			margin-bottom: 0.125rem;
+			margin-bottom: 0.25rem;
 		}
 
 		.title-dynamic {

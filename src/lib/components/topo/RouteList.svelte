@@ -5,6 +5,7 @@
 	import { routeGrade, routeLength } from '$lib/assets/js/route-summary';
 	import { colors } from '$lib/colors.js';
 	import { getRouteTracks } from '$lib/assets/js/route-gpx.js';
+	import { getGradeColor } from '$lib/assets/js/grades.js';
 	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
 
 	let {
@@ -26,18 +27,6 @@
 		onRouteSelect?: (route: Route) => void;
 		onRouteHover?: (route: Route | null) => void;
 	} = $props();
-
-	function getGradeColor(grade: Grade | undefined) {
-		if (!grade?.standardizedValue) return colors.topo.gradeUnknown;
-		const value = grade.standardizedValue;
-		if (value.startsWith('3') || value.startsWith('4') || value.startsWith('5')) {
-			return colors.topo.gradeEasy;
-		}
-		if (value.startsWith('6')) return colors.topo.gradeMedium;
-		if (value.startsWith('7')) return colors.topo.gradeHard;
-		if (value.startsWith('8') || value.startsWith('9')) return colors.topo.gradeVeryHard;
-		return colors.topo.gradeUnknown;
-	}
 
 	function selectRoute(route: Route) {
 		onRouteSelect?.(route);

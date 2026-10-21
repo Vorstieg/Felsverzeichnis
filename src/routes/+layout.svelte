@@ -20,7 +20,7 @@
 		if (stream) {
 			void stream
 				.then((res) => {
-					if ($page.data.streamed?.details === stream && res?.topoPaths?.length) {
+					if ($page.data.streamed?.details === stream && res?.topoPaths) {
 						streamedTopoPaths = res.topoPaths;
 					}
 				})
@@ -28,12 +28,14 @@
 		}
 	});
 	let activeTopoPaths = $derived(
-		$page.data.topoPaths?.length
-			? $page.data.topoPaths
-			: (streamedTopoPaths ?? $page.data.topoPaths)
+		streamedTopoPaths ?? $page.data.topoPaths
 	);
 
-	let displayTitle = $derived($page.data.name || $_('site.title'));
+	let displayTitle = $derived(
+		$page.data.route
+			? `${$page.data.route.name || $page.data.route.id} - ${$page.data.name}`
+			: $page.data.name || $_('site.title')
+	);
 	let displayDescription = $derived.by(() => {
 		const d = $page.data;
 		if ($locale === 'de') {
@@ -76,6 +78,8 @@
 			':' +
 			($page.data.access?.features || []).map((feature) => feature.id || '').join(',')}
 		cameraTarget={$page.data.cameraTarget}
+		selectedRouteId={$page.data.route?.id ?? $page.data.routeId ?? null}
+		selectedRouteParentId={$page.data.route?.parentId ?? null}
 		isHidden={$page.url.pathname.startsWith(`${base}/topo/`)}
 	/>
 	<main id="main" class="pointer-events-none overflow-auto" tabindex="-1">

@@ -38,12 +38,17 @@
 	} from '$lib/types/application';
 	import type { PerspectiveCamera } from 'three';
 	import type { OrbitControls as ThreeOrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import { findRouteOrChild } from '$lib/assets/js/topo-loader-utils.js';
+	import {
+		findRouteOrChild,
+		getParentRoute as findParentRoute,
+		getPitchDisplayName,
+		getRouteDisplayName
+	} from '$lib/assets/js/topo-loader-utils.js';
+	import { getGradeColor, getGradeDistribution } from '$lib/assets/js/grades.js';
 	import { getTypeColor } from '$lib/assets/js/route-types.js';
 	import { colors } from '$lib/colors.js';
 
-	import SteepnessDistribution from '$lib/components/charts/SteepnessDistribution.svelte';
-	import RouteSteepnessChart from '$lib/components/charts/RouteSteepnessChart.svelte';
+	import RouteDetail from '$lib/components/topo/RouteDetail.svelte';
 	import FloatingControlsBottom from '$lib/components/ui/FloatingControlsBottom.svelte';
 	import FloatingControlsTop from '$lib/components/ui/FloatingControlsTop.svelte';
 	import FloatingButton from '$lib/components/ui/FloatingButton.svelte';
@@ -177,12 +182,7 @@
 	let animationState = $state<CameraAnimation | null>(null);
 
 	function getParentRoute(childId: RouteId | null | undefined) {
-		return data.topo.routes.find(
-			(r) =>
-				r.id === childId ||
-				(r.pitches && r.pitches.some((p) => p.id === childId)) ||
-				(r.variants && r.variants.some((variant) => variant.id === childId))
-		);
+		return findParentRoute(data.topo.routes, childId);
 	}
 
 	let referencedTracks = $derived(
@@ -421,6 +421,22 @@
 
 	let activeRouteId = $derived(pendingRouteId ?? data.route?.id);
 
+	let parentRoute = $derived(
+		data.route ? findParentRoute(data.topo?.routes, data.route.id) : null
+	);
+	let routeDisplayName = $derived(
+		data.route ? getRouteDisplayName(data.route, parentRoute, $_) : ''
+	);
+	let displayRoute = $derived(
+		data.route ? { ...data.route, name: routeDisplayName } : null
+	);
+	let displayPitches = $derived(
+		(data.route?.pitches ?? []).map((pitch, idx) => ({
+			...pitch,
+			name: getPitchDisplayName(pitch, idx, $_)
+		}))
+	);
+
 	let description = $derived(
 		$locale === 'de' ? data.description_de : data.description_en || data.description_de
 	);
@@ -599,16 +615,6 @@
 		});
 	};
 
-	function getGradeColor(grade: Grade | undefined) {
-		if (!grade) return colors.topo.gradeUnknown;
-		const g = grade.standardizedValue;
-		if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) return colors.topo.gradeEasy;
-		if (g.startsWith('6')) return colors.topo.gradeMedium;
-		if (g.startsWith('7')) return colors.topo.gradeHard;
-		if (g.startsWith('8') || g.startsWith('9')) return colors.topo.gradeVeryHard;
-		return colors.topo.gradeUnknown;
-	}
-
 	function getSectorRouteCount(sector: import('$lib/types/files').FelsLocation) {
 		return (data.gradeRoutes ?? []).filter((route) => route.sectorId === sector.entry.properties.id)
 			.length;
@@ -616,44 +622,7 @@
 
 	function getSectorGradeDistribution(sector: import('$lib/types/files').FelsLocation) {
 		const routes = data.gradeRoutes?.filter((r) => r.sectorId === sector.entry.properties.id) || [];
-		if (routes.length === 0) return [];
-
-		let easy = 0,
-			medium = 0,
-			hard = 0,
-			veryHard = 0;
-		routes.forEach((r) => {
-			const g = hardestRouteGrade(r)?.standardizedValue ?? '';
-			if (g.startsWith('3') || g.startsWith('4') || g.startsWith('5')) easy++;
-			else if (g.startsWith('6')) medium++;
-			else if (g.startsWith('7')) hard++;
-			else if (g.startsWith('8') || g.startsWith('9')) veryHard++;
-		});
-
-		const total = easy + medium + hard + veryHard;
-		if (total === 0) return [];
-
-		return [
-			{ count: easy, percent: (easy / total) * 100, colorClass: 'bg-green-400', label: '< 6a' },
-			{
-				count: medium,
-				percent: (medium / total) * 100,
-				colorClass: 'bg-yellow-400',
-				label: '6a - 6c+'
-			},
-			{
-				count: hard,
-				percent: (hard / total) * 100,
-				colorClass: 'bg-orange-500',
-				label: '7a - 7c+'
-			},
-			{
-				count: veryHard,
-				percent: (veryHard / total) * 100,
-				colorClass: 'bg-fuchsia-500',
-				label: '> 8a'
-			}
-		].filter((b) => b.count > 0);
+		return getGradeDistribution(routes);
 	}
 
 	function getSectorDirection(sector: import('$lib/types/files').FelsLocation) {
@@ -1019,7 +988,7 @@
 						<div class="mt-6 h-40 w-full rounded-2xl bg-gray-200"></div>
 					</div>
 				</div>
-			{:else if data.route}
+			{:else if displayRoute}
 				<div
 					class="flex w-screen flex-row items-center justify-self-center px-6 pt-6 pr-20 pb-5 sm:w-auto sm:justify-self-start"
 				>
@@ -1032,20 +1001,21 @@
 					</a>
 					<div class="min-w-0">
 						<div class="flex items-center gap-3">
-							<h1 class="my-0 truncate text-2xl font-bold text-slate-800">{data.route.name}</h1>
-							{#if data.route.grade}
+							<h1 class="my-0 truncate text-2xl font-bold text-slate-800">{routeDisplayName}</h1>
+							{#if displayRoute.grade}
 								<span
 									class="shrink-0 rounded-md bg-gray-100 px-5 py-1 text-sm font-bold text-gray-700 shadow-sm"
-									style="border-left: 5px solid {getGradeColor(data.route.grade)};"
+									style="border-left: 5px solid {getGradeColor(displayRoute.grade)};"
 								>
-									{data.route.grade?.value ?? ''}
+									{displayRoute.grade?.value ?? ''}
 								</span>
 							{/if}
 							{#if referencedTracks.length}
 								<RouteGpxDownload
-									route={data.route}
+									route={displayRoute}
 									tracks={referencedTracks}
 									{fallbackAccessTracks}
+									class="px-3.5 text-sm"
 								/>
 							{/if}
 						</div>
@@ -1061,90 +1031,32 @@
 				</div>
 
 				<div class="mb-4 min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-6" overflow-y>
-					<div class="mb-6 flex flex-wrap gap-3 text-sm font-medium text-gray-700">
-						{#if data.route.type}
-							{#each [data.route.type] as t}
-								<span
-									class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white"
-									style="background-color: {getTypeColor(t) + 'd9'};"
-								>
-									{$_('types.' + t)}
-								</span>
-							{/each}
-						{/if}
-						{#if data.route.tags && data.route.tags.length > 0}
-							{#each data.route.tags as tag}
-								<span
-									class="rounded-lg px-3 py-1.5 text-sm font-medium text-white"
-									style="background-color: #64748bd9;"
-								>
-									{getTagLabel(tag)}
-								</span>
-							{/each}
-						{/if}
-						{#if wallDirection !== 'N/A' && wallDirection !== 'Unknown'}
-							<Tooltip text={$_('topo.wall_direction')}>
-								<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
-									<i class="fa-solid fa-compass"></i>
-									<span>{displayWallDirection}</span>
-								</div>
-							</Tooltip>
-						{/if}
-						{#if sunInfo.hours !== 'N/A' && sunInfo.hours !== 'Unknown' && sunInfo.hours !== 'no_geodata'}
-							<Tooltip text={$_('topo.sun_hours')}>
-								<div class="mt-1 ml-2 flex items-center gap-1.5 text-slate-700">
-									<i class="fa-solid fa-clock"></i>
-									<span>{displaySunHours}</span>
-								</div>
-							</Tooltip>
-						{/if}
-					</div>
-					<div class="prose mx-auto mb-5">
-						{#if data.route.description}
-							<div class="border-b border-gray-200 p-3">
-								{data.route.description}
+					<RouteDetail
+						route={displayRoute}
+						rockType={data.rockType}
+						{wallDirection}
+						{sunInfo}
+						metrics={routeMetrics}
+						onMetrics={handleMetrics}
+						showCharts={!isProgrammaticAnimationRunning}
+					>
+						{#if displayPitches.length}
+							<div class="mt-4 mb-5">
+								<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
+									{$_('topo.pitches', { default: 'Seillängen' })} ({displayPitches.length})
+								</h3>
+								<RouteList
+									routes={displayPitches}
+									title=""
+									{activeRouteId}
+									{pendingRouteId}
+									onRouteSelect={(pitch) => {
+										goto(`${base}/topo/crag/${data.path}/${pitch.id}${$page.url.search}`);
+									}}
+								/>
 							</div>
 						{/if}
-
-						{#if data.route.length}
-							<div class="border-b border-gray-200 p-3">
-								{$_('topo.length')}: {data.route.length} m
-							</div>
-						{/if}
-						{#if data.route.boltAmount}
-							<div class="border-b border-gray-200 p-3">
-								{$_('topo.required_draws')}: {data.route.boltAmount}
-							</div>
-						{/if}
-						{#if data.rockType}
-							<div class="border-b border-gray-200 p-3">
-								{$_('topo.rock_type')}
-								: {$_('rock_types.' + data.rockType) || data.rockType}
-							</div>
-						{/if}
-					</div>
-					{#if data.route?.points3D?.length}
-						<div class="mt-6 min-h-[400px] w-full">
-							{#if !isProgrammaticAnimationRunning && renderChartsStage >= 1}
-								<div in:slide={{ duration: 200 }}>
-									<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">
-										{$_('topo.steepness_distribution')}
-									</h3>
-									<div class="mb-8">
-										<SteepnessDistribution metrics={routeMetrics} />
-									</div>
-								</div>
-							{/if}
-							{#if !isProgrammaticAnimationRunning && renderChartsStage >= 2}
-								<div in:slide={{ duration: 200 }}>
-									<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.steepness')}</h3>
-									<div class="mb-8 h-48 w-full">
-										<RouteSteepnessChart route={data.route} on:metrics={handleMetrics} />
-									</div>
-								</div>
-							{/if}
-						</div>
-					{/if}
+					</RouteDetail>
 				</div>
 			{:else}
 				<div
@@ -1270,8 +1182,8 @@
 																>
 																	{#each getSectorGradeDistribution(sector) as bucket}
 																		<div
-																			class="h-full {bucket.colorClass}"
-																			style="width: {bucket.percent}%"
+																			class="h-full"
+																			style="width: {bucket.percent}%; background-color: {bucket.color};"
 																			title="{bucket.label}: {bucket.count}"
 																		></div>
 																	{/each}
