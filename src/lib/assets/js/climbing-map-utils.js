@@ -33,8 +33,16 @@ export function getPreferredClimbingType(types = []) {
 	return sortClimbingTypes(types)[0] ?? '';
 }
 
+/**
+ * @typedef {import('@vorstieg/fels-types/types').FelsProperties & {
+ *   filePath: string;
+ *   hasSectors?: boolean;
+ *   isCentroid?: boolean;
+ * }} PlaceFeatureProperties
+ */
+
 /** @param {import('$lib/types/files').FelsLocation[]} [locations]
- * @returns {import('geojson').FeatureCollection<import('geojson').Geometry, import('@vorstieg/fels-types/types').FelsProperties & {filePath: string, hasSectors?: boolean, isCentroid?: boolean}>} */
+ * @returns {import('geojson').FeatureCollection<import('geojson').Geometry, PlaceFeatureProperties>} */
 export function createPlacesData(locations = []) {
 	const sectorParentPaths = new Set(
 		locations
@@ -47,10 +55,11 @@ export function createPlacesData(locations = []) {
 			.filter(Boolean)
 	);
 
-	/** @type {import('geojson').Feature<import('geojson').Geometry, any>[]} */
+	/** @type {import('geojson').Feature<import('geojson').Geometry, PlaceFeatureProperties>[]} */
 	const features = [];
 
 	for (const { entry, path } of locations) {
+		/** @type {PlaceFeatureProperties} */
 		const properties = {
 			...entry?.properties,
 			filePath: path,
