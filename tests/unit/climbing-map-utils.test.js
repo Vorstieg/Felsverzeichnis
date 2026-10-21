@@ -104,6 +104,37 @@ describe('climbing map utilities', () => {
 		expect(result.features[2].properties.hasSectors).toBe(false);
 	});
 
+	it('generates centroid points for polygon sectors as well', () => {
+		const sectorPolygon = {
+			type: 'Feature',
+			geometry: {
+				type: 'Polygon',
+				coordinates: [
+					[
+						[16, 48],
+						[16.02, 48],
+						[16.02, 48.02],
+						[16, 48.02],
+						[16, 48]
+					]
+				]
+			},
+			properties: {
+				id: 'poly-sector',
+				name: 'Poly Sector',
+				kind: 'sector',
+				type: ['sports-climbing']
+			}
+		};
+
+		const result = createPlacesData([{ entry: sectorPolygon, path: 'areas/crag/poly-sector' }]);
+
+		expect(result.features).toHaveLength(2);
+		expect(result.features[0].geometry.type).toBe('Polygon');
+		expect(result.features[1].properties.isCentroid).toBe(true);
+		expect(result.features[1].geometry.type).toBe('Point');
+	});
+
 	it('prioritizes climbing types according to multi-pitch > sports-climbing > bouldering', () => {
 		expect(sortClimbingTypes(['bouldering', 'sports-climbing', 'multi-pitch'])).toEqual([
 			'multi-pitch',

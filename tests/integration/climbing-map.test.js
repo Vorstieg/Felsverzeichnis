@@ -232,7 +232,7 @@ describe('ClimbingMap', () => {
 			expect(matchesPlace(18, 'Point', 'sector')).toBe(true);
 			expect(matchesPlace(16, 'Polygon', 'sector')).toBe(false);
 			expect(matchesPlace(14, 'Point', 'crag')).toBe(true);
-			expect(matchesPlace(14, 'Polygon', 'crag')).toBe(true);
+			expect(matchesPlace(14, 'Polygon', 'crag')).toBe(false);
 			expect(matchesPlace(14, 'Polygon', 'area')).toBe(false);
 
 			const placesDotsFilter = createExpression(map.getLayer('places-dots').filter, {

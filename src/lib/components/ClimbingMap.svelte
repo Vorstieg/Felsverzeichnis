@@ -98,8 +98,7 @@
 	const defaultPlacesFilter: ExpressionSpecification = [
 		'all',
 		['!=', ['get', 'kind'], 'area'],
-		['!=', ['coalesce', ['get', 'isCentroid'], false], true],
-		['any', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'crag']],
+		['==', ['geometry-type'], 'Point'],
 		['any', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
 	];
 
@@ -1087,14 +1086,14 @@
 		const isSelected = selectionExpression(selectedPath);
 		if (!isSelected) return;
 		const decodedPath = decodeURIComponent(selectedPath);
-		const isPolygonExactMatch: ExpressionSpecification = ['==', ['get', 'filePath'], decodedPath];
+		const isExactMatch: ExpressionSpecification = ['==', ['get', 'filePath'], decodedPath];
+		const isPolygonExactMatch = isExactMatch;
 
 		setLayerFilter('places', [
 			'all',
 			['!=', ['get', 'kind'], 'area'],
-			['!=', ['coalesce', ['get', 'isCentroid'], false], true],
-			['any', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'crag']],
-			['any', isSelected, ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
+			['==', ['geometry-type'], 'Point'],
+			['any', isExactMatch, ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
 		]);
 
 		setLayerFilter('crag-fill', [
@@ -1210,44 +1209,44 @@
 		setLayerPaint('places-dots', 'circle-opacity', [
 			'step',
 			['zoom'],
-			['case', isSelected, 0, 1], // Zoom < 13.5
+			['case', isExactMatch, 0, 1], // Zoom < 13.5
 			13.5,
 			0 // Zoom >= 13.5
 		]);
 		setLayerPaint('places-dots', 'circle-stroke-opacity', [
 			'step',
 			['zoom'],
-			['case', isSelected, 0, 1],
+			['case', isExactMatch, 0, 1],
 			13.5,
 			0
 		]);
 
 		// Change text color to red instantly
-		setLayerPaint('places', 'text-color', ['case', isSelected, '#dc2626', 'rgba(47,57,72,1)']);
+		setLayerPaint('places', 'text-color', ['case', isExactMatch, '#dc2626', 'rgba(47,57,72,1)']);
 
 		// For icons and text, make sure the selected marker is visible at all zoom levels
 		setLayerPaint('places', 'icon-opacity', [
 			'step',
 			['zoom'],
-			['case', isSelected, 1, 0], // Zoom < 13.5 (show ONLY selected marker)
+			['case', isExactMatch, 1, 0], // Zoom < 13.5 (show ONLY selected marker)
 			13.5,
 			1 // Zoom >= 13.5 (show all markers)
 		]);
 		setLayerPaint('places', 'text-opacity', [
 			'step',
 			['zoom'],
-			['case', isSelected, 1, 0], // Zoom < 13.5 (show ONLY selected marker label)
+			['case', isExactMatch, 1, 0], // Zoom < 13.5 (show ONLY selected marker label)
 			13.5,
 			1 // Zoom >= 13.5 (show all marker labels)
 		]);
 
 		// Render selected marker above all other markers
-		setLayerLayout('places', 'symbol-sort-key', ['case', isSelected, 10, 0]);
+		setLayerLayout('places', 'symbol-sort-key', ['case', isExactMatch, 10, 0]);
 
 		// Swap the icon image instantly
 		setLayerLayout('places', 'icon-image', [
 			'case',
-			isSelected,
+			isExactMatch,
 			['image', 'selected-marker'],
 			placeIcon
 		]);

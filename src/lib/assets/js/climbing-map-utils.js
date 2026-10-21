@@ -71,11 +71,11 @@ export function createPlacesData(locations = []) {
 			properties
 		});
 
-		// For polygon crags, also include a centroid Point feature so that
-		// circle layers (places-dots) can render a single dot at the crag center
-		// instead of rendering a circle at every vertex along the polygon perimeter.
+		// For polygon crags and sectors, also include a centroid Point feature so that
+		// symbol layers (places) and circle layers (places-dots) can render a single
+		// marker/dot at the center instead of rendering on polygon geometry fragments.
 		if (
-			entry?.properties?.kind === 'crag' &&
+			(entry?.properties?.kind === 'crag' || entry?.properties?.kind === 'sector') &&
 			(entry?.geometry?.type === 'Polygon' || entry?.geometry?.type === 'MultiPolygon')
 		) {
 			const center = getGeometryCenter(entry.geometry);
