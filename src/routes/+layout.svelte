@@ -78,8 +78,12 @@
 			':' +
 			($page.data.access?.features || []).map((feature) => feature.id || '').join(',')}
 		cameraTarget={$page.data.cameraTarget}
-		selectedRouteId={$page.data.route?.id ?? $page.data.routeId ?? null}
-		selectedRouteParentId={$page.data.route?.parentId ?? null}
+		selectedRouteId={$page.data.route?.id != null
+			? String($page.data.route.id)
+			: ($page.data.routeId ?? null)}
+		selectedRouteParentId={$page.data.route?.parentId != null
+			? String($page.data.route.parentId)
+			: null}
 		isHidden={$page.url.pathname.startsWith(`${base}/topo/`)}
 	/>
 	<main id="main" class="pointer-events-none overflow-auto" tabindex="-1">

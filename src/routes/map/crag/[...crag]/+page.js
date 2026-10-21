@@ -81,13 +81,14 @@ export const load = async ({ params, url, parent, fetch }) => {
 			/** @type {import('@vorstieg/fels-types/types').FelsTopoDocument | null | undefined} */ doc,
 			sectorPath = ''
 		) => {
+			/** @type {Map<string | number, { role?: string; routeId?: string; routeType?: string; label?: string; targetPath?: string }>} */
 			const pathRoles = new Map();
 			for (const route of doc?.routes || []) {
 				for (const reference of route.pathRefs || []) {
 					if (!pathRoles.has(reference.pathId) || reference.role === 'main') {
 						pathRoles.set(reference.pathId, {
 							...reference,
-							routeId: route.id,
+							routeId: route.id !== undefined ? String(route.id) : undefined,
 							routeType: getPreferredClimbingType(route.type),
 							targetPath: sectorPath || routeCragPath
 						});
@@ -116,7 +117,11 @@ export const load = async ({ params, url, parent, fetch }) => {
 							feature.properties?.name ||
 							matchingRoute?.name ||
 							'',
-						routeId: reference?.routeId || matchingRoute?.id || feature.properties?.routeId || '',
+						routeId:
+							reference?.routeId ||
+							(matchingRoute?.id !== undefined ? String(matchingRoute.id) : '') ||
+							feature.properties?.routeId ||
+							'',
 						targetPath:
 							reference?.targetPath ||
 							sectorPath ||

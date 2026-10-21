@@ -51,11 +51,15 @@
 		const translated = $_('rock_types.' + key);
 		return translated === 'rock_types.' + key ? type : translated;
 	}
+
+	let routeTypes = $derived<string[]>(
+		route.type ? (Array.isArray(route.type) ? route.type : [route.type]).map(String) : []
+	);
 </script>
 
 <div class="mb-6 flex flex-wrap gap-3 text-sm font-medium text-gray-700 sm:mt-4">
-	{#if route.type}
-		{#each Array.isArray(route.type) ? route.type : [route.type] as t}
+	{#if routeTypes.length > 0}
+		{#each routeTypes as t}
 			<span
 				class="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-white"
 				style="background-color: {getTypeColor(t) + 'd9'};"
@@ -133,7 +137,7 @@
 		<div>
 			<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.steepness')}</h3>
 			<div class="mb-8 h-48 w-full">
-				<RouteSteepnessChart {route} on:metrics={(e) => onMetrics?.(e)} />
+				<RouteSteepnessChart {route} on:metrics={(e) => onMetrics?.(e as CustomEvent<SteepnessMetrics>)} />
 			</div>
 		</div>
 	</div>

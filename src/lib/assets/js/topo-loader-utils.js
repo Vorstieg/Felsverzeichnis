@@ -29,9 +29,9 @@ export function getParentRoute(routes, childId) {
 
 /**
  * Returns the explicit pitch name if present, or a localized fallback like "Pitch 1" / "Seillänge 1".
- * @param {any} pitch
+ * @param {Partial<import('@vorstieg/fels-types/types').Pitch | import('@vorstieg/fels-types/types').Route> | null | undefined} pitch
  * @param {number} [index] - 0-based pitch index
- * @param {((key: string, options?: any) => string) | null | undefined} [t] - translation function
+ * @param {((key: string, options?: Record<string, unknown>) => string) | null | undefined} [t] - translation function
  * @returns {string}
  */
 export function getPitchDisplayName(pitch, index = 0, t) {
@@ -60,7 +60,7 @@ export function getPitchDisplayName(pitch, index = 0, t) {
  * If the route is a pitch without an explicit name, resolves its fallback using its index in the parent route.
  * @param {import('@vorstieg/fels-types/types').Route | null | undefined} route
  * @param {import('@vorstieg/fels-types/types').Route | null | undefined} parentRoute
- * @param {((key: string, options?: any) => string) | null | undefined} [t]
+ * @param {((key: string, options?: Record<string, unknown>) => string) | null | undefined} [t]
  * @returns {string}
  */
 export function getRouteDisplayName(route, parentRoute, t) {

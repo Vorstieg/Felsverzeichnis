@@ -28,7 +28,6 @@
 		getRouteDisplayName
 	} from '$lib/assets/js/topo-loader-utils.js';
 	import { getGradeColor, getGradeDistribution } from '$lib/assets/js/grades.js';
-	import { hardestRouteGrade } from '$lib/assets/js/route-summary';
 	import type { Route } from '@vorstieg/fels-types/types';
 	import type { SteepnessMetrics } from '$lib/types/application';
 	import { navigating } from '$app/stores';
@@ -447,7 +446,7 @@
 							title=""
 							{activeRouteId}
 							{pendingRouteId}
-							onRouteSelect={(pitch) => {
+							onRouteSelect={(pitch: Route) => {
 								goto(`${base}/map/crag/${data.cragPathUrl}/${pitch.id}`);
 							}}
 						/>

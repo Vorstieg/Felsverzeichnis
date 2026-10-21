@@ -24,10 +24,9 @@
 	} from '$lib/assets/js/sun-calculations';
 	import { getTypeColorClass } from '$lib/assets/js/route-types.js';
 	import { getAccessTracks, getRouteTracks } from '$lib/assets/js/route-gpx.js';
-	import { hardestRouteGrade } from '$lib/assets/js/route-summary';
 	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
 	import SceneSetup from '$lib/components/topo/SceneSetup.svelte';
-	import type { Route, Point3D, Grade } from '@vorstieg/fels-types/types';
+	import type { Route, Point3D } from '@vorstieg/fels-types/types';
 	import type {
 		RouteId,
 		SelectedClimbingLine,
@@ -377,21 +376,6 @@
 		if (isCameraMoving && animationState) {
 			animationState = null;
 			isProgrammaticAnimationRunning = false;
-		}
-	});
-
-	let renderChartsStage = $state(0);
-	$effect(() => {
-		if (!isProgrammaticAnimationRunning && data.route) {
-			renderChartsStage = 1;
-			setTimeout(() => {
-				if (!isProgrammaticAnimationRunning) renderChartsStage = 2;
-			}, 50);
-			setTimeout(() => {
-				if (!isProgrammaticAnimationRunning) renderChartsStage = 3;
-			}, 100);
-		} else {
-			renderChartsStage = 0;
 		}
 	});
 
@@ -1050,7 +1034,7 @@
 									title=""
 									{activeRouteId}
 									{pendingRouteId}
-									onRouteSelect={(pitch) => {
+									onRouteSelect={(pitch: Route) => {
 										goto(`${base}/topo/crag/${data.path}/${pitch.id}${$page.url.search}`);
 									}}
 								/>

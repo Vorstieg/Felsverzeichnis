@@ -26,6 +26,8 @@ declare global {
 				details?: Promise<{ topoPaths?: PathFeature[] }>;
 			};
 			cameraTarget?: MapCameraTarget | null;
+			route?: (import('@vorstieg/fels-types/types').Route & { parentId?: string | number }) | null;
+			routeId?: string | null;
 		}
 	}
 	interface Window {

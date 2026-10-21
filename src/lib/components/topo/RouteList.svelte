@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import type { FelsTopoDocument, Grade, Route } from '@vorstieg/fels-types/types';
+	import type { FelsTopoDocument, Route } from '@vorstieg/fels-types/types';
 	import type { GpxTrack, RouteSummary } from '$lib/types/application';
 	import { routeGrade, routeLength } from '$lib/assets/js/route-summary';
-	import { colors } from '$lib/colors.js';
 	import { getRouteTracks } from '$lib/assets/js/route-gpx.js';
 	import { getGradeColor } from '$lib/assets/js/grades.js';
 	import RouteGpxDownload from '$lib/components/topo/RouteGpxDownload.svelte';
