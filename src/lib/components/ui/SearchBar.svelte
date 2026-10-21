@@ -6,6 +6,7 @@
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import { getGeometryBounds, getBoundsCenter } from '$lib/assets/js/map-camera.js';
+	import { getPreferredClimbingType } from '$lib/assets/js/climbing-map-utils.js';
 
 	let {
 		actionBase = '/map',
@@ -153,13 +154,13 @@
 				>
 					<div class="flex items-center justify-between">
 						<span>{suggestion.entry.properties.name}</span>
-						{#if suggestion.entry.properties.type?.[0] != null}
+						{#if getPreferredClimbingType(suggestion.entry.properties.type)}
 							<span
 								class="text-xs {i === activeIndex
 									? 'text-white/80'
 									: 'text-slate-400'} font-normal tracking-wider uppercase"
 							>
-								{getTagLabel(suggestion.entry.properties.type[0])}
+								{getTagLabel(getPreferredClimbingType(suggestion.entry.properties.type))}
 							</span>
 						{/if}
 					</div>

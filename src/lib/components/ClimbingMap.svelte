@@ -9,6 +9,7 @@
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
 	import { getGeometryCenter } from '$lib/assets/js/topo-loader-utils.js';
+	import { getGeometryBounds } from '$lib/assets/js/map-camera.js';
 	import { colors } from '$lib/colors.js';
 	import {
 		createPlacesData,
@@ -56,6 +57,20 @@
 
 	const placeType: ExpressionSpecification = [
 		'case',
+		['!=', ['coalesce', ['get', 'primaryType'], ''], ''],
+		['get', 'primaryType'],
+		['in', 'multi-pitch', ['coalesce', ['get', 'type'], ['literal', []]]],
+		'multi-pitch',
+		['in', 'sports-climbing', ['coalesce', ['get', 'type'], ['literal', []]]],
+		'sports-climbing',
+		['in', 'bouldering', ['coalesce', ['get', 'type'], ['literal', []]]],
+		'bouldering',
+		['in', 'trad', ['coalesce', ['get', 'type'], ['literal', []]]],
+		'trad',
+		['in', 'alpine-tour', ['coalesce', ['get', 'type'], ['literal', []]]],
+		'alpine-tour',
+		['in', 'via-ferrata', ['coalesce', ['get', 'type'], ['literal', []]]],
+		'via-ferrata',
 		['>', ['length', ['coalesce', ['get', 'type'], ['literal', []]]], 0],
 		['at', 0, ['get', 'type']],
 		''
@@ -82,7 +97,9 @@
 
 	const defaultPlacesFilter: ExpressionSpecification = [
 		'all',
-		['!=', ['geometry-type'], 'Polygon'],
+		['!=', ['get', 'kind'], 'area'],
+		['!=', ['coalesce', ['get', 'isCentroid'], false], true],
+		['any', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'crag']],
 		['any', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
 	];
 
@@ -124,7 +141,12 @@
 		type: 'circle',
 		source: 'places',
 		maxzoom: 14,
-		filter: ['all', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 0]],
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'Point'],
+			['==', ['get', 'kind'], 'crag'],
+			['>=', ['zoom'], 0]
+		],
 		paint: {
 			'circle-color': placeTypeColor,
 			'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 12, 4.5],
@@ -138,19 +160,136 @@
 		}
 	};
 
+	const defaultAreaFilter: ExpressionSpecification = [
+		'all',
+		['==', ['geometry-type'], 'Polygon'],
+		['==', ['get', 'kind'], 'area'],
+		['==', ['get', 'filePath'], '']
+	];
+
+	const areaFillLayer: LayerSpecification = {
+		id: 'area-fill',
+		type: 'fill',
+		source: 'places',
+		filter: defaultAreaFilter,
+		paint: { 'fill-color': colors.text.ink, 'fill-opacity': 0.04 }
+	};
+
+	const areaSelectedCasingLayer: LayerSpecification = {
+		id: 'area-selected-casing',
+		type: 'line',
+		source: 'places',
+		filter: defaultAreaFilter,
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': '#ffffff',
+			'line-width': 4.5,
+			'line-opacity': 0.8
+		}
+	};
+
+	const areaLineLayer: LayerSpecification = {
+		id: 'area-line',
+		type: 'line',
+		source: 'places',
+		filter: defaultAreaFilter,
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': colors.text.ink,
+			'line-width': 2,
+			'line-opacity': 0.75,
+			'line-dasharray': [3, 2]
+		}
+	};
+
+	const defaultCragFilter: ExpressionSpecification = [
+		'all',
+		['==', ['geometry-type'], 'Polygon'],
+		['==', ['get', 'kind'], 'crag'],
+		['>=', ['zoom'], 13.5]
+	];
+
+	const cragFillLayer: LayerSpecification = {
+		id: 'crag-fill',
+		type: 'fill',
+		source: 'places',
+		filter: defaultCragFilter,
+		paint: {
+			'fill-color': placeTypeColor,
+			'fill-opacity': ['step', ['zoom'], 0.12, 16, ['case', ['get', 'hasSectors'], 0, 0.12]]
+		}
+	};
+
+	const cragSelectedCasingLayer: LayerSpecification = {
+		id: 'crag-selected-casing',
+		type: 'line',
+		source: 'places',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'crag'],
+			['==', ['get', 'filePath'], '']
+		],
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': '#ffffff',
+			'line-width': 4.5,
+			'line-opacity': 0.8
+		}
+	};
+
+	const cragLineLayer: LayerSpecification = {
+		id: 'crag-line',
+		type: 'line',
+		source: 'places',
+		filter: defaultCragFilter,
+		paint: {
+			'line-color': placeTypeColor,
+			'line-width': 2,
+			'line-opacity': 0.7,
+			'line-dasharray': ['case', ['get', 'hasSectors'], ['literal', [2, 2]], ['literal', [1]]]
+		}
+	};
+
+	const defaultSectorFilter: ExpressionSpecification = [
+		'all',
+		['==', ['geometry-type'], 'Polygon'],
+		['==', ['get', 'kind'], 'sector'],
+		['>=', ['zoom'], 16]
+	];
+
 	const sectorFillLayer: LayerSpecification = {
 		id: 'sector-fill',
 		type: 'fill',
 		source: 'places',
-		filter: ['all', ['==', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 16]],
+		filter: defaultSectorFilter,
 		paint: { 'fill-color': placeTypeColor, 'fill-opacity': 0.12 }
+	};
+
+	const sectorSelectedCasingLayer: LayerSpecification = {
+		id: 'sector-selected-casing',
+		type: 'line',
+		source: 'places',
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'sector'],
+			['==', ['get', 'filePath'], '']
+		],
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
+		paint: {
+			'line-color': '#ffffff',
+			'line-width': 4.5,
+			'line-opacity': 0.8
+		}
 	};
 
 	const sectorLineLayer: LayerSpecification = {
 		id: 'sector-line',
 		type: 'line',
 		source: 'places',
-		filter: ['all', ['==', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 16]],
+		filter: defaultSectorFilter,
+		layout: { 'line-cap': 'round', 'line-join': 'round' },
 		paint: { 'line-color': placeTypeColor, 'line-width': 2, 'line-opacity': 0.7 }
 	};
 
@@ -158,7 +297,13 @@
 		id: 'sector-labels',
 		type: 'symbol',
 		source: 'places',
-		filter: ['all', ['==', ['geometry-type'], 'Polygon'], ['>=', ['zoom'], 16], ['has', 'name']],
+		filter: [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'sector'],
+			['>=', ['zoom'], 16],
+			['has', 'name']
+		],
 		layout: {
 			'text-field': ['get', 'name'],
 			'text-size': 12,
@@ -376,6 +521,13 @@
 		map.getCanvas().style.cursor = 'default';
 
 		map.on('click', 'places', (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
+			if (e.point && map.queryRenderedFeatures?.(e.point, { layers: sectorLayerIds })?.length) {
+				return;
+			}
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
 			if (map.getZoom() >= 12.0 && e.features?.[0]) {
 				openFeature(e.features[0]);
 			}
@@ -397,7 +549,10 @@
 			updateSelectionStyle($page.params.crag || '');
 		});
 
-		map.on('mouseenter', 'places', function () {
+		map.on('mouseenter', 'places', function (e) {
+			if (e.point && map.queryRenderedFeatures?.(e.point, { layers: sectorLayerIds })?.length) {
+				return;
+			}
 			if (map.getZoom() >= 12.0) {
 				map.getCanvas().style.cursor = 'pointer';
 			}
@@ -418,6 +573,10 @@
 		});
 
 		map.on('click', 'places-dots', (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
 			if (map.getZoom() < 12.0 && e.features?.[0]) {
 				openFeature(e.features[0]);
 			}
@@ -431,6 +590,129 @@
 			map.getCanvas().style.cursor = 'default';
 		});
 		map.on('click', sectorLayerIds, (e) => {
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
+			const feature = e.features?.[0];
+			if (feature) openFeature(feature);
+		});
+
+		map.on('mouseenter', 'sector-selected-casing', () => {
+			map.getCanvas().style.cursor = 'pointer';
+		});
+		map.on('mouseleave', 'sector-selected-casing', () => {
+			map.getCanvas().style.cursor = 'default';
+		});
+		map.on('click', 'sector-selected-casing', (e) => {
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
+			const feature = e.features?.[0];
+			if (feature) openFeature(feature);
+		});
+
+		map.on('mouseenter', 'crag-selected-casing', (e) => {
+			if (e.point && map.queryRenderedFeatures?.(e.point, { layers: sectorLayerIds })?.length) {
+				return;
+			}
+			map.getCanvas().style.cursor = 'pointer';
+		});
+		map.on('mouseleave', 'crag-selected-casing', () => {
+			map.getCanvas().style.cursor = 'default';
+		});
+		map.on('click', 'crag-selected-casing', (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
+			if (e.point && map.queryRenderedFeatures?.(e.point, { layers: sectorLayerIds })?.length) {
+				return;
+			}
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
+			const feature = e.features?.[0];
+			if (feature) openFeature(feature);
+		});
+
+		map.on('mouseenter', 'area-selected-casing', (e) => {
+			if (
+				e.point &&
+				map.queryRenderedFeatures?.(e.point, {
+					layers: [...sectorLayerIds, ...cragPolygonLayerIds]
+				})?.length
+			) {
+				return;
+			}
+			map.getCanvas().style.cursor = 'pointer';
+		});
+		map.on('mouseleave', 'area-selected-casing', () => {
+			map.getCanvas().style.cursor = 'default';
+		});
+		map.on('click', 'area-selected-casing', (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
+			if (
+				e.point &&
+				map.queryRenderedFeatures?.(e.point, {
+					layers: [...sectorLayerIds, ...cragPolygonLayerIds]
+				})?.length
+			) {
+				return;
+			}
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
+			const feature = e.features?.[0];
+			if (feature) openFeature(feature);
+		});
+
+		const cragPolygonLayerIds = ['crag-fill', 'crag-line'];
+		map.on('mouseenter', cragPolygonLayerIds, (e) => {
+			if (e.point && map.queryRenderedFeatures?.(e.point, { layers: sectorLayerIds })?.length) {
+				return;
+			}
+			map.getCanvas().style.cursor = 'pointer';
+		});
+		map.on('mouseleave', cragPolygonLayerIds, () => {
+			map.getCanvas().style.cursor = 'default';
+		});
+		map.on('click', cragPolygonLayerIds, (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
+			if (e.point && map.queryRenderedFeatures?.(e.point, { layers: sectorLayerIds })?.length) {
+				return;
+			}
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
+			const feature = e.features?.[0];
+			if (feature) openFeature(feature);
+		});
+
+		const areaPolygonLayerIds = ['area-fill', 'area-line'];
+		map.on('mouseenter', areaPolygonLayerIds, (e) => {
+			if (
+				e.point &&
+				map.queryRenderedFeatures?.(e.point, {
+					layers: [...sectorLayerIds, ...cragPolygonLayerIds]
+				})?.length
+			) {
+				return;
+			}
+			map.getCanvas().style.cursor = 'pointer';
+		});
+		map.on('mouseleave', areaPolygonLayerIds, () => {
+			map.getCanvas().style.cursor = 'default';
+		});
+		map.on('click', areaPolygonLayerIds, (e) => {
+			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
+			if (
+				e.point &&
+				map.queryRenderedFeatures?.(e.point, {
+					layers: [...sectorLayerIds, ...cragPolygonLayerIds]
+				})?.length
+			) {
+				return;
+			}
+			if (e.originalEvent) {
+				(e.originalEvent as unknown as Record<string, boolean>)._felsHandled = true;
+			}
 			const feature = e.features?.[0];
 			if (feature) openFeature(feature);
 		});
@@ -472,14 +754,42 @@
 		const center = getGeometryCenter(location.entry.geometry);
 		if (!center) return;
 		updateSelectionStyle(location.path);
-		openPlace(location.path, center);
+		openPlace(location.path, center, location.entry);
 	}
 
-	async function openPlace(path: string, coordinates: [number, number]) {
-		await goto(`${base}/map/crag/${path}`);
+	async function openPlace(
+		path: string,
+		coordinates: [number, number],
+		entry?: FelsLocation['entry']
+	) {
+		if ($page.params.crag !== path) {
+			await goto(`${base}/map/crag/${path}`);
+		}
 
 		if (!map || !coordinates) return;
 		const uiPadding = getMapPadding();
+
+		if (entry?.properties?.kind === 'area' && entry.geometry?.type !== 'Point') {
+			const bounds = getGeometryBounds(entry.geometry);
+			if (bounds) {
+				isManuallyPanning = true;
+				map.fitBounds(bounds, {
+					padding: {
+						top: uiPadding.top + 40,
+						bottom: uiPadding.bottom + 40,
+						left: uiPadding.left + 40,
+						right: uiPadding.right + 40
+					},
+					maxZoom: 14,
+					duration: 1200
+				});
+				map.once('moveend', () => {
+					isManuallyPanning = false;
+				});
+				return;
+			}
+		}
+
 		if (!isTargetVisibleAndZoomed(coordinates, uiPadding, 16)) {
 			isManuallyPanning = true;
 			map.flyTo({
@@ -523,7 +833,14 @@
 	}
 
 	const LAYER_ORDER = [
+		'area-fill',
+		'area-selected-casing',
+		'area-line',
+		'crag-fill',
+		'crag-selected-casing',
+		'crag-line',
 		'sector-fill',
+		'sector-selected-casing',
 		'sector-line',
 		'sector-labels',
 		'access-lines-outline',
@@ -535,6 +852,24 @@
 		'access-points',
 		'places'
 	];
+
+	function addPlacesLayers() {
+		if (!map.getSource('places')) {
+			map.addSource('places', { type: 'geojson', cluster: false, data: getPlacesData() });
+		}
+		addLayerInOrder(areaFillLayer);
+		addLayerInOrder(areaSelectedCasingLayer);
+		addLayerInOrder(areaLineLayer);
+		addLayerInOrder(cragFillLayer);
+		addLayerInOrder(cragSelectedCasingLayer);
+		addLayerInOrder(cragLineLayer);
+		addLayerInOrder(sectorFillLayer);
+		addLayerInOrder(sectorSelectedCasingLayer);
+		addLayerInOrder(sectorLineLayer);
+		addLayerInOrder(sectorLabelsLayer);
+		addLayerInOrder(placesDotsLayer);
+		addLayerInOrder(placesLayer);
+	}
 
 	function addLayerInOrder(layer: LayerSpecification) {
 		if (map.getLayer(layer.id)) return;
@@ -553,17 +888,6 @@
 		} else {
 			map.addLayer(layer);
 		}
-	}
-
-	function addPlacesLayers() {
-		if (!map.getSource('places')) {
-			map.addSource('places', { type: 'geojson', cluster: false, data: getPlacesData() });
-		}
-		addLayerInOrder(sectorFillLayer);
-		addLayerInOrder(sectorLineLayer);
-		addLayerInOrder(sectorLabelsLayer);
-		addLayerInOrder(placesDotsLayer);
-		addLayerInOrder(placesLayer);
 	}
 
 	function getAccessData() {
@@ -676,39 +1000,221 @@
 	});
 
 	function updateSelectionStyle(selectedPath: string) {
-		if (!map || !map.getLayer('places-dots')) return;
+		if (!map) return;
+
+		const setLayerFilter = (id: string, filter: ExpressionSpecification) => {
+			if (map.getLayer(id)) map.setFilter?.(id, filter);
+		};
+		const setLayerPaint = (id: string, name: string, value: unknown) => {
+			if (map.getLayer(id)) map.setPaintProperty?.(id, name, value);
+		};
+		const setLayerLayout = (id: string, name: string, value: unknown) => {
+			if (map.getLayer(id)) map.setLayoutProperty?.(id, name, value);
+		};
 
 		if (!selectedPath) {
-			map.setFilter?.('places', defaultPlacesFilter);
-			map.setPaintProperty('places-dots', 'circle-color', placeTypeColor);
-			map.setPaintProperty('places-dots', 'circle-opacity', ['step', ['zoom'], 1, 13.5, 0]);
-			map.setPaintProperty('places-dots', 'circle-stroke-opacity', ['step', ['zoom'], 1, 13.5, 0]);
-			map.setPaintProperty('places', 'text-color', 'rgba(47,57,72,1)');
-			map.setPaintProperty('places', 'icon-opacity', ['step', ['zoom'], 0, 13.5, 1]);
-			map.setPaintProperty('places', 'text-opacity', ['step', ['zoom'], 0, 13.5, 1]);
-			map.setLayoutProperty('places', 'symbol-sort-key', 0);
-			map.setLayoutProperty('places', 'icon-image', placeIcon);
+			setLayerFilter('places', defaultPlacesFilter);
+			setLayerFilter('crag-fill', defaultCragFilter);
+			setLayerFilter('crag-selected-casing', [
+				'all',
+				['==', ['geometry-type'], 'Polygon'],
+				['==', ['get', 'kind'], 'crag'],
+				['==', ['get', 'filePath'], '']
+			]);
+			setLayerFilter('crag-line', defaultCragFilter);
+			setLayerFilter('sector-fill', defaultSectorFilter);
+			setLayerFilter('sector-selected-casing', [
+				'all',
+				['==', ['geometry-type'], 'Polygon'],
+				['==', ['get', 'kind'], 'sector'],
+				['==', ['get', 'filePath'], '']
+			]);
+			setLayerFilter('sector-line', defaultSectorFilter);
+			setLayerFilter('sector-labels', [
+				'all',
+				['==', ['geometry-type'], 'Polygon'],
+				['==', ['get', 'kind'], 'sector'],
+				['>=', ['zoom'], 16],
+				['has', 'name']
+			]);
+			setLayerFilter('area-fill', defaultAreaFilter);
+			setLayerFilter('area-selected-casing', defaultAreaFilter);
+			setLayerFilter('area-line', defaultAreaFilter);
+
+			setLayerPaint('area-fill', 'fill-color', colors.text.ink);
+			setLayerPaint('area-fill', 'fill-opacity', 0.04);
+			setLayerPaint('area-line', 'line-color', colors.text.ink);
+			setLayerPaint('area-line', 'line-width', 2);
+			setLayerPaint('area-line', 'line-opacity', 0.75);
+			setLayerPaint('area-line', 'line-dasharray', [3, 2]);
+
+			setLayerPaint('crag-fill', 'fill-color', placeTypeColor);
+			setLayerPaint('crag-fill', 'fill-opacity', [
+				'step',
+				['zoom'],
+				0.12,
+				16,
+				['case', ['get', 'hasSectors'], 0, 0.12]
+			]);
+			setLayerPaint('crag-line', 'line-color', placeTypeColor);
+			setLayerPaint('crag-line', 'line-width', 2);
+			setLayerPaint('crag-line', 'line-opacity', 0.7);
+			setLayerPaint('crag-line', 'line-dasharray', [
+				'case',
+				['get', 'hasSectors'],
+				['literal', [2, 2]],
+				['literal', [1]]
+			]);
+
+			setLayerPaint('sector-fill', 'fill-color', placeTypeColor);
+			setLayerPaint('sector-fill', 'fill-opacity', 0.12);
+			setLayerPaint('sector-line', 'line-color', placeTypeColor);
+			setLayerPaint('sector-line', 'line-width', 2);
+			setLayerPaint('sector-line', 'line-opacity', 0.7);
+			setLayerPaint('sector-labels', 'text-color', colors.map.sectorText);
+			setLayerLayout('sector-labels', 'text-size', 12);
+			setLayerPaint('places-dots', 'circle-color', placeTypeColor);
+			setLayerPaint('places-dots', 'circle-opacity', ['step', ['zoom'], 1, 13.5, 0]);
+			setLayerPaint('places-dots', 'circle-stroke-opacity', ['step', ['zoom'], 1, 13.5, 0]);
+			setLayerPaint('places', 'text-color', 'rgba(47,57,72,1)');
+			setLayerPaint('places', 'icon-opacity', ['step', ['zoom'], 0, 13.5, 1]);
+			setLayerPaint('places', 'text-opacity', ['step', ['zoom'], 0, 13.5, 1]);
+			setLayerLayout('places', 'symbol-sort-key', 0);
+			setLayerLayout('places', 'icon-image', placeIcon);
 			return;
 		}
 
 		const isSelected = selectionExpression(selectedPath);
 		if (!isSelected) return;
+		const decodedPath = decodeURIComponent(selectedPath);
+		const isPolygonExactMatch: ExpressionSpecification = ['==', ['get', 'filePath'], decodedPath];
 
-		map.setFilter?.('places', [
+		setLayerFilter('places', [
 			'all',
-			['!=', ['geometry-type'], 'Polygon'],
+			['!=', ['get', 'kind'], 'area'],
+			['!=', ['coalesce', ['get', 'isCentroid'], false], true],
+			['any', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'crag']],
 			['any', isSelected, ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
 		]);
 
+		setLayerFilter('crag-fill', [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'crag'],
+			['any', isSelected, ['>=', ['zoom'], 13.5]]
+		]);
+		setLayerFilter('crag-selected-casing', [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'crag'],
+			isPolygonExactMatch
+		]);
+		setLayerFilter('crag-line', [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'crag'],
+			['any', isSelected, ['>=', ['zoom'], 13.5]]
+		]);
+
+		const sectorSelectionFilter: ExpressionSpecification = [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'sector'],
+			['any', isSelected, ['>=', ['zoom'], 16]]
+		];
+		setLayerFilter('sector-fill', sectorSelectionFilter);
+		setLayerFilter('sector-selected-casing', [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'sector'],
+			isPolygonExactMatch
+		]);
+		setLayerFilter('sector-line', sectorSelectionFilter);
+		setLayerFilter('sector-labels', [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'sector'],
+			['has', 'name'],
+			['any', isSelected, ['>=', ['zoom'], 16]]
+		]);
+
+		const areaSelectionFilter: ExpressionSpecification = [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			['==', ['get', 'kind'], 'area'],
+			isPolygonExactMatch
+		];
+		setLayerFilter('area-fill', areaSelectionFilter);
+		setLayerFilter('area-selected-casing', areaSelectionFilter);
+		setLayerFilter('area-line', areaSelectionFilter);
+
+		setLayerPaint('area-fill', 'fill-color', colors.text.ink);
+		setLayerPaint('area-fill', 'fill-opacity', ['case', isPolygonExactMatch, 0.08, 0.04]);
+		setLayerPaint('area-line', 'line-color', [
+			'case',
+			isPolygonExactMatch,
+			'#dc2626',
+			colors.text.ink
+		]);
+		setLayerPaint('area-line', 'line-width', ['case', isPolygonExactMatch, 2.5, 2]);
+		setLayerPaint('area-line', 'line-opacity', ['case', isPolygonExactMatch, 0.9, 0.75]);
+		setLayerPaint('area-line', 'line-dasharray', [
+			'case',
+			isPolygonExactMatch,
+			['literal', [1]],
+			['literal', [3, 2]]
+		]);
+
+		setLayerPaint('crag-fill', 'fill-color', placeTypeColor);
+		setLayerPaint('crag-fill', 'fill-opacity', [
+			'step',
+			['zoom'],
+			['case', isPolygonExactMatch, 0.18, 0.12],
+			16,
+			['case', isPolygonExactMatch, 0.18, ['case', ['get', 'hasSectors'], 0, 0.12]]
+		]);
+		setLayerPaint('crag-line', 'line-color', [
+			'case',
+			isPolygonExactMatch,
+			'#dc2626',
+			placeTypeColor
+		]);
+		setLayerPaint('crag-line', 'line-width', ['case', isPolygonExactMatch, 2.5, 2]);
+		setLayerPaint('crag-line', 'line-opacity', ['case', isPolygonExactMatch, 0.9, 0.7]);
+		setLayerPaint('crag-line', 'line-dasharray', [
+			'case',
+			isPolygonExactMatch,
+			['literal', [1]],
+			['case', ['get', 'hasSectors'], ['literal', [2, 2]], ['literal', [1]]]
+		]);
+
+		setLayerPaint('sector-fill', 'fill-color', placeTypeColor);
+		setLayerPaint('sector-fill', 'fill-opacity', ['case', isPolygonExactMatch, 0.18, 0.12]);
+		setLayerPaint('sector-line', 'line-color', [
+			'case',
+			isPolygonExactMatch,
+			'#dc2626',
+			placeTypeColor
+		]);
+		setLayerPaint('sector-line', 'line-width', ['case', isPolygonExactMatch, 2.5, 2]);
+		setLayerPaint('sector-line', 'line-opacity', ['case', isPolygonExactMatch, 0.9, 0.7]);
+		setLayerPaint('sector-labels', 'text-color', [
+			'case',
+			isPolygonExactMatch,
+			'#dc2626',
+			colors.map.sectorText
+		]);
+		setLayerLayout('sector-labels', 'text-size', ['case', isPolygonExactMatch, 13, 12]);
+
 		// For dots, we set opacity to 0 when selected to avoid bleed-through
-		map.setPaintProperty('places-dots', 'circle-opacity', [
+		setLayerPaint('places-dots', 'circle-opacity', [
 			'step',
 			['zoom'],
 			['case', isSelected, 0, 1], // Zoom < 13.5
 			13.5,
 			0 // Zoom >= 13.5
 		]);
-		map.setPaintProperty('places-dots', 'circle-stroke-opacity', [
+		setLayerPaint('places-dots', 'circle-stroke-opacity', [
 			'step',
 			['zoom'],
 			['case', isSelected, 0, 1],
@@ -717,22 +1223,17 @@
 		]);
 
 		// Change text color to red instantly
-		map.setPaintProperty('places', 'text-color', [
-			'case',
-			isSelected,
-			'#dc2626',
-			'rgba(47,57,72,1)'
-		]);
+		setLayerPaint('places', 'text-color', ['case', isSelected, '#dc2626', 'rgba(47,57,72,1)']);
 
 		// For icons and text, make sure the selected marker is visible at all zoom levels
-		map.setPaintProperty('places', 'icon-opacity', [
+		setLayerPaint('places', 'icon-opacity', [
 			'step',
 			['zoom'],
 			['case', isSelected, 1, 0], // Zoom < 13.5 (show ONLY selected marker)
 			13.5,
 			1 // Zoom >= 13.5 (show all markers)
 		]);
-		map.setPaintProperty('places', 'text-opacity', [
+		setLayerPaint('places', 'text-opacity', [
 			'step',
 			['zoom'],
 			['case', isSelected, 1, 0], // Zoom < 13.5 (show ONLY selected marker label)
@@ -741,10 +1242,10 @@
 		]);
 
 		// Render selected marker above all other markers
-		map.setLayoutProperty('places', 'symbol-sort-key', ['case', isSelected, 10, 0]);
+		setLayerLayout('places', 'symbol-sort-key', ['case', isSelected, 10, 0]);
 
 		// Swap the icon image instantly
-		map.setLayoutProperty('places', 'icon-image', [
+		setLayerLayout('places', 'icon-image', [
 			'case',
 			isSelected,
 			['image', 'selected-marker'],

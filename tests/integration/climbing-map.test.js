@@ -81,6 +81,10 @@ vi.mock('maplibre-gl', () => {
 		removeSource(id) {
 			this.sources.delete(id);
 		}
+		setFilter(id, filter) {
+			const layer = this.layers.get(id);
+			if (layer) layer.filter = filter;
+		}
 		setPaintProperty(...args) {
 			this.paintCalls.push(args);
 		}
@@ -228,6 +232,24 @@ describe('ClimbingMap', () => {
 			expect(matchesPlace(18, 'Point', 'sector')).toBe(true);
 			expect(matchesPlace(16, 'Polygon', 'sector')).toBe(false);
 			expect(matchesPlace(14, 'Point', 'crag')).toBe(true);
+			expect(matchesPlace(14, 'Polygon', 'crag')).toBe(true);
+			expect(matchesPlace(14, 'Polygon', 'area')).toBe(false);
+
+			const placesDotsFilter = createExpression(map.getLayer('places-dots').filter, {
+				type: 'boolean'
+			});
+			expect(placesDotsFilter.result).toBe('success');
+			const matchesPlacesDots = (zoom, type, kind) =>
+				placesDotsFilter.value.evaluateWithoutErrorHandling(
+					{ zoom },
+					{ type, properties: { kind } }
+				);
+			expect(matchesPlacesDots(10, 'Point', 'crag')).toBe(true);
+			expect(matchesPlacesDots(10, 'Polygon', 'crag')).toBe(false);
+			expect(matchesPlacesDots(10, 'Point', 'sector')).toBe(false);
+			expect(matchesPlacesDots(10, 'Polygon', 'sector')).toBe(false);
+			expect(matchesPlacesDots(10, 'Point', 'area')).toBe(false);
+			expect(matchesPlacesDots(10, 'Polygon', 'area')).toBe(false);
 
 			map.setZoom(16);
 			map.handlers.get('click:"places"')({
@@ -253,6 +275,18 @@ describe('ClimbingMap', () => {
 			expect(evaluateIcon(iconExpression, { type: ['multi-pitch', 'sports-climbing'] }).name).toBe(
 				'multi-pitch'
 			);
+			expect(evaluateIcon(iconExpression, { type: ['sports-climbing', 'multi-pitch'] }).name).toBe(
+				'multi-pitch'
+			);
+			expect(evaluateIcon(iconExpression, { type: ['bouldering', 'sports-climbing'] }).name).toBe(
+				'sports-climbing'
+			);
+			expect(evaluateIcon(iconExpression, { type: ['bouldering', 'multi-pitch'] }).name).toBe(
+				'multi-pitch'
+			);
+			expect(
+				evaluateIcon(iconExpression, { primaryType: 'multi-pitch', type: ['sports-climbing'] }).name
+			).toBe('multi-pitch');
 			expect(evaluateIcon(iconExpression, { type: [] })).toBeNull();
 			expect(evaluateIcon(iconExpression, { kind: 'area' })).toBeNull();
 			const resetExpression = map.layoutCalls.findLast((call) => call[1] === 'icon-image')[2];
@@ -437,5 +471,145 @@ describe('ClimbingMap', () => {
 		);
 		expect(map.fly.center).toEqual([16, 48]);
 		expect(map.fly.zoom).toBe(15);
+	});
+
+	it('renders crag and area polygon layers and handles area fitBounds', async () => {
+		const originalImage = globalThis.Image;
+		globalThis.Image = class {
+			set src(value) {
+				this._src = value;
+				queueMicrotask(() => this.onload?.());
+			}
+		};
+
+		const customLocations = [
+			{
+				path: 'areas/val-valley',
+				entry: {
+					type: 'Feature',
+					geometry: {
+						type: 'Polygon',
+						coordinates: [
+							[
+								[15.9, 47.9],
+								[16.1, 47.9],
+								[16.1, 48.1],
+								[15.9, 48.1],
+								[15.9, 47.9]
+							]
+						]
+					},
+					properties: { id: 'val-valley', kind: 'area', name: 'Val Valley' }
+				}
+			},
+			{
+				path: 'areas/val-valley/rock',
+				entry: {
+					type: 'Feature',
+					geometry: {
+						type: 'Polygon',
+						coordinates: [
+							[
+								[16.0, 48.0],
+								[16.02, 48.0],
+								[16.02, 48.02],
+								[16.0, 48.02],
+								[16.0, 48.0]
+							]
+						]
+					},
+					properties: {
+						id: 'rock',
+						kind: 'crag',
+						name: 'Rock',
+						type: ['sports-climbing']
+					}
+				}
+			},
+			{
+				path: 'areas/val-valley/rock/wall',
+				entry: {
+					type: 'Feature',
+					geometry: {
+						type: 'Polygon',
+						coordinates: [
+							[
+								[16.005, 48.005],
+								[16.015, 48.005],
+								[16.015, 48.015],
+								[16.005, 48.015],
+								[16.005, 48.005]
+							]
+						]
+					},
+					properties: {
+						id: 'wall',
+						kind: 'sector',
+						name: 'Wall',
+						type: ['multi-pitch']
+					}
+				}
+			}
+		];
+
+		try {
+			const map = await renderMap({ locations: customLocations });
+			await map.handlers.get('load')();
+
+			expect(map.getLayer('area-fill')).toBeTruthy();
+			expect(map.getLayer('area-selected-casing')).toBeTruthy();
+			expect(map.getLayer('area-line')).toBeTruthy();
+			expect(map.getLayer('crag-fill')).toBeTruthy();
+			expect(map.getLayer('crag-selected-casing')).toBeTruthy();
+			expect(map.getLayer('crag-line')).toBeTruthy();
+			expect(map.getLayer('sector-selected-casing')).toBeTruthy();
+
+			// Clicking a crag polygon navigates to the crag
+			const cragPolyClick = map.handlers.get('click:["crag-fill","crag-line"]');
+			cragPolyClick({
+				features: [{ properties: { filePath: 'areas/val-valley/rock' } }]
+			});
+			expect(goto).toHaveBeenCalledWith('/map/crag/areas/val-valley/rock');
+
+			// Clicking an area polygon fits the map to the area bounds
+			const areaPolyClick = map.handlers.get('click:["area-fill","area-line"]');
+			areaPolyClick({
+				features: [{ properties: { filePath: 'areas/val-valley' } }]
+			});
+			expect(goto).toHaveBeenCalledWith('/map/crag/areas/val-valley');
+			await waitFor(() => expect(map.bounds).toBeTruthy());
+			expect(map.bounds.options.maxZoom).toBe(14);
+
+			// Test click priority: sectors take precedence over crags
+			vi.mocked(goto).mockClear();
+			const originalEvent = {};
+			const sectorClick = map.handlers.get('click:["sector-fill","sector-line","sector-labels"]');
+			sectorClick({
+				originalEvent,
+				features: [{ properties: { filePath: 'areas/val-valley/rock/wall' } }]
+			});
+			expect(goto).toHaveBeenCalledWith('/map/crag/areas/val-valley/rock/wall');
+
+			// Crag handler ignores click because sector already handled it
+			cragPolyClick({
+				originalEvent,
+				features: [{ properties: { filePath: 'areas/val-valley/rock' } }]
+			});
+			// Should still be sector, NOT crag
+			expect(goto).not.toHaveBeenCalledWith('/map/crag/areas/val-valley/rock');
+
+			const cragFillOpacityCall = map.paintCalls.findLast(
+				(call) => call[0] === 'crag-fill' && call[1] === 'fill-opacity'
+			);
+			if (cragFillOpacityCall) {
+				const compiled = createExpression(
+					cragFillOpacityCall[2],
+					latest.paint_fill['fill-opacity']
+				);
+				expect(compiled.result).toBe('success');
+			}
+		} finally {
+			globalThis.Image = originalImage;
+		}
 	});
 });

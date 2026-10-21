@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
 import { getGeometryCenter } from '$lib/assets/js/topo-loader-utils.js';
+import { getGeometryBounds } from '$lib/assets/js/map-camera.js';
 import { createEntryLoader } from '$lib/assets/js/entry-loader';
 
 /** @satisfies {import('./$types').PageLoad} */
@@ -77,6 +78,11 @@ export const load = async ({ params, url, parent, fetch }) => {
 			access: accessData,
 			topoPaths,
 			cameraTarget: (() => {
+				if (currentData.properties?.kind === 'area' && currentData.geometry?.type !== 'Point') {
+					const bounds = getGeometryBounds(currentData.geometry);
+					if (bounds)
+						return { type: /** @type {const} */ ('bounds'), bounds, padding: 80, maxZoom: 14 };
+				}
 				const center = getGeometryCenter(currentData.geometry);
 				return center ? { type: /** @type {const} */ ('center'), center, zoom: 16 } : null;
 			})(),

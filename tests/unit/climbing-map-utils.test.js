@@ -3,7 +3,9 @@ import {
 	createPlacesData,
 	createTopoPathsData,
 	getMapPadding,
-	selectionExpression
+	getPreferredClimbingType,
+	selectionExpression,
+	sortClimbingTypes
 } from '$lib/assets/js/climbing-map-utils.js';
 
 describe('climbing map utilities', () => {
@@ -65,5 +67,53 @@ describe('climbing map utilities', () => {
 			0
 		]);
 		expect(selectionExpression('')).toBeNull();
+	});
+
+	it('flags crags that have child sectors', () => {
+		const cragPolygon = {
+			type: 'Feature',
+			geometry: {
+				type: 'Polygon',
+				coordinates: [
+					[
+						[16, 48],
+						[16.02, 48],
+						[16.02, 48.02],
+						[16, 48.02],
+						[16, 48]
+					]
+				]
+			},
+			properties: { id: 'polygon-crag', name: 'Polygon Crag', kind: 'crag', type: ['bouldering'] }
+		};
+		const childSector = {
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: [16.01, 48.01] },
+			properties: { id: 'sector-1', name: 'Sector 1', kind: 'sector' }
+		};
+
+		const result = createPlacesData([
+			{ entry: cragPolygon, path: 'areas/polygon-crag' },
+			{ entry: childSector, path: 'areas/polygon-crag/sector-1' }
+		]);
+
+		expect(result.features).toHaveLength(3);
+		expect(result.features[0].properties.hasSectors).toBe(true);
+		expect(result.features[1].properties.isCentroid).toBe(true);
+		expect(result.features[1].geometry.type).toBe('Point');
+		expect(result.features[2].properties.hasSectors).toBe(false);
+	});
+
+	it('prioritizes climbing types according to multi-pitch > sports-climbing > bouldering', () => {
+		expect(sortClimbingTypes(['bouldering', 'sports-climbing', 'multi-pitch'])).toEqual([
+			'multi-pitch',
+			'sports-climbing',
+			'bouldering'
+		]);
+		expect(getPreferredClimbingType(['bouldering', 'sports-climbing'])).toBe('sports-climbing');
+		expect(getPreferredClimbingType(['sports-climbing', 'multi-pitch'])).toBe('multi-pitch');
+		expect(getPreferredClimbingType(['bouldering', 'multi-pitch'])).toBe('multi-pitch');
+		expect(getPreferredClimbingType(['trad', 'bouldering'])).toBe('bouldering');
+		expect(getPreferredClimbingType([])).toBe('');
 	});
 });
