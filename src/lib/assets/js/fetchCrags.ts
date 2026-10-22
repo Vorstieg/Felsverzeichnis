@@ -2,12 +2,13 @@ import { browser } from '$app/environment';
 import { cragsPerPage, fsApiUrl } from '$lib/config';
 import { storage } from '$lib/assets/js/storage-utils.js';
 
+type EntryKind = import('@vorstieg/fels-types/types').EntryKind;
+type FelsEntry = import('@vorstieg/fels-types/types').FelsEntry;
 type FelsLocation = import('$lib/types/files').FelsLocation;
 type PersistedCragsCache = { timestamp: number; crags: FelsLocation[] };
 
 const STORAGE_KEY = 'felsverzeichnis:crags-cache-v1';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const BATCH_SIZE = 64;
 
 let cachedCrags: FelsLocation[] | null = null;
 let fetchPromise: Promise<FelsLocation[]> | null = null;
@@ -17,26 +18,29 @@ function refreshCrags(fetcher: typeof globalThis.fetch): Promise<FelsLocation[]>
 	if (!fetchPromise) {
 		fetchPromise = (async () => {
 			try {
-				const res = await fetcher(`${fsApiUrl}/?recursive=true`);
-				if (!res.ok) throw new Error('Failed to fetch entry directory');
-				const files = (await res.json()) as import('$lib/types/files').DirectoryEntry[];
-				const entryFiles = files.filter((file) => {
-					const folder = file.path.split('/').at(-2);
-					return file.type === 'file' && file.name === `${folder}.json`;
+				const res = await fetcher(`${fsApiUrl}/fels-layer.json`);
+				if (!res.ok) throw new Error('Failed to fetch map GeoJSON from API');
+				type LayerFeature = FelsEntry & {
+					properties?: {
+						path?: string;
+						id?: string;
+						kind?: EntryKind;
+						[key: string]: unknown;
+					};
+				};
+				const featureCollection = (await res.json()) as {
+					type?: string;
+					features?: LayerFeature[];
+				};
+				const features = featureCollection.features || [];
+				const entries: FelsLocation[] = features.map((feature) => {
+					const properties = feature.properties || {};
+					const path = String(properties.path);
+					return {
+						entry: feature as FelsEntry,
+						path
+					};
 				});
-				const entries: FelsLocation[] = [];
-				for (let offset = 0; offset < entryFiles.length; offset += BATCH_SIZE) {
-					const batch = await Promise.all(
-						entryFiles.slice(offset, offset + BATCH_SIZE).map(async (file) => {
-							const response = await fetcher(`${fsApiUrl}/${file.path}`);
-							if (!response.ok) throw new Error(`Failed to fetch entry: ${file.path}`);
-							const entry =
-								(await response.json()) as import('@vorstieg/fels-types/types').FelsEntry;
-							return { entry, path: file.path.slice(0, -(file.name.length + 1)) };
-						})
-					);
-					entries.push(...batch);
-				}
 				cachedCrags = entries;
 				cacheTime = Date.now();
 				if (browser) {
