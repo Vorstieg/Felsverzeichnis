@@ -6,13 +6,8 @@ const entries = [
 	{ name: 'Boulderpark', type: ['bouldering'], id: 'b' }
 ].map((properties) => ({
 	type: 'Feature',
-	properties: { ...properties, kind: 'crag' },
+	properties: { ...properties, path: properties.id, kind: 'crag' },
 	geometry: { type: 'Point', coordinates: [16, 48] }
-}));
-const files = entries.map((entry) => ({
-	name: `${entry.properties.id}.json`,
-	path: `${entry.properties.id}/${entry.properties.id}.json`,
-	type: 'file'
 }));
 
 async function loadFetchCrags() {
@@ -27,12 +22,12 @@ describe('fetchCrags', () => {
 		vi.restoreAllMocks();
 		vi.stubGlobal(
 			'fetch',
-			vi.fn(async (url) => ({
+			vi.fn(async () => ({
 				ok: true,
-				json: async () =>
-					url.endsWith('/?recursive=true')
-						? files
-						: entries.find((entry) => url.endsWith(`/${entry.properties.id}.json`))
+				json: async () => ({
+					type: 'FeatureCollection',
+					features: entries
+				})
 			}))
 		);
 	});
@@ -51,15 +46,15 @@ describe('fetchCrags', () => {
 	it('deduplicates concurrent network requests and caches results', async () => {
 		const fetchCrags = await loadFetchCrags();
 		await Promise.all([fetchCrags(), fetchCrags()]);
-		expect(fetch).toHaveBeenCalledTimes(4);
+		expect(fetch).toHaveBeenCalledTimes(1);
 		await fetchCrags();
-		expect(fetch).toHaveBeenCalledTimes(4);
+		expect(fetch).toHaveBeenCalledTimes(1);
 	});
 
 	it('surfaces failed data requests', async () => {
 		fetch.mockResolvedValueOnce({ ok: false });
 		const fetchCrags = await loadFetchCrags();
-		await expect(fetchCrags()).rejects.toThrow('Failed to fetch entry directory');
+		await expect(fetchCrags()).rejects.toThrow('Failed to fetch map GeoJSON from API');
 	});
 
 	it('hydrates from localStorage in browser mode and revalidates stale cache in the background', async () => {
@@ -73,7 +68,7 @@ describe('fetchCrags', () => {
 		const fetchCrags = await loadFetchCrags();
 		const staleResult = await fetchCrags({ limit: -1 });
 		expect(staleResult.map((x) => x.path)).toEqual(['b']);
-		await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(4));
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
 		const refreshedResult = await fetchCrags({ limit: -1 });
 		expect(refreshedResult.map((x) => x.path)).toEqual(['a', 'b', 'z']);
 	});
