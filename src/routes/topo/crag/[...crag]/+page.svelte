@@ -405,15 +405,11 @@
 
 	let activeRouteId = $derived(pendingRouteId ?? data.route?.id);
 
-	let parentRoute = $derived(
-		data.route ? findParentRoute(data.topo?.routes, data.route.id) : null
-	);
+	let parentRoute = $derived(data.route ? findParentRoute(data.topo?.routes, data.route.id) : null);
 	let routeDisplayName = $derived(
 		data.route ? getRouteDisplayName(data.route, parentRoute, $_) : ''
 	);
-	let displayRoute = $derived(
-		data.route ? { ...data.route, name: routeDisplayName } : null
-	);
+	let displayRoute = $derived(data.route ? { ...data.route, name: routeDisplayName } : null);
 	let displayPitches = $derived(
 		(data.route?.pitches ?? []).map((pitch, idx) => ({
 			...pitch,
@@ -1003,14 +999,6 @@
 								/>
 							{/if}
 						</div>
-						{#if data.name}
-							<div class="mt-1 flex items-center gap-2">
-								<span
-									class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100"
-									>{data.name}</span
-								>
-							</div>
-						{/if}
 					</div>
 				</div>
 

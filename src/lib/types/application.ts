@@ -62,9 +62,12 @@ export type MapCameraTarget =
 			maxZoom: number;
 	  };
 export interface MapFocusTarget {
-	center: [number, number];
+	center?: [number, number];
 	zoom?: number;
 	path?: string;
+	bounds?: [[number, number], [number, number]];
+	padding?: number;
+	maxZoom?: number;
 }
 export interface SectorTopo {
 	sectorId: string;

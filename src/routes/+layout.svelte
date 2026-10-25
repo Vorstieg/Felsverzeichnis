@@ -28,7 +28,9 @@
 		}
 	});
 	let activeTopoPaths = $derived(
-		streamedTopoPaths ?? $page.data.topoPaths
+		streamedTopoPaths && streamedTopoPaths.length > 0
+			? streamedTopoPaths
+			: ($page.data.topoPaths ?? streamedTopoPaths ?? [])
 	);
 
 	let displayTitle = $derived(
@@ -77,6 +79,11 @@
 		accessKey={$page.url.pathname +
 			':' +
 			($page.data.access?.features || []).map((feature) => feature.id || '').join(',')}
+		topoPathsKey={$page.url.pathname +
+			':' +
+			($page.data.route?.id != null ? String($page.data.route.id) : '') +
+			':' +
+			(activeTopoPaths ?? []).map((p) => p.id ?? '').join(',')}
 		cameraTarget={$page.data.cameraTarget}
 		selectedRouteId={$page.data.route?.id != null
 			? String($page.data.route.id)

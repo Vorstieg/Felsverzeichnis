@@ -65,6 +65,7 @@
 	<div class="mt-5 mb-5 w-full first:mt-0 last:mb-0">
 		<GradeChartSection
 			title={group.title}
+			type={group.type}
 			routes={group.routes}
 			{fallbackAccessTracks}
 			{activeRouteId}

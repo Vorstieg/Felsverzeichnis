@@ -1,25 +1,79 @@
 import { describe, expect, it } from 'vitest';
 import {
+	fontOrder,
+	getDisciplineQuickFilters,
 	getGradeColor,
 	getGradeDistribution,
 	getGradeLabel,
+	getGradeScaleOrder,
 	getGradeTier,
+	gradeOrder,
+	sacOrder,
 	standardGrades,
-	uiaaMap
+	uiaaMap,
+	viaFerrataOrder
 } from '$lib/assets/js/grades.js';
 import { colors } from '$lib/colors.js';
 
 describe('grades', () => {
-	it('contains the complete standard grade range', () => {
+	it('contains the complete standard grade range for each discipline', () => {
 		expect(standardGrades).toHaveLength(54);
 		expect(standardGrades).toContain('1a');
 		expect(standardGrades).toContain('9c+');
+
+		expect(viaFerrataOrder).toContain('A');
+		expect(viaFerrataOrder).toContain('C/D');
+		expect(viaFerrataOrder).toContain('F');
+
+		expect(sacOrder).toContain('F');
+		expect(sacOrder).toContain('AD');
+		expect(sacOrder).toContain('ABO');
+
+		expect(fontOrder).toContain('4');
+		expect(fontOrder).toContain('6A');
+		expect(fontOrder).toContain('8C+');
 	});
 
-	it('translates UIAA grades and preserves unknown values', () => {
+	it('returns discipline-appropriate quick filters and scale orders', () => {
+		const ferrataFilters = getDisciplineQuickFilters('via-ferrata');
+		expect(ferrataFilters.map((f) => f.label)).toEqual(['A', 'B', 'C', 'D', 'E+']);
+
+		const alpineFilters = getDisciplineQuickFilters('alpine-tour');
+		expect(alpineFilters.map((f) => f.label)).toEqual(['F - PD', 'AD', 'D', 'TD', '≥ ED']);
+
+		const boulderFilters = getDisciplineQuickFilters('bouldering');
+		expect(boulderFilters.map((f) => f.label)).toEqual([
+			'< Fb 5',
+			'Fb 5 - 5+',
+			'Fb 6A - 6B+',
+			'Fb 6C - 7A+',
+			'Fb 7B - 8A',
+			'≥ Fb 8A+'
+		]);
+
+		const sportFilters = getDisciplineQuickFilters('sports-climbing');
+		expect(sportFilters.map((f) => f.label)).toEqual([
+			'< 5a',
+			'5a - 5c+',
+			'6a - 6b+',
+			'6c - 7a+',
+			'7b - 8a+',
+			'≥ 8b'
+		]);
+
+		expect(getGradeScaleOrder('via-ferrata')).toBe(viaFerrataOrder);
+		expect(getGradeScaleOrder('alpine-tour')).toBe(sacOrder);
+		expect(getGradeScaleOrder('bouldering')).toBe(fontOrder);
+		expect(getGradeScaleOrder('sports-climbing')).toBe(gradeOrder);
+	});
+
+	it('formats grade labels per discipline', () => {
 		expect(getGradeLabel('6a+', 'uiaa')).toBe('VI+');
 		expect(getGradeLabel('unknown', 'uiaa')).toBe('unknown');
 		expect(getGradeLabel('6a', 'french')).toBe('6a');
+		expect(getGradeLabel('C/D', 'via-ferrata', 'via-ferrata')).toBe('C/D');
+		expect(getGradeLabel('AD', 'sac', 'alpine-tour')).toBe('AD');
+		expect(getGradeLabel('6A', 'font', 'bouldering')).toBe('Fb 6A');
 		expect(uiaaMap['9a']).toBe('XI+');
 	});
 
@@ -32,6 +86,13 @@ describe('grades', () => {
 		expect(getGradeColor({ standardizedValue: '8a' })).toBe(colors.topo.grade8);
 		expect(getGradeColor({ standardizedValue: '9a+' })).toBe(colors.topo.grade9);
 		expect(getGradeColor(undefined)).toBe(colors.topo.gradeUnknown);
+
+		// Via Ferrata colors
+		expect(getGradeColor({ standardizedValue: 'A' }, 'via-ferrata')).toBe(colors.topo.gradeEasy);
+		expect(getGradeColor({ standardizedValue: 'C/D' }, 'via-ferrata')).toBe(
+			colors.topo.grade6High7Low
+		);
+		expect(getGradeColor({ standardizedValue: 'F' }, 'via-ferrata')).toBe(colors.topo.grade8);
 	});
 
 	it('classifies grades into unified tiers', () => {
@@ -43,9 +104,34 @@ describe('grades', () => {
 		expect(getGradeTier({ standardizedValue: '8b' })?.key).toBe('8');
 		expect(getGradeTier({ standardizedValue: '9b+' })?.key).toBe('9');
 		expect(getGradeTier(null)).toBeNull();
+
+		// SAC alpine grades
+		expect(getGradeTier({ scale: 'sac', value: 'PD', standardizedValue: 'PD' })?.key).toBe(
+			'under_5'
+		);
+		expect(getGradeTier({ scale: 'sac', value: 'AD', standardizedValue: 'AD' })?.key).toBe('5');
+		expect(getGradeTier({ scale: 'sac', value: 'D', standardizedValue: 'D' })?.key).toBe('6_low');
+
+		// Via ferrata grades
+		expect(
+			getGradeTier({ scale: 'via-ferrata', value: 'A', standardizedValue: 'A' }, 'via-ferrata')
+				?.label
+		).toBe('A');
+		expect(
+			getGradeTier({ scale: 'via-ferrata', value: 'C/D', standardizedValue: 'C/D' }, 'via-ferrata')
+				?.label
+		).toBe('D');
+
+		// UIAA roman numeral grades
+		expect(getGradeTier({ scale: 'uiaa', value: 'II', standardizedValue: 'II' })?.key).toBe(
+			'under_5'
+		);
+		expect(getGradeTier({ scale: 'uiaa', value: 'VII', standardizedValue: 'VII' })?.key).toBe(
+			'6_high_7_low'
+		);
 	});
 
-	it('calculates consistent grade distribution across routes', () => {
+	it('calculates consistent grade distribution across routes with discipline labels', () => {
 		const routes = [
 			{ id: '1', grade: { standardizedValue: '4c' } },
 			{ id: '2', grade: { standardizedValue: '5b' } },
@@ -73,5 +159,14 @@ describe('grades', () => {
 		const unknown = distribution.find((d) => d.key === 'unknown');
 		expect(unknown?.color).toBe(colors.topo.gradeUnknown);
 		expect(unknown?.count).toBe(1);
+
+		// Via ferrata distribution uses ferrata labels
+		const ferrataRoutes = [
+			{ id: 'f1', type: 'via-ferrata', grade: { standardizedValue: 'A' } },
+			{ id: 'f2', type: 'via-ferrata', grade: { standardizedValue: 'C' } }
+		];
+		const ferrataDist = getGradeDistribution(ferrataRoutes, 'via-ferrata');
+		expect(ferrataDist.find((d) => d.key === 'under_5')?.label).toBe('A');
+		expect(ferrataDist.find((d) => d.key === '6_low')?.label).toBe('C');
 	});
 });

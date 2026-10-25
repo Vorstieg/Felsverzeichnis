@@ -3,15 +3,16 @@
 	import type { Route } from '@vorstieg/fels-types/types';
 	import type { GpxTrack, RouteSummary } from '$lib/types/application';
 	import { _ } from 'svelte-i18n';
-	import { gradeOrder, gradeRank, hardestRouteGrade } from '$lib/assets/js/route-summary';
+	import { gradeRank, hardestRouteGrade } from '$lib/assets/js/route-summary';
 	import { colors } from '$lib/colors.js';
-	import { getGradeColor } from '$lib/assets/js/grades.js';
+	import { getGradeColor, getGradeLabel, getGradeScaleOrder } from '$lib/assets/js/grades.js';
 	import RouteList from '$lib/components/topo/RouteList.svelte';
 	import GradeLine from '$lib/components/charts/GradeLine.svelte';
 
 	let {
 		routes,
 		title,
+		type,
 		fallbackAccessTracks = [],
 		activeRouteId,
 		pendingRouteId,
@@ -20,6 +21,7 @@
 	}: {
 		routes: (RouteSummary | Route)[];
 		title?: string;
+		type?: string;
 		fallbackAccessTracks?: GpxTrack[];
 		activeRouteId?: Route['id'] | null;
 		pendingRouteId?: Route['id'] | null;
@@ -27,7 +29,7 @@
 		onRouteSelect?: (route: Route) => void;
 	} = $props();
 
-	let gradeChartData = $derived(calculateGradeStats(routes));
+	let gradeChartData = $derived(calculateGradeStats(routes as Route[], type));
 
 	let userExpanded = $state<boolean | null>(null);
 
@@ -46,21 +48,25 @@
 		}
 	});
 
-	function calculateGradeStats(routes: Route[]) {
+	function calculateGradeStats(routes: Route[], climbingType?: string) {
 		if (routes.length === 0) return null;
 
-		const grades = routes.map(hardestRouteGrade).filter((grade) => gradeRank(grade) !== -1);
+		const order = getGradeScaleOrder(climbingType);
+		const grades = routes
+			.map((r) => hardestRouteGrade(r, climbingType))
+			.filter((grade) => gradeRank(grade, climbingType) !== -1);
 
 		const counts: Record<string, number> = {};
-		let minIdx = gradeOrder.length;
+		let minIdx = order.length;
 		let maxIdx = 0;
 		let hasData = false;
 
 		grades.forEach((g) => {
-			const idx = gradeRank(g);
+			const idx = gradeRank(g, climbingType);
 
-			if (idx !== -1) {
-				counts[gradeOrder[idx]] = (counts[gradeOrder[idx]] || 0) + 1;
+			if (idx !== -1 && idx < order.length) {
+				const gradeKey = order[idx];
+				counts[gradeKey] = (counts[gradeKey] || 0) + 1;
 				if (idx < minIdx) minIdx = idx;
 				if (idx > maxIdx) maxIdx = idx;
 				hasData = true;
@@ -74,10 +80,10 @@
 		const segmentColors = [];
 
 		for (let i = minIdx; i <= maxIdx; i++) {
-			const grade = gradeOrder[i];
-			labels.push(grade);
+			const grade = order[i];
+			labels.push(getGradeLabel(grade, undefined, climbingType) || grade);
 			dataCounts.push(counts[grade] || 0);
-			segmentColors.push(getGradeColor({ standardizedValue: grade }));
+			segmentColors.push(getGradeColor({ standardizedValue: grade }, climbingType));
 		}
 
 		return {
@@ -191,7 +197,7 @@
 		}}
 		aria-label={$_('topo.show_routes')}
 	>
-		<GradeLine routes={routes as Route[]} />
+		<GradeLine routes={routes as Route[]} {type} />
 	</div>
 {:else}
 	{#if gradeChartData}

@@ -4,6 +4,7 @@
 	import { page, navigating } from '$app/stores';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { searchActive } from '$lib/stores/search.js';
 
 	let { children }: { children?: import('svelte').Snippet } = $props();
 
@@ -20,7 +21,11 @@
 	let isSearchRoute = $derived(!!$page.params.search);
 	let panelBreak = $derived<'top' | 'middle'>(isAboutRoute || isSearchRoute ? 'top' : 'middle');
 
+	let isFocused = $state(false);
 	let currentSearchTerm = $derived($page.params.search || '');
+	let isExpanded = $derived(
+		isFocused || $searchActive || Boolean(currentSearchTerm && currentSearchTerm.length > 0)
+	);
 
 	function resetSearch() {
 		goto(`${base}/map`);
@@ -37,7 +42,9 @@
 	class="pointer-events-none fixed top-2 right-0 left-0 z-[5000] h-fit overflow-visible py-2 sm:top-3 sm:w-auto"
 >
 	<div
-		class="pointer-events-auto mx-4 sm:mx-0 sm:ml-8 sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80"
+		class="pointer-events-auto mx-4 transition-all duration-300 ease-out sm:mx-0 sm:ml-8 {isExpanded
+			? 'sm:w-[55vw] sm:max-w-md md:max-w-xl lg:max-w-2xl'
+			: 'sm:w-[30vw] sm:max-w-64 md:max-w-72 lg:max-w-80'}"
 	>
 		<SearchBar
 			actionBase={`${base}/map`}
@@ -45,6 +52,7 @@
 			showClear={isSearchRoute}
 			onClear={resetSearch}
 			containerClass="w-full"
+			bind:isFocused
 		/>
 	</div>
 </div>

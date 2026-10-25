@@ -77,12 +77,31 @@ export function getRouteDisplayName(route, parentRoute, t) {
 	return String(route.name || route.id || '');
 }
 
-/** Calculate the mean of outer-ring vertices, excluding closing coordinates.
- * @param {import('@vorstieg/fels-types/types').PointOrAreaGeometry | null | undefined} geometry
+/**
+ * @typedef {import('@vorstieg/fels-types/types').PointOrAreaGeometry
+ *   | import('geojson').LineString
+ *   | import('geojson').MultiLineString
+ *   | import('geojson').MultiPoint} SupportedGeometry
+ */
+
+/** Calculate the mean of geometry vertices or center point.
+ * @param {SupportedGeometry | null | undefined} geometry
  * @returns {[number, number] | null} */
 export function getGeometryCenter(geometry) {
-	if (!geometry) return null;
+	if (!geometry || !geometry.coordinates) return null;
 	if (geometry.type === 'Point') return [geometry.coordinates[0], geometry.coordinates[1]];
+	if (geometry.type === 'LineString' || geometry.type === 'MultiPoint') {
+		const coords = geometry.coordinates;
+		if (!coords.length) return null;
+		const sum = coords.reduce((acc, c) => [acc[0] + c[0], acc[1] + c[1]], [0, 0]);
+		return [sum[0] / coords.length, sum[1] / coords.length];
+	}
+	if (geometry.type === 'MultiLineString') {
+		const coords = geometry.coordinates.flat();
+		if (!coords.length) return null;
+		const sum = coords.reduce((acc, c) => [acc[0] + c[0], acc[1] + c[1]], [0, 0]);
+		return [sum[0] / coords.length, sum[1] / coords.length];
+	}
 	const rings =
 		geometry.type === 'Polygon'
 			? geometry.coordinates.slice(0, 1)

@@ -137,7 +137,10 @@
 		<div>
 			<h3 class="mb-3 px-1 text-lg font-bold text-gray-800">{$_('topo.steepness')}</h3>
 			<div class="mb-8 h-48 w-full">
-				<RouteSteepnessChart {route} on:metrics={(e) => onMetrics?.(e as CustomEvent<SteepnessMetrics>)} />
+				<RouteSteepnessChart
+					{route}
+					on:metrics={(e) => onMetrics?.(e as CustomEvent<SteepnessMetrics>)}
+				/>
 			</div>
 		</div>
 	</div>

@@ -14,6 +14,14 @@ export const siteLink = 'https://www.felsverzeichnis.at/';
 export const fsApiUrl = env.PUBLIC_FS_API_URL || 'https://lager.felsverzeichnis.at/api/fs';
 export const felsstudioUrl = env.PUBLIC_FELSSTUDIO_URL || 'https://studio.felsverzeichnis.at';
 
+/**
+ * Meilisearch (search & filtering). The index is maintained by Felslager; the key
+ * must be the read-only search key (`npm run search:reindex` in Felslager prints it).
+ */
+export const meiliUrl = (env.PUBLIC_MEILI_URL || '').replace(/\/$/, '');
+export const meiliSearchKey = env.PUBLIC_MEILI_SEARCH_KEY || '';
+export const meiliIndex = env.PUBLIC_MEILI_INDEX || 'fels';
+
 // Controls how many posts are shown per page on the main blog index pages
 export const cragsPerPage = 50;
 

@@ -377,4 +377,61 @@ describe('map crag loader', () => {
 		expect(result.cragPathUrl).toBe(sectorPath);
 		expect(result.meta.title).toBe('route-1 - North Wall');
 	});
+
+	it('targets center at zoom 16 for short climbing routes to prevent zooming out', async () => {
+		const shortTopo = {
+			...topo,
+			routes: [
+				{
+					id: 'short-route',
+					type: 'multi-pitch',
+					pathRefs: [
+						{ pathId: 'short-main', role: 'main' },
+						{ pathId: 'long-approach', role: 'approach' }
+					]
+				}
+			],
+			paths: {
+				type: 'FeatureCollection',
+				features: [
+					{
+						type: 'Feature',
+						id: 'short-main',
+						geometry: {
+							type: 'LineString',
+							coordinates: [
+								[16.0538, 47.8329],
+								[16.0539, 47.8331]
+							]
+						}
+					},
+					{
+						type: 'Feature',
+						id: 'long-approach',
+						geometry: {
+							type: 'LineString',
+							coordinates: [
+								[16.04, 47.82],
+								[16.0538, 47.8329]
+							]
+						}
+					}
+				]
+			}
+		};
+
+		const fetchShort = vi.fn(async (url) => {
+			if (url.endsWith('/areas/alpine-crag/alpine-crag.json')) return response(crag);
+			if (url.endsWith('/areas/alpine-crag/alpine-crag-topo.json')) return response(shortTopo);
+			if (url.endsWith('/areas/alpine-crag')) return response([]);
+			return response(null, false);
+		});
+
+		const result = await load(makeArgs(fetchShort, { crag: 'areas/alpine-crag/short-route' }));
+		expect(result.cameraTarget).toEqual({
+			type: 'center',
+			center: [(16.0538 + 16.0539) / 2, (47.8329 + 47.8331) / 2],
+			zoom: 16
+		});
+	});
 });
