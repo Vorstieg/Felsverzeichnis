@@ -15,7 +15,7 @@
 	<a
 		href="{base}/map/crag/{crag.path}"
 		class="absolute inset-0 z-0"
-		aria-label="{crag.entry.properties.name}"
+		aria-label={crag.entry.properties.name}
 		tabindex="-1"
 	></a>
 	<div class="relative z-10 flex h-full min-w-0 flex-1 flex-col justify-between">
@@ -38,7 +38,8 @@
 						{isLast && crag.entry.properties.name ? crag.entry.properties.name : part}
 					</a>
 					{#if i < parts.length - 1}
-						<i class="fa-solid fa-chevron-right shrink-0 text-[8px] text-slate-300 sm:text-[10px]"></i>
+						<i class="fa-solid fa-chevron-right shrink-0 text-[8px] text-slate-300 sm:text-[10px]"
+						></i>
 					{/if}
 				{/each}
 			</div>

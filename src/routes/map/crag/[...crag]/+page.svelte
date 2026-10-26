@@ -159,15 +159,11 @@
 		data.route ? `${data.cragPathUrl}/${data.route.id}` : data.cragPathUrl
 	);
 
-	let parentRoute = $derived(
-		data.route ? getParentRoute(activeTopo?.routes, data.route.id) : null
-	);
+	let parentRoute = $derived(data.route ? getParentRoute(activeTopo?.routes, data.route.id) : null);
 	let routeDisplayName = $derived(
 		data.route ? getRouteDisplayName(data.route, parentRoute, $_) : ''
 	);
-	let displayRoute = $derived(
-		data.route ? { ...data.route, name: routeDisplayName } : null
-	);
+	let displayRoute = $derived(data.route ? { ...data.route, name: routeDisplayName } : null);
 	let displayPitches = $derived(
 		(data.route?.pitches ?? []).map((pitch, idx) => ({
 			...pitch,
@@ -177,7 +173,9 @@
 
 	function handleRouteSelect(route: Route) {
 		const sectorId =
-			'sectorId' in route ? (route as import('$lib/types/application').RouteSummary).sectorId : null;
+			'sectorId' in route
+				? (route as import('$lib/types/application').RouteSummary).sectorId
+				: null;
 		const sector = sectorId ? sectors.find((s) => s.entry.properties.id === sectorId) : null;
 		const targetPath = sector ? sector.path : data.cragPathUrl;
 		goto(`${base}/map/crag/${targetPath}/${route.id}`);
@@ -329,13 +327,11 @@
 			: ''}"
 	>
 		<div class="flex max-w-full min-w-0 flex-1 flex-col">
-			<div
-				class="breadcrumb-dynamic relative z-20 w-full mr-2 sm:mr-3 {breadcrumbMaskClass}"
-			>
+			<div class="breadcrumb-dynamic relative z-20 mr-2 w-full sm:mr-3 {breadcrumbMaskClass}">
 				<div
 					bind:this={breadcrumbScrollContainer}
 					onscroll={checkBreadcrumbScroll}
-					class="no-scrollbar flex items-center gap-1 overflow-x-auto pl-1 pr-3 py-0.5 text-xs font-medium tracking-wide sm:text-sm sm:pr-4"
+					class="no-scrollbar flex items-center gap-1 overflow-x-auto py-0.5 pr-3 pl-1 text-xs font-medium tracking-wide sm:pr-4 sm:text-sm"
 				>
 					{#each breadcrumbParts as part, i}
 						{@const subpath = breadcrumbParts.slice(0, i + 1).join('/')}
@@ -344,7 +340,8 @@
 							href={isLastCragPart && data.route
 								? `${base}/map/crag/${data.cragPathUrl}`
 								: `${base}/map/${encodeURIComponent(subpath)}`}
-							class="shrink-0 rounded-md px-2 py-0.5 transition-all sm:px-2.5 sm:py-1 no-underline {isLastCragPart && !data.route
+							class="shrink-0 rounded-md px-2 py-0.5 no-underline transition-all sm:px-2.5 sm:py-1 {isLastCragPart &&
+							!data.route
 								? 'bg-slate-200/80 font-bold text-slate-800'
 								: 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95'}"
 						>
@@ -353,7 +350,8 @@
 								: part}
 						</a>
 						{#if i < breadcrumbParts.length - 1 || data.route}
-							<i class="fa-solid fa-chevron-right shrink-0 text-[8px] text-slate-300 sm:text-[10px]"></i>
+							<i class="fa-solid fa-chevron-right shrink-0 text-[8px] text-slate-300 sm:text-[10px]"
+							></i>
 						{/if}
 					{/each}
 					{#if data.route}
@@ -775,7 +773,8 @@
 						href={isLastCragPart && data.route
 							? `${base}/map/crag/${data.cragPathUrl}`
 							: `${base}/map/${encodeURIComponent(subpath)}`}
-						class="shrink-0 rounded-md px-2 py-0.5 transition-all no-underline {isLastCragPart && !data.route
+						class="shrink-0 rounded-md px-2 py-0.5 no-underline transition-all {isLastCragPart &&
+						!data.route
 							? 'bg-slate-200/80 font-bold text-slate-800'
 							: 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95'}"
 					>
@@ -890,8 +889,20 @@
 	}
 
 	.breadcrumb-mask-both {
-		mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
-		-webkit-mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
+		mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			black 28px,
+			black calc(100% - 28px),
+			transparent 100%
+		);
+		-webkit-mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			black 28px,
+			black calc(100% - 28px),
+			transparent 100%
+		);
 	}
 
 	@media (max-width: 639px) {

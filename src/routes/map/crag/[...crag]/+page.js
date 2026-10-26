@@ -1,7 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { fsApiUrl } from '$lib/config';
 import { browser } from '$app/environment';
-import { findRouteOrChild, getGeometryCenter, getParentRoute } from '$lib/assets/js/topo-loader-utils.js';
+import {
+	findRouteOrChild,
+	getGeometryCenter,
+	getParentRoute
+} from '$lib/assets/js/topo-loader-utils.js';
 import { getPreferredClimbingType } from '$lib/assets/js/climbing-map-utils.js';
 import { getGeometryBounds } from '$lib/assets/js/map-camera.js';
 import { createEntryLoader } from '$lib/assets/js/entry-loader';
@@ -95,6 +99,7 @@ export const load = async ({ params, url, parent, fetch }) => {
 					}
 				}
 			}
+
 			return (doc?.paths?.features || []).map((feature) => {
 				const reference = feature.id === undefined ? undefined : pathRoles.get(feature.id);
 				const matchingRoute =
@@ -123,10 +128,7 @@ export const load = async ({ params, url, parent, fetch }) => {
 							feature.properties?.routeId ||
 							'',
 						targetPath:
-							reference?.targetPath ||
-							sectorPath ||
-							feature.properties?.targetPath ||
-							routeCragPath
+							reference?.targetPath || sectorPath || feature.properties?.targetPath || routeCragPath
 					}
 				};
 			});
@@ -139,7 +141,8 @@ export const load = async ({ params, url, parent, fetch }) => {
 		) => {
 			if (!targetRoute) {
 				// Only see the main gpx track when in the overlaying crag
-				return paths.filter((feature) => feature.properties?.role === 'main');
+				const main = paths.filter((feature) => feature.properties?.role === 'main');
+				return main.length ? main : paths;
 			}
 			// In detail view: show approach, variant, descent, main etc. for this route
 			const effectiveRoute = getParentRoute(doc?.routes, targetRoute.id) || targetRoute;
@@ -148,7 +151,7 @@ export const load = async ({ params, url, parent, fetch }) => {
 				const routePaths = paths.filter(
 					(feature) =>
 						(feature.id !== undefined && refPathIds.has(feature.id)) ||
-						feature.properties?.routeId === effectiveRoute.id ||
+						String(feature.properties?.routeId) === String(effectiveRoute.id) ||
 						feature.id === effectiveRoute.id
 				);
 				if (routePaths.length) return routePaths;
@@ -215,13 +218,50 @@ export const load = async ({ params, url, parent, fetch }) => {
 			routeSector,
 			rockType,
 			cameraTarget: (() => {
+				if (route) {
+					// For routes with main GPX track(s), calculate bounds strictly from main/variant climbing lines,
+					// NOT from approach or descent trails (which can span kilometers away into the valley).
+					const mainBounds = topoPaths
+						.filter((p) => p.properties?.role === 'main' || p.properties?.role === 'variant')
+						.map((p) => getGeometryBounds(p.geometry))
+						.filter((b) => b !== null);
+					if (mainBounds.length > 0) {
+						const minLng = Math.min(...mainBounds.map(([[lng]]) => lng));
+						const minLat = Math.min(...mainBounds.map(([[, lat]]) => lat));
+						const maxLng = Math.max(...mainBounds.map(([, [lng]]) => lng));
+						const maxLat = Math.max(...mainBounds.map(([, [, lat]]) => lat));
+
+						// Short climbing route (< ~300m): center at zoom 16 so camera does not zoom out or jump
+						if (maxLng - minLng < 0.003 && maxLat - minLat < 0.003) {
+							return {
+								type: /** @type {const} */ ('center'),
+								center: /** @type {[number, number]} */ ([
+									(minLng + maxLng) / 2,
+									(minLat + maxLat) / 2
+								]),
+								zoom: 16
+							};
+						}
+
+						return {
+							type: /** @type {const} */ ('bounds'),
+							bounds: /** @type {[[number, number], [number, number]]} */ ([
+								[minLng, minLat],
+								[maxLng, maxLat]
+							]),
+							padding: 80,
+							maxZoom: 17
+						};
+					}
+				}
 				if (currentData.properties?.kind === 'area' && currentData.geometry?.type !== 'Point') {
 					const bounds = getGeometryBounds(currentData.geometry);
 					if (bounds)
 						return { type: /** @type {const} */ ('bounds'), bounds, padding: 80, maxZoom: 14 };
 				}
 				const center =
-					getGeometryCenter(activeLocationEntry.geometry) || getGeometryCenter(currentData.geometry);
+					getGeometryCenter(activeLocationEntry.geometry) ||
+					getGeometryCenter(currentData.geometry);
 				return center ? { type: /** @type {const} */ ('center'), center, zoom: 16 } : null;
 			})(),
 			name: activeLocationEntry.properties?.name || currentData.properties?.name,

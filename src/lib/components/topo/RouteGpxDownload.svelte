@@ -113,7 +113,10 @@
 			? 'border-slate-300 bg-slate-200 text-slate-900'
 			: 'border-slate-200 bg-slate-100 text-slate-700 hover:border-slate-300 hover:bg-slate-200 hover:text-slate-900'} {className}"
 	>
-		<i class="fa-solid fa-download text-[11px] {open ? 'text-slate-700' : 'text-slate-500'}" aria-hidden="true"></i>
+		<i
+			class="fa-solid fa-download text-[11px] {open ? 'text-slate-700' : 'text-slate-500'}"
+			aria-hidden="true"
+		></i>
 		<span>GPX</span>
 	</button>
 	{#if open}

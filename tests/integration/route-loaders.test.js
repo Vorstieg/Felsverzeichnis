@@ -4,7 +4,16 @@ vi.mock('$lib/assets/js/fetchCrags', () => ({
 	default: vi.fn()
 }));
 
+vi.mock('$lib/search/catalog-search', async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		...actual,
+		searchCatalog: vi.fn()
+	};
+});
+
 import fetchCrags from '$lib/assets/js/fetchCrags';
+import { searchCatalog } from '$lib/search/catalog-search';
 import { load as loadMapLayout } from '../../src/routes/map/+layout.js';
 import { load as loadMapSearch } from '../../src/routes/map/[search]/+page.js';
 
@@ -25,9 +34,35 @@ const valleyCrag = {
 	}
 };
 
+const alpineHit = {
+	id: 'alpine-crag',
+	docType: 'entry',
+	kind: 'crag',
+	name: 'Alpine Crag',
+	path: 'areas/alpine-crag',
+	breadcrumb: [],
+	types: ['sports-climbing'],
+	grades: [],
+	routeCount: 0,
+	_geo: { lat: 48, lng: 16 }
+};
+const valleyHit = {
+	id: 'valley-crag',
+	docType: 'entry',
+	kind: 'crag',
+	name: 'Valley Crag',
+	path: 'areas/valley-crag',
+	breadcrumb: [],
+	types: ['sports-climbing'],
+	grades: [],
+	routeCount: 0,
+	_geo: { lat: 47, lng: 15 }
+};
+
 describe('route loaders and redirects', () => {
 	beforeEach(() => {
 		vi.mocked(fetchCrags).mockReset();
+		vi.mocked(searchCatalog).mockReset();
 	});
 
 	it('loads map layout locations and exposes them as allLocations', async () => {
@@ -42,6 +77,12 @@ describe('route loaders and redirects', () => {
 
 	it('redirects a single map search result with a coordinate hash', async () => {
 		vi.mocked(fetchCrags).mockResolvedValue([alpineCrag]);
+		vi.mocked(searchCatalog).mockResolvedValue({
+			entries: [alpineHit],
+			routes: [],
+			entryTotal: 1,
+			routeTotal: 0
+		});
 
 		await expect(loadMapSearch({ params: { search: 'alpine' } })).rejects.toMatchObject({
 			status: 302,
@@ -51,6 +92,12 @@ describe('route loaders and redirects', () => {
 
 	it('returns a bounds camera target for multiple map search results', async () => {
 		vi.mocked(fetchCrags).mockResolvedValue([alpineCrag, valleyCrag]);
+		vi.mocked(searchCatalog).mockResolvedValue({
+			entries: [alpineHit, valleyHit],
+			routes: [],
+			entryTotal: 2,
+			routeTotal: 0
+		});
 
 		const result = await loadMapSearch({ params: { search: 'crag' } });
 
@@ -69,13 +116,20 @@ describe('route loaders and redirects', () => {
 
 	it('returns no camera target for an empty map search', async () => {
 		vi.mocked(fetchCrags).mockResolvedValue([]);
+		vi.mocked(searchCatalog).mockResolvedValue({
+			entries: [],
+			routes: [],
+			entryTotal: 0,
+			routeTotal: 0
+		});
 
 		const result = await loadMapSearch({ params: { search: 'missing' } });
 
-		expect(result).toEqual({
+		expect(result).toMatchObject({
 			locations: [],
 			search: 'missing',
-			cameraTarget: null
+			cameraTarget: null,
+			routes: []
 		});
 	});
 
@@ -100,6 +154,12 @@ describe('route loaders and redirects', () => {
 
 	it('keeps the filtered map for a hierarchy path without a document', async () => {
 		vi.mocked(fetchCrags).mockResolvedValue([alpineCrag, valleyCrag]);
+		vi.mocked(searchCatalog).mockResolvedValue({
+			entries: [alpineHit, valleyHit],
+			routes: [],
+			entryTotal: 2,
+			routeTotal: 0
+		});
 
 		const result = await loadMapSearch({ params: { search: 'areas' } });
 

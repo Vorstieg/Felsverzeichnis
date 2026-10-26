@@ -45,6 +45,19 @@ describe('map camera utilities', () => {
 			[8, 18],
 			[14, 24]
 		]);
+		expect(
+			getGeometryBounds({
+				type: 'LineString',
+				coordinates: [
+					[10.8, 46.8],
+					[10.9, 46.9],
+					[10.7, 46.85]
+				]
+			})
+		).toEqual([
+			[10.7, 46.8],
+			[10.9, 46.9]
+		]);
 		expect(getGeometryBounds(null)).toBeNull();
 	});
 

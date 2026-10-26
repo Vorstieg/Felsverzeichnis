@@ -74,6 +74,9 @@ jobs:
       - name: Deploy artifact to production
         env:
           PM2_HOME: /home/vorstieg/.pm2
+          PUBLIC_MEILI_URL: https://www.felsverzeichnis.at/meili
+          PUBLIC_MEILI_INDEX: fels
+          PUBLIC_MEILI_SEARCH_KEY: 922032c29b03410cb86449eb4a7dae29cbd38ddf906cec0f2d270fec380ff718
         run: |
           set -euo pipefail
 

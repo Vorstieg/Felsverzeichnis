@@ -3,9 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import { getGradeDistribution } from '$lib/assets/js/grades.js';
 
-	let { routes }: { routes: Route[] } = $props();
+	let { routes, type }: { routes: Route[]; type?: string } = $props();
 
-	let distribution = $derived(getGradeDistribution(routes));
+	let distribution = $derived(getGradeDistribution(routes, type));
 </script>
 
 {#if distribution.length > 0}

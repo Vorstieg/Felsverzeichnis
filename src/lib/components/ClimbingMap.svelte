@@ -34,6 +34,7 @@
 		access = null,
 		topoPaths = [],
 		accessKey = '',
+		topoPathsKey = '',
 		cameraTarget = null,
 		selectedRouteId = null,
 		selectedRouteParentId = null,
@@ -43,6 +44,7 @@
 		access?: AccessCollection | null;
 		topoPaths?: PathFeature[];
 		accessKey?: string;
+		topoPathsKey?: string;
 		cameraTarget?: MapCameraTarget | null;
 		selectedRouteId?: string | null;
 		selectedRouteParentId?: string | null;
@@ -625,8 +627,7 @@
 			if ((e.originalEvent as unknown as Record<string, boolean> | undefined)?._felsHandled) return;
 			const feature = e.features?.[0];
 			const properties = feature?.properties as
-				| { routeId?: string; targetPath?: string }
-				| undefined;
+				{ routeId?: string; targetPath?: string } | undefined;
 			if (!properties?.routeId) return;
 
 			if (e.originalEvent) {
@@ -783,6 +784,22 @@
 		window.addEventListener('crag-review:focus-map-target', handleFocusMapTarget);
 	});
 
+	let isManuallyPanning = false;
+	let lastTargetBounds: [[number, number], [number, number]] | null = null;
+
+	function areBoundsEqual(
+		b1?: [[number, number], [number, number]] | null,
+		b2?: [[number, number], [number, number]] | null
+	) {
+		if (!b1 || !b2) return false;
+		return (
+			Math.abs(b1[0][0] - b2[0][0]) < 1e-6 &&
+			Math.abs(b1[0][1] - b2[0][1]) < 1e-6 &&
+			Math.abs(b1[1][0] - b2[1][0]) < 1e-6 &&
+			Math.abs(b1[1][1] - b2[1][1]) < 1e-6
+		);
+	}
+
 	function getMapPadding() {
 		if (typeof window === 'undefined') return { top: 0, bottom: 0, left: 0, right: 0 };
 		return calculateMapPadding({ width: window.innerWidth, height: window.innerHeight });
@@ -791,12 +808,35 @@
 	function handleFocusMapTarget(e: CustomEvent<MapFocusTarget>) {
 		if (!map) return;
 		const target = e.detail;
-		if (target && target.center) {
+		if (target && target.bounds) {
+			lastTargetBounds = target.bounds;
+			const uiPadding = getMapPadding();
+			const base = target.padding ?? 80;
+			isManuallyPanning = true;
+			map.fitBounds(target.bounds, {
+				padding: {
+					top: uiPadding.top + base,
+					bottom: uiPadding.bottom + base,
+					left: uiPadding.left + base,
+					right: uiPadding.right + base
+				},
+				maxZoom: target.maxZoom ?? 14,
+				duration: 1200
+			});
+			map.once('moveend', () => {
+				isManuallyPanning = false;
+			});
+		} else if (target && target.center) {
+			lastTargetBounds = null;
+			isManuallyPanning = true;
 			map.flyTo({
 				center: target.center,
 				zoom: target.zoom ?? 18,
 				padding: getMapPadding(),
 				duration: 1200
+			});
+			map.once('moveend', () => {
+				isManuallyPanning = false;
 			});
 		}
 		if (target && target.path) {
@@ -835,6 +875,7 @@
 		if (entry?.properties?.kind === 'area' && entry.geometry?.type !== 'Point') {
 			const bounds = getGeometryBounds(entry.geometry);
 			if (bounds) {
+				lastTargetBounds = bounds;
 				isManuallyPanning = true;
 				map.fitBounds(bounds, {
 					padding: {
@@ -976,11 +1017,7 @@
 					['==', ['get', 'routeId'], selectedRouteParentId],
 					['==', ['get', 'routeId'], '']
 				]
-			: [
-					'any',
-					['==', ['get', 'routeId'], selectedRouteId],
-					['==', ['get', 'routeId'], '']
-				];
+			: ['any', ['==', ['get', 'routeId'], selectedRouteId], ['==', ['get', 'routeId'], '']];
 
 		return ['all', ['==', ['get', 'role'], 'main'], routeMatch];
 	}
@@ -1072,6 +1109,7 @@
 	});
 
 	$effect(() => {
+		topoPathsKey;
 		topoPaths;
 		if (!mapReady) return;
 		syncTopoPathLayers();
@@ -1356,8 +1394,6 @@
 		}
 	}
 
-	let isManuallyPanning = false;
-
 	function isTargetVisibleAndZoomed(
 		centerLngLat: LngLatLike,
 		padding: Required<PaddingOptions>,
@@ -1385,6 +1421,10 @@
 		const uiPadding = getMapPadding();
 
 		if (cameraTarget.type === 'bounds' && cameraTarget.bounds) {
+			if (areBoundsEqual(lastTargetBounds, cameraTarget.bounds)) {
+				return;
+			}
+			lastTargetBounds = cameraTarget.bounds;
 			const base = cameraTarget.padding;
 			map.fitBounds(cameraTarget.bounds, {
 				padding: {
@@ -1397,6 +1437,7 @@
 				duration: 900
 			});
 		} else if (cameraTarget.type === 'center') {
+			lastTargetBounds = null;
 			if (isTargetVisibleAndZoomed(cameraTarget.center, uiPadding, cameraTarget.zoom)) {
 				return;
 			}

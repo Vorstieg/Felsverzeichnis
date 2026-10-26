@@ -1,16 +1,29 @@
-/** @param {import('@vorstieg/fels-types/types').PointOrAreaGeometry | null | undefined} geometry
+/**
+ * @typedef {import('@vorstieg/fels-types/types').PointOrAreaGeometry
+ *   | import('geojson').LineString
+ *   | import('geojson').MultiLineString
+ *   | import('geojson').MultiPoint} SupportedGeometry
+ */
+
+/** @param {SupportedGeometry | null | undefined} geometry
  * @returns {[[number, number], [number, number]] | null} */
 export function getGeometryBounds(geometry) {
-	if (!geometry) return null;
-	const points =
-		geometry.type === 'Point'
-			? [geometry.coordinates]
-			: geometry.type === 'Polygon'
-				? geometry.coordinates.flat()
-				: geometry.coordinates.flat(2);
+	if (!geometry || !geometry.coordinates) return null;
+	/** @type {import('geojson').Position[]} */
+	let points = [];
+	if (geometry.type === 'Point') {
+		points = [geometry.coordinates];
+	} else if (geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
+		points = geometry.coordinates;
+	} else if (geometry.type === 'MultiLineString' || geometry.type === 'Polygon') {
+		points = geometry.coordinates.flat();
+	} else if (geometry.type === 'MultiPolygon') {
+		points = geometry.coordinates.flat(2);
+	}
 	if (!points.length) return null;
-	const longitudes = points.map(([longitude]) => longitude);
-	const latitudes = points.map(([, latitude]) => latitude);
+	const longitudes = points.map(([longitude]) => longitude).filter(Number.isFinite);
+	const latitudes = points.map(([, latitude]) => latitude).filter(Number.isFinite);
+	if (!longitudes.length || !latitudes.length) return null;
 	return [
 		[Math.min(...longitudes), Math.min(...latitudes)],
 		[Math.max(...longitudes), Math.max(...latitudes)]

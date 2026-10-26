@@ -1,5 +1,33 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('$lib/search/catalog-search', async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		...actual,
+		isSearchConfigured: vi.fn(() => true),
+		searchCatalog: vi.fn(async () => ({
+			entries: [
+				{
+					id: 'alpine-crag',
+					docType: 'entry',
+					kind: 'crag',
+					name: 'Alpine Crag',
+					path: 'areas/alpine-crag',
+					breadcrumb: [],
+					types: ['sports-climbing'],
+					grades: [],
+					routeCount: 0,
+					_geo: { lat: 48, lng: 16 }
+				}
+			],
+			routes: [],
+			entryTotal: 1,
+			routeTotal: 0
+		}))
+	};
+});
+
 import { goto } from '$app/navigation';
 import CragList from '$lib/components/CragList.svelte';
 import SearchBar from '$lib/components/ui/SearchBar.svelte';
@@ -56,6 +84,7 @@ describe('frontend navigation components', () => {
 		const input = screen.getAllByRole('textbox')[0];
 		await fireEvent.focus(input);
 		await fireEvent.input(input, { target: { value: 'alp' } });
+		expect(await screen.findByText('Alpine Crag')).toBeInTheDocument();
 		await fireEvent.keyDown(input, { key: 'ArrowDown' });
 		await fireEvent.keyDown(input, { key: 'Enter' });
 		expect(goto).toHaveBeenCalledWith('/map/crag/areas/alpine-crag#16/48/16');

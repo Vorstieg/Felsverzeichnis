@@ -471,6 +471,25 @@ describe('ClimbingMap', () => {
 		);
 		expect(map.fly.center).toEqual([16, 48]);
 		expect(map.fly.zoom).toBe(15);
+
+		window.dispatchEvent(
+			new CustomEvent('crag-review:focus-map-target', {
+				detail: {
+					bounds: [
+						[15.9, 47.9],
+						[16.1, 48.1]
+					],
+					padding: 80,
+					maxZoom: 14,
+					path: 'areas/alpine-crag'
+				}
+			})
+		);
+		expect(map.bounds.bounds).toEqual([
+			[15.9, 47.9],
+			[16.1, 48.1]
+		]);
+		expect(map.bounds.options.maxZoom).toBe(14);
 	});
 
 	it('renders crag and area polygon layers and handles area fitBounds', async () => {
@@ -705,6 +724,66 @@ describe('ClimbingMap', () => {
 				['==', ['get', 'role'], 'main'],
 				['any', ['==', ['get', 'routeId'], 'route-123'], ['==', ['get', 'routeId'], '']]
 			]);
+		} finally {
+			globalThis.Image = originalImage;
+		}
+	});
+
+	it('adds topo paths when navigating from an empty state to a route with topo paths', async () => {
+		const originalImage = globalThis.Image;
+		globalThis.Image = class {
+			onload = null;
+			set src(_) {
+				this.onload?.();
+			}
+		};
+
+		const routePath = {
+			type: 'Feature',
+			id: 'main-1',
+			geometry: {
+				type: 'LineString',
+				coordinates: [
+					[16.0, 48.0],
+					[16.01, 48.01]
+				]
+			},
+			properties: {
+				role: 'main',
+				routeId: 'route-123',
+				targetPath: 'areas/alpine-crag/north',
+				routeType: 'sports-climbing'
+			}
+		};
+
+		try {
+			const view = render(ClimbingMap, {
+				props: {
+					locations: [],
+					topoPaths: [],
+					topoPathsKey: '',
+					access: null,
+					accessKey: '',
+					selectedRouteId: null
+				}
+			});
+			await waitFor(() => expect(mapState.instance).toBeTruthy());
+			const map = mapState.instance;
+			await map.handlers.get('load')();
+
+			expect(map.getLayer('topo-paths')).toBeNull();
+
+			await view.rerender({
+				locations: [],
+				topoPaths: [routePath],
+				topoPathsKey: 'map/crag/areas/alpine-crag/north/route-123:route-123:main-1',
+				access: null,
+				accessKey: '',
+				selectedRouteId: 'route-123'
+			});
+
+			expect(map.getLayer('topo-paths')).toBeTruthy();
+			expect(map.getSource('topo-paths')).toBeTruthy();
 		} finally {
 			globalThis.Image = originalImage;
 		}

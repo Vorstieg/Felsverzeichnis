@@ -2,7 +2,7 @@
 	import { base } from '$app/paths';
 	import { types } from '$lib/config';
 	import { _ } from 'svelte-i18n';
-	import { searchSuggestionsActive } from '$lib/stores/search.js';
+	import { searchSuggestionsActive, searchActive } from '$lib/stores/search.js';
 	import { getTypeDotClass } from '$lib/assets/js/route-types.js';
 </script>
 
@@ -11,7 +11,9 @@
 </svelte:head>
 
 <div
-	class="filter-wrapper fade no-scrollbar pointer-events-auto fixed right-0 z-[1000] flex items-center overflow-x-auto py-2 pl-0 transition-all duration-300 ease-out sm:top-5 sm:h-[50px] sm:py-0"
+	class="filter-wrapper fade no-scrollbar fixed right-0 z-[1000] flex items-center overflow-x-auto py-2 pl-0 transition-all duration-300 ease-out sm:top-5 sm:h-[50px] sm:py-0 {$searchActive
+		? 'pointer-events-none invisible opacity-0'
+		: 'pointer-events-auto visible opacity-100'}"
 	style="--dropdown-offset: {$searchSuggestionsActive > 0 ? $searchSuggestionsActive + 16 : 0}px;"
 >
 	<div class="w-4 shrink-0 sm:hidden"></div>
