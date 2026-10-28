@@ -2,7 +2,8 @@
 	import { base } from '$app/paths';
 	import { page, navigating } from '$app/stores';
 	import { slide } from 'svelte/transition';
-	import maplibregl from 'maplibre-gl';
+	import * as maplibregl from 'maplibre-gl';
+	import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -510,6 +511,7 @@
 	};
 
 	onMount(async () => {
+		maplibregl.setWorkerUrl(maplibreWorkerUrl);
 		map = new maplibregl.Map({
 			container: mapElement,
 			zoom: cameraTarget?.type === 'center' ? cameraTarget.zoom : 8,
@@ -1155,10 +1157,14 @@
 		const setLayerFilter = (id: string, filter: ExpressionSpecification) => {
 			if (map.getLayer(id)) map.setFilter?.(id, filter);
 		};
-		const setLayerPaint = (id: string, name: string, value: unknown) => {
+		const setLayerPaint = (
+			...[id, name, value]: Parameters<maplibregl.Map['setPaintProperty']>
+		) => {
 			if (map.getLayer(id)) map.setPaintProperty?.(id, name, value);
 		};
-		const setLayerLayout = (id: string, name: string, value: unknown) => {
+		const setLayerLayout = (
+			...[id, name, value]: Parameters<maplibregl.Map['setLayoutProperty']>
+		) => {
 			if (map.getLayer(id)) map.setLayoutProperty?.(id, name, value);
 		};
 

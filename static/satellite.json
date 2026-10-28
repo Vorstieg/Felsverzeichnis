@@ -20,6 +20,11 @@
 				"type": "FeatureCollection",
 				"features": []
 			}
+		},
+		"maptiler_planet": {
+			"url": "https://api.maptiler.com/tiles/v3/tiles.json?key=LvnvMGe2SC2a134Y4UY9",
+			"type": "vector",
+			"attribution": "<a href=\"https://www.maptiler.com/copyright/\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\">&copy; OpenStreetMap contributors</a>"
 		}
 	},
 	"layers": [
@@ -27,6 +32,167 @@
 			"id": "global-imagery",
 			"type": "raster",
 			"source": "globalImagery"
+		},
+		{
+			"id": "satellite-road-casing",
+			"type": "line",
+			"source": "maptiler_planet",
+			"source-layer": "transportation",
+			"minzoom": 7,
+			"filter": [
+				"all",
+				["==", ["geometry-type"], "LineString"],
+				["!=", ["get", "brunnel"], "tunnel"],
+				[
+					"in",
+					["get", "class"],
+					["literal", ["motorway", "trunk", "primary", "secondary", "tertiary", "minor", "service"]]
+				]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-cap": "round"
+			},
+			"paint": {
+				"line-color": "#18212b",
+				"line-opacity": 0.5,
+				"line-width": ["interpolate", ["linear"], ["zoom"], 7, 1.5, 12, 2.5, 16, 4, 18, 6]
+			}
+		},
+		{
+			"id": "satellite-roads",
+			"type": "line",
+			"source": "maptiler_planet",
+			"source-layer": "transportation",
+			"minzoom": 7,
+			"filter": [
+				"all",
+				["==", ["geometry-type"], "LineString"],
+				["!=", ["get", "brunnel"], "tunnel"],
+				[
+					"in",
+					["get", "class"],
+					["literal", ["motorway", "trunk", "primary", "secondary", "tertiary", "minor", "service"]]
+				]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-cap": "round"
+			},
+			"paint": {
+				"line-color": "#f4eee0",
+				"line-opacity": 0.75,
+				"line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.5, 12, 1.2, 16, 2.5, 18, 4]
+			}
+		},
+		{
+			"id": "satellite-paths",
+			"type": "line",
+			"source": "maptiler_planet",
+			"source-layer": "transportation",
+			"minzoom": 12,
+			"filter": [
+				"all",
+				["==", ["geometry-type"], "LineString"],
+				["!=", ["get", "brunnel"], "tunnel"],
+				["in", ["get", "class"], ["literal", ["path", "track", "pedestrian"]]]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-cap": "round"
+			},
+			"paint": {
+				"line-color": "#ffe2a3",
+				"line-opacity": 0.85,
+				"line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.8, 18, 2],
+				"line-dasharray": [2, 2]
+			}
+		},
+		{
+			"id": "satellite-road-labels",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "transportation_name",
+			"minzoom": 13,
+			"filter": [
+				"in",
+				["get", "class"],
+				["literal", ["motorway", "trunk", "primary", "secondary", "tertiary", "minor"]]
+			],
+			"layout": {
+				"symbol-placement": "line",
+				"symbol-spacing": 350,
+				"text-field": ["get", "name"],
+				"text-font": ["Noto Sans Regular"],
+				"text-size": 11
+			},
+			"paint": {
+				"text-color": "#ffffff",
+				"text-halo-color": "rgba(15, 23, 42, 0.9)",
+				"text-halo-width": 1.5,
+				"text-halo-blur": 0.5
+			}
+		},
+		{
+			"id": "satellite-peak-labels",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "mountain_peak",
+			"minzoom": 11,
+			"filter": [
+				"all",
+				["==", ["geometry-type"], "Point"],
+				["==", ["get", "class"], "peak"],
+				["has", "name"]
+			],
+			"layout": {
+				"text-field": ["concat", "▴ ", ["get", "name"]],
+				"text-font": ["Noto Sans Regular"],
+				"text-size": 12,
+				"text-padding": 8
+			},
+			"paint": {
+				"text-color": "#ffe2a3",
+				"text-halo-color": "rgba(15, 23, 42, 0.9)",
+				"text-halo-width": 1.5,
+				"text-halo-blur": 0.5
+			}
+		},
+		{
+			"id": "satellite-place-labels",
+			"type": "symbol",
+			"source": "maptiler_planet",
+			"source-layer": "place",
+			"minzoom": 5,
+			"filter": [
+				"any",
+				["in", ["get", "class"], ["literal", ["city", "town"]]],
+				["all", ["==", ["get", "class"], "village"], [">=", ["zoom"], 10]],
+				["all", ["==", ["get", "class"], "hamlet"], [">=", ["zoom"], 12]]
+			],
+			"layout": {
+				"text-field": ["get", "name"],
+				"text-font": ["Noto Sans Regular"],
+				"text-size": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					5,
+					["interpolate", ["linear"], ["get", "rank"], 1, 28, 7, 18, 11, 13, 22, 9],
+					12,
+					["interpolate", ["linear"], ["get", "rank"], 1, 36, 7, 24, 11, 17, 22, 12],
+					16,
+					["interpolate", ["linear"], ["get", "rank"], 1, 40, 7, 28, 11, 20, 22, 14]
+				],
+				"text-padding": 10,
+				"symbol-sort-key": ["coalesce", ["get", "rank"], 100]
+			},
+			"paint": {
+				"text-color": "#ffffff",
+				"text-halo-color": "rgba(15, 23, 42, 0.9)",
+				"text-halo-width": 1.5,
+				"text-halo-blur": 0.5
+			}
 		},
 		{
 			"id": "routes-outline",

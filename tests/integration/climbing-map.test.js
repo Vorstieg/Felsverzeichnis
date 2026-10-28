@@ -119,11 +119,10 @@ vi.mock('maplibre-gl', () => {
 
 	class MockControl {}
 	return {
-		default: {
-			Map: MockMap,
-			GeolocateControl: MockControl,
-			NavigationControl: MockControl
-		}
+		Map: MockMap,
+		GeolocateControl: MockControl,
+		NavigationControl: MockControl,
+		setWorkerUrl: vi.fn()
 	};
 });
 
