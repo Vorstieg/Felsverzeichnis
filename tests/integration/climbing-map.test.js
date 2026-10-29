@@ -312,12 +312,12 @@ describe('ClimbingMap', () => {
 			).toBe('sports-climbing');
 
 			const accessIconExpression = map.getLayer('access-points').layout['icon-image'];
-			expect(evaluateIcon(accessIconExpression, { kind: 'parking' }).name).toBe('access-parking');
-			expect(evaluateIcon(accessIconExpression, { kind: 'hut' }).name).toBe('access-hut');
-			expect(evaluateIcon(accessIconExpression, { kind: 'transit', mode: 'train' }).name).toBe(
+			expect(evaluateIcon(accessIconExpression, { kind: 'parking' })).toBe('access-parking');
+			expect(evaluateIcon(accessIconExpression, { kind: 'hut' })).toBe('access-hut');
+			expect(evaluateIcon(accessIconExpression, { kind: 'transit', mode: 'train' })).toBe(
 				'access-train'
 			);
-			expect(evaluateIcon(accessIconExpression, { kind: 'transit', mode: 'bus' }).name).toBe(
+			expect(evaluateIcon(accessIconExpression, { kind: 'transit', mode: 'bus' })).toBe(
 				'access-bus'
 			);
 			expect(map.images.has('parking')).toBe(false);

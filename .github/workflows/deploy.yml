@@ -3,9 +3,10 @@ name: Deploy Felsverzeichnis
 on:
   push:
     branches: [main]
+  pull_request:
 
 concurrency:
-  group: production
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'production' }}
   cancel-in-progress: false
 
 jobs:
@@ -32,7 +33,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ github.token }}
 
       - name: Check application types
-        run: npm run typecheck && npm run lint:types
+        run: npm run typecheck
+
+      - name: Lint application
+        run: npm run lint
 
       - name: Run tests
         run: npm test
@@ -45,6 +49,7 @@ jobs:
       # adapter-node leaves some server dependencies external. Include only the
       # production dependency tree so the server never has to run npm install.
       - name: Assemble deployment artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           npm prune --omit=dev
           tar -czf felsverzeichnis-${GITHUB_SHA}.tar.gz build node_modules package.json package-lock.json
@@ -52,6 +57,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ github.token }}
 
       - name: Upload deployment artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: felsverzeichnis-${{ github.sha }}
@@ -60,6 +66,7 @@ jobs:
           retention-days: 7
 
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: self-hosted
     permissions:
