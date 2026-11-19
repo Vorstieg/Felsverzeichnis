@@ -91,7 +91,8 @@
 		selectedRouteParentId={$page.data.route?.parentId != null
 			? String($page.data.route.parentId)
 			: null}
-		isHidden={$page.url.pathname.startsWith(`${base}/topo/`)}
+		isHidden={$page.url.pathname.startsWith(`${base}/topo/`) ||
+			$page.url.pathname === `${base}/mitmachen`}
 	/>
 	<main id="main" class="pointer-events-none overflow-auto" tabindex="-1">
 		<div class="h-full">

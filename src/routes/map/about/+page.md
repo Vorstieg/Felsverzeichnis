@@ -1,3 +1,7 @@
+<script>
+	import { base } from '$app/paths';
+</script>
+
 <svelte:head>
 <title>Impressum</title>
 </svelte:head>
@@ -12,8 +16,9 @@
 Diese Plattform bietet eine umfassende Sammlung von Klettergebieten mit detaillierten Informationen, insbesondere zur öffentlichen Anreise.  
 Egal ob Anfänger&#42;in oder erfahrene&#42;r Kletterer&#42;in – hier findest du die passenden Felsen für dein nächstes Kletterabenteuer!
 
-Du möchtest ein neues Klettergebiet hinzufügen oder Fehler korrigieren? Schau gerne auf unserem [GitHub Repository](https://github.com/crag-review/crag-review-svelte) vorbei.  
-Gemeinsam können wir die Kletter-Community unterstützen und den Zugang zu Informationen für nachhaltiges Klettern erleichtern.
+Du möchtest ein Topo erstellen, Touren ergänzen oder Fehler korrigieren? In unserer <a href="{base}/mitmachen">Felsstudio-Anleitung zum Mitmachen</a> zeigen wir dir Schritt für Schritt, wie das geht – mit dem Roten Ofen als Sportkletterbeispiel und der Bischofsmütze für alpine Mehrseillängen. Programmierkenntnisse brauchst du dafür nicht.
+
+Unser Ziel: Topos und Tourenbeschreibungen sollen für immer kostenlos im Internet zugänglich bleiben. Mit deinem Wissen hilfst du, die Sammlung zu erweitern und aktuell zu halten.
 
 **Tipp:** Sehr empfehlenswert ist der [Mobilitätsguide des Alpenvereins](https://www.alpenverein.at/portal/natur-umwelt/sanfte_mobilitaet/Mobilitaetsguide-Sportklettern.php),  
 der zeigt, wie du umweltfreundlich und ganz ohne Auto zu den besten Kletterspots gelangst.
