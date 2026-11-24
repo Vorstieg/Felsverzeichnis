@@ -102,9 +102,15 @@
 		colors.routeTypes['sports-climbing']
 	];
 
+	const isAreaKind: ExpressionSpecification = [
+		'in',
+		['get', 'kind'],
+		['literal', ['area', 'region', 'country']]
+	];
+
 	const defaultPlacesFilter: ExpressionSpecification = [
 		'all',
-		['!=', ['get', 'kind'], 'area'],
+		['!', isAreaKind],
 		['==', ['geometry-type'], 'Point'],
 		['any', ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
 	];
@@ -166,10 +172,11 @@
 		}
 	};
 
+	// MapLibre reports both Polygon and MultiPolygon features as 'Polygon'.
 	const defaultAreaFilter: ExpressionSpecification = [
 		'all',
 		['==', ['geometry-type'], 'Polygon'],
-		['==', ['get', 'kind'], 'area'],
+		isAreaKind,
 		['==', ['get', 'filePath'], '']
 	];
 
@@ -874,7 +881,12 @@
 		if (!map || !coordinates) return;
 		const uiPadding = getMapPadding();
 
-		if (entry?.properties?.kind === 'area' && entry.geometry?.type !== 'Point') {
+		if (
+			(entry?.properties?.kind === 'area' ||
+				entry?.properties?.kind === 'country' ||
+				entry?.properties?.kind === 'region') &&
+			entry.geometry?.type !== 'Point'
+		) {
 			const bounds = getGeometryBounds(entry.geometry);
 			if (bounds) {
 				lastTargetBounds = bounds;
@@ -1239,7 +1251,7 @@
 
 		setLayerFilter('places', [
 			'all',
-			['!=', ['get', 'kind'], 'area'],
+			['!', isAreaKind],
 			['==', ['geometry-type'], 'Point'],
 			['any', isExactMatch, ['!=', ['get', 'kind'], 'sector'], ['>=', ['zoom'], 16]]
 		]);
@@ -1278,14 +1290,24 @@
 		]);
 		setLayerFilter('sector-line', sectorSelectionFilter);
 
+		const isEntryOrDirectChild: ExpressionSpecification = [
+			'all',
+			['==', ['index-of', decodedPath + '/', ['concat', ['get', 'filePath'], '/']], 0],
+			['==', ['index-of', '/', ['get', 'filePath'], decodedPath.length + 1], -1]
+		];
 		const areaSelectionFilter: ExpressionSpecification = [
 			'all',
 			['==', ['geometry-type'], 'Polygon'],
-			['==', ['get', 'kind'], 'area'],
-			isPolygonExactMatch
+			isAreaKind,
+			isEntryOrDirectChild
 		];
 		setLayerFilter('area-fill', areaSelectionFilter);
-		setLayerFilter('area-selected-casing', areaSelectionFilter);
+		setLayerFilter('area-selected-casing', [
+			'all',
+			['==', ['geometry-type'], 'Polygon'],
+			isAreaKind,
+			isPolygonExactMatch
+		]);
 		setLayerFilter('area-line', areaSelectionFilter);
 
 		setLayerPaint('area-fill', 'fill-color', colors.text.ink);
