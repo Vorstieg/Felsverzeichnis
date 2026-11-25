@@ -123,6 +123,7 @@ vi.mock('maplibre-gl', () => {
 		Map: MockMap,
 		GeolocateControl: MockControl,
 		NavigationControl: MockControl,
+		addProtocol: vi.fn(),
 		setWorkerUrl: vi.fn()
 	};
 });

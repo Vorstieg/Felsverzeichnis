@@ -87,3 +87,16 @@ Please make sure to test your changes thoroughly before submitting a pull reques
 Felsverzeichnis includes a "Topo Creator" tool that allows users to generate 3D models and associated data for climbing crags. This tool is designed to facilitate the creation of detailed visualizations for new crags.
 
 If you have used the Topo Creator to generate files for a new crag and would like to see it integrated into Felsverzeichnis, you can send the generated files directly to [robin.steiner@vorstieg.eu](mailto://robin.steiner@vorstieg.eu). There is no need to open a Pull Request for these types of contributions; they will be added manually.
+
+## Custom map overlay
+
+Terrain and transport maps display OSM via ferrata and hiking difficulty tiles
+served by Felslager at `/api/tiles/via-ferrata.pmtiles`. Build the archive in
+Felslager using `npm run build:via-ferrata` and keep its `TILES_DIR` persistent.
+Felsverzeichnis uses the [PMTiles MapLibre protocol](https://docs.protomaps.com/pmtiles/maplibre)
+to read byte ranges directly from that service; it does not generate or host tiles.
+
+The archive URL defaults to the Felslager origin configured in `PUBLIC_FS_API_URL`
+(default `https://lager.felsverzeichnis.at/api/fs`). For a separate tile host,
+set `PUBLIC_VIA_FERRATA_TILES_URL` to the full HTTP(S) archive URL. The tile host
+must support ranges and CORS. The overlay covers Austria from zoom 10 upward.
