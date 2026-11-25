@@ -28,6 +28,11 @@
 				"type": "FeatureCollection",
 				"features": []
 			}
+		},
+		"viaFerrataTiles": {
+			"type": "vector",
+			"url": "pmtiles://https://lager.felsverzeichnis.at/api/tiles/via-ferrata.pmtiles",
+			"attribution": "© OpenStreetMap contributors"
 		}
 	},
 	"layers": [
@@ -2818,6 +2823,156 @@
 			},
 			"metadata": {},
 			"filter": ["==", "class", "continent"]
+		},
+		{
+			"id": "Hiking difficulty grade",
+			"type": "symbol",
+			"source": "viaFerrataTiles",
+			"source-layer": "hiking_difficulty",
+			"minzoom": 13,
+			"layout": {
+				"symbol-placement": "line",
+				"text-field": [
+					"match",
+					["get", "sac_scale"],
+					"strolling",
+					"T1",
+					"hiking",
+					"T1",
+					"mountain_hiking",
+					"T2",
+					"demanding_mountain_hiking",
+					"T3",
+					"alpine_hiking",
+					"T4",
+					"demanding_alpine_hiking",
+					"T5",
+					"difficult_alpine_hiking",
+					"T6",
+					"?"
+				],
+				"text-font": ["Roboto Regular", "Noto Sans Regular"],
+				"text-size": 9,
+				"text-padding": 8,
+				"text-rotation-alignment": "map",
+				"text-allow-overlap": false,
+				"text-ignore-placement": false
+			},
+			"paint": {
+				"text-color": "#5d554d",
+				"text-halo-color": "#ffffff",
+				"text-halo-width": 1.5,
+				"text-halo-blur": 0.2
+			}
+		},
+		{
+			"id": "Via ferrata casing",
+			"type": "line",
+			"source": "viaFerrataTiles",
+			"source-layer": "via_ferrata",
+			"minzoom": 12,
+			"layout": {
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": "#000000",
+				"line-dasharray": {
+					"stops": [
+						[10, [1.363636, 0.909091]],
+						[11, [1.363636, 0.909091]],
+						[12, [1.363636, 0.909091]],
+						[13, [1.363636, 0.909091]],
+						[14, [1.363636, 0.909091]],
+						[15, [1.561753, 1.041169]],
+						[16, [1.744202, 1.162801]],
+						[17, [1.910112, 1.273408]],
+						[18, [2.059256, 1.372837]],
+						[19, [2.191947, 1.461298]],
+						[20, [2.308919, 1.53928]],
+						[21, [2.4112, 1.607466]],
+						[22, [2.5, 1.666667]]
+					]
+				},
+				"line-width": {
+					"base": 1.2,
+					"stops": [
+						[14, 1.1],
+						[22, 3.6]
+					]
+				}
+			}
+		},
+		{
+			"id": "Via ferrata",
+			"type": "line",
+			"source": "viaFerrataTiles",
+			"source-layer": "via_ferrata",
+			"minzoom": 12,
+			"layout": {
+				"line-join": "round",
+				"visibility": "visible"
+			},
+			"paint": {
+				"line-color": {
+					"stops": [
+						[6, "hsl(0, 0%, 60%)"],
+						[18, "hsl(0, 0%, 51%)"]
+					]
+				},
+				"line-dasharray": [3, 2],
+				"line-width": {
+					"base": 1.2,
+					"stops": [
+						[14, 0.5],
+						[22, 3]
+					]
+				}
+			}
+		},
+		{
+			"id": "Via ferrata grade",
+			"type": "symbol",
+			"source": "viaFerrataTiles",
+			"source-layer": "via_ferrata",
+			"minzoom": 14,
+			"layout": {
+				"symbol-placement": "line",
+				"symbol-spacing": 260,
+				"text-field": [
+					"match",
+					["get", "via_ferrata_scale"],
+					"0",
+					"A",
+					"1",
+					"A",
+					"2",
+					"B",
+					"3",
+					"C",
+					"4",
+					"D",
+					"5",
+					"E",
+					"6",
+					"F",
+					"?"
+				],
+				"text-font": ["Roboto Regular", "Noto Sans Regular"],
+				"text-size": ["interpolate", ["linear"], ["zoom"], 14, 10, 18, 11],
+				"text-offset": [0, -0.9],
+				"text-padding": 5,
+				"text-rotation-alignment": "viewport",
+				"text-pitch-alignment": "viewport",
+				"text-allow-overlap": false,
+				"text-ignore-placement": false
+			},
+			"paint": {
+				"text-color": "#50534e",
+				"text-halo-color": "#ffffff",
+				"text-halo-width": 1.3,
+				"text-halo-blur": 0.2
+			}
 		},
 		{
 			"id": "routes-outline",

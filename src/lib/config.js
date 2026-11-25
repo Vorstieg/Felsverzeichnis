@@ -12,6 +12,9 @@ export const siteTitle = 'Klettergebiete rund um Wien';
 export const siteDescription = 'Finde Klettergebiete die von Wien aus öffentlich erreichbar sind';
 export const siteLink = 'https://www.felsverzeichnis.at/';
 export const fsApiUrl = env.PUBLIC_FS_API_URL || 'https://lager.felsverzeichnis.at/api/fs';
+export const viaFerrataTilesUrl =
+	env.PUBLIC_VIA_FERRATA_TILES_URL ||
+	new URL('../tiles/via-ferrata.pmtiles', fsApiUrl.replace(/\/$/, '') + '/').href;
 export const felsstudioUrl = env.PUBLIC_FELSSTUDIO_URL || 'https://studio.felsverzeichnis.at';
 
 /**

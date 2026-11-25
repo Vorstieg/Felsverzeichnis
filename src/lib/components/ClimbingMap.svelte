@@ -6,6 +6,8 @@
 	import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
+	import { viaFerrataTilesUrl } from '$lib/config';
+	import { registerCustomTiles, transformTileRequest } from '$lib/assets/js/custom-tiles.js';
 	import { goto } from '$app/navigation';
 	import { slowRasterTileDecay } from '$lib/assets/js/map-raster-lod.js';
 	import { searchSuggestionsActive } from '$lib/stores/search.js';
@@ -519,6 +521,7 @@
 
 	onMount(async () => {
 		maplibregl.setWorkerUrl(maplibreWorkerUrl);
+		registerCustomTiles(maplibregl);
 		map = new maplibregl.Map({
 			container: mapElement,
 			zoom: cameraTarget?.type === 'center' ? cameraTarget.zoom : 8,
@@ -526,6 +529,7 @@
 			pitch: 0,
 			hash: true,
 			style: base + '/terrain.json',
+			transformRequest: (url) => transformTileRequest(url, viaFerrataTilesUrl),
 			maxZoom: 18,
 			maxPitch: 75
 		});
