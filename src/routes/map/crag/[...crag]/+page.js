@@ -254,7 +254,10 @@ export const load = async ({ params, url, parent, fetch }) => {
 						};
 					}
 				}
-				if (currentData.properties?.kind === 'area' && currentData.geometry?.type !== 'Point') {
+				if (
+					['country', 'region', 'area'].includes(currentData.properties.kind) &&
+					currentData.geometry?.type !== 'Point'
+				) {
 					const bounds = getGeometryBounds(currentData.geometry);
 					if (bounds)
 						return { type: /** @type {const} */ ('bounds'), bounds, padding: 80, maxZoom: 14 };

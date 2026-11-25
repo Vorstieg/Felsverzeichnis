@@ -100,6 +100,42 @@ describe.each(kinds)('%s entries use the same loading rules', (kind) => {
 		expect(topoPage.modelUrl).toBe(`${fsApiUrl}/${path}/place.glb`);
 	});
 
+	it.each(['Polygon', 'MultiPolygon'])(
+		'uses the correct camera target for %s geometry',
+		async (type) => {
+			const { args, entry } = fixture(kind);
+			const polygon = (x, y) => [
+				[
+					[x, y],
+					[x + 1, y],
+					[x + 1, y + 1],
+					[x, y + 1],
+					[x, y]
+				]
+			];
+			entry.geometry = {
+				type,
+				coordinates: type === 'Polygon' ? polygon(10, 40) : [polygon(10, 40), polygon(20, 50)]
+			};
+			const result = await loadMap(args);
+			await result.streamed.details;
+			if (['country', 'region', 'area'].includes(kind)) {
+				expect(result.cameraTarget).toEqual({
+					type: 'bounds',
+					bounds: [[10, 40], type === 'Polygon' ? [11, 41] : [21, 51]],
+					padding: 80,
+					maxZoom: 14
+				});
+			} else {
+				expect(result.cameraTarget).toEqual({
+					type: 'center',
+					center: type === 'Polygon' ? [10.5, 40.5] : [15.5, 45.5],
+					zoom: 16
+				});
+			}
+		}
+	);
+
 	it('resolves a route from its own topo', async () => {
 		const { args, path } = fixture(kind);
 		const result = await loadTopo({ ...args, params: { crag: `${path}/route` } });

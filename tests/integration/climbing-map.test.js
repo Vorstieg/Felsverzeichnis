@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { goto } from '$app/navigation';
 import ClimbingMap from '$lib/components/ClimbingMap.svelte';
 import { createExpression, latest } from '@maplibre/maplibre-gl-style-spec';
+import { GeoJSONVT } from '@maplibre/geojson-vt';
 
 const mapState = vi.hoisted(() => ({ instance: null }));
 
@@ -630,6 +631,155 @@ describe('ClimbingMap', () => {
 			globalThis.Image = originalImage;
 		}
 	});
+
+	it.each([
+		['area', 'Polygon'],
+		['country', 'Polygon'],
+		['region', 'Polygon'],
+		['area', 'MultiPolygon'],
+		['country', 'MultiPolygon'],
+		['region', 'MultiPolygon']
+	])('renders and focuses %s %s shapes like areas', async (kind, geometryType) => {
+		const originalImage = globalThis.Image;
+		globalThis.Image = class {
+			set src(_) {
+				queueMicrotask(() => this.onload?.());
+			}
+		};
+		const polygon = (x, y) => [
+			[
+				[x, y],
+				[x + 1, y],
+				[x + 1, y + 1],
+				[x, y + 1],
+				[x, y]
+			]
+		];
+		const path = `places/${kind}`;
+		const entry = {
+			type: 'Feature',
+			properties: { kind, name: kind },
+			geometry: {
+				type: geometryType,
+				coordinates:
+					geometryType === 'Polygon' ? polygon(10, 40) : [polygon(10, 40), polygon(20, 50)]
+			}
+		};
+		try {
+			const map = await renderMap({ locations: [{ path, entry }] });
+			await map.handlers.get('load')();
+			const data = map.getSource('places').data;
+			expect(data.features).toHaveLength(1);
+			expect(data.features[0].geometry).toEqual(entry.geometry);
+			// Use MapLibre's GeoJSON tiler so MultiPolygon geometry reaches the filters
+			// in the same form as it does in the renderer.
+			const tile = new GeoJSONVT(data, { tolerance: 0 }).getTile(0, 0, 0);
+			const tiled = tile.features[0];
+			expect(tiled.type).toBe(3);
+			expect(tiled.geometry).toHaveLength(geometryType === 'Polygon' ? 1 : 2);
+			const feature = { type: tiled.type, properties: tiled.tags };
+			const matches = (layerId, candidate = feature) => {
+				const compiled = createExpression(map.getLayer(layerId).filter, { type: 'boolean' });
+				expect(compiled.result).toBe('success');
+				return compiled.value.evaluateWithoutErrorHandling({ zoom: 10 }, candidate);
+			};
+			const shapeLayers = ['area-fill', 'area-selected-casing', 'area-line'];
+			for (const id of shapeLayers) expect(matches(id)).toBe(false);
+			expect(matches('places', { type: 1, properties: { kind, filePath: path } })).toBe(false);
+
+			map.handlers.get('click:["area-fill","area-line"]')({
+				features: [{ properties: { filePath: path } }]
+			});
+			expect(goto).toHaveBeenCalledWith(`/map/crag/${path}`);
+			for (const id of shapeLayers) {
+				expect(matches(id)).toBe(true);
+				expect(matches(id, { ...feature, properties: { kind, filePath: 'places/other' } })).toBe(
+					false
+				);
+			}
+			expect(matches('places', { type: 1, properties: { kind, filePath: path } })).toBe(false);
+			await waitFor(() => expect(map.bounds).toBeTruthy());
+			expect(map.bounds.bounds).toEqual([
+				[10, 40],
+				geometryType === 'Polygon' ? [11, 41] : [21, 51]
+			]);
+			expect(map.bounds.options.maxZoom).toBe(14);
+
+			// Restoring the style without a selected page resets all shape filters.
+			map.sources.clear();
+			map.layers.clear();
+			await map.handlers.get('style.load')();
+			for (const id of shapeLayers) expect(matches(id)).toBe(false);
+		} finally {
+			globalThis.Image = originalImage;
+		}
+	});
+
+	it.each(['country', 'region', 'area', 'crag', 'sector'])(
+		'shows only direct child area shapes of an opened %s and preserves crag and sector display rules',
+		async (parentKind) => {
+			const originalImage = globalThis.Image;
+			globalThis.Image = class {
+				set src(_) {
+					queueMicrotask(() => this.onload?.());
+				}
+			};
+			try {
+				const map = await renderMap();
+				await map.handlers.get('load')();
+				// Let the initial source synchronization finish before changing selection.
+				await new Promise((resolve) => queueMicrotask(resolve));
+				const path = `places/${parentKind}`;
+				window.dispatchEvent(new CustomEvent('crag-review:focus-map-target', { detail: { path } }));
+				const matches = (layer, kind, filePath, zoom = 5, type = 3) => {
+					const compiled = createExpression(map.getLayer(layer).filter, { type: 'boolean' });
+					expect(compiled.result).toBe('success');
+					return compiled.value.evaluateWithoutErrorHandling(
+						{ zoom },
+						{ type, properties: { kind, filePath } }
+					);
+				};
+				for (const kind of ['country', 'region', 'area']) {
+					for (const zoom of [5, 14, 18]) {
+						for (const layer of ['area-fill', 'area-line']) {
+							expect(matches(layer, kind, path, zoom)).toBe(true);
+							expect(matches(layer, kind, path + '/child', zoom)).toBe(true);
+							expect(matches(layer, kind, path + '/child/grandchild', zoom)).toBe(false);
+							expect(matches(layer, kind, path + '-other/child', zoom)).toBe(false);
+						}
+						expect(matches('area-selected-casing', kind, path, zoom)).toBe(true);
+						expect(matches('area-selected-casing', kind, path + '/child', zoom)).toBe(false);
+					}
+				}
+				// Existing crag and sector selection and zoom thresholds stay intact.
+				for (const kind of ['crag', 'sector']) {
+					for (const layer of [`${kind}-fill`, `${kind}-line`]) {
+						expect(matches(layer, kind, path)).toBe(true);
+						expect(matches(layer, kind, path + '/child/grandchild')).toBe(false);
+						expect(matches(layer, kind, 'elsewhere/child')).toBe(false);
+						expect(matches(layer, kind, 'elsewhere/child', kind === 'crag' ? 14 : 16)).toBe(true);
+					}
+				}
+				expect(matches('places', 'sector', path + '/child', 14, 1)).toBe(false);
+				expect(matches('places', 'sector', path + '/child', 16, 1)).toBe(true);
+				for (const name of ['icon-opacity', 'text-opacity']) {
+					const expression = map.paintCalls.findLast(
+						(call) => call[0] === 'places' && call[1] === name
+					)[2];
+					const compiled = createExpression(expression, latest.paint_symbol[name]);
+					expect(compiled.result).toBe('success');
+					expect(
+						compiled.value.evaluateWithoutErrorHandling(
+							{ zoom: 5 },
+							{ type: 1, properties: { filePath: path + '/child' } }
+						)
+					).toBe(0);
+				}
+			} finally {
+				globalThis.Image = originalImage;
+			}
+		}
+	);
 
 	it('handles clicks on main route paths and highlights selected route main path', async () => {
 		const originalImage = globalThis.Image;
